@@ -73,7 +73,6 @@ onMounted(async () => {
 }
 
 .container {
-    max-width: 400px;
     border: 2px solid #ddd;
     display: block;
     justify-content: left;

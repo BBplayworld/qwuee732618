@@ -80,8 +80,9 @@ let func = {
 }
 
 function createTreemap() {
-    const width = window.innerWidth - 80;  // 트리맵의 전체 너비
-    const height = window.innerHeight - 150; // 트리맵의 전체 높이
+    let width = window.innerWidth < 1279 ? window.innerWidth - 80 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
+    const height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
+    if (width > 1600) width = 1300
 
     const root = d3.hierarchy({ children: stocks.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
@@ -150,6 +151,7 @@ h2 {
 }
 
 .container {
+    max-width: 60%;
     border: 2px solid #ddd;
     display: block;
     justify-content: left;
@@ -179,5 +181,12 @@ h2 {
 .node-change {
     font-size: 10px;
     /* 기본 폰트 크기, 상황에 따라 조정 가능 */
+}
+
+/* 중간 크기 화면 (태블릿)에서의 스타일링 */
+@media all and (max-width:1279px) {
+    .container {
+        min-width: 100%;
+    }
 }
 </style>
