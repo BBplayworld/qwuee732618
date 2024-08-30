@@ -80,8 +80,8 @@ let func = {
 }
 
 function createTreemap() {
-    const width = window.innerWidth < 1050 ? 920 : 960;  // 트리맵의 전체 너비
-    const height = window.innerWidth < 1050 ? 500 : 660; // 트리맵의 전체 높이
+    const width = window.innerWidth - 80;  // 트리맵의 전체 너비
+    const height = window.innerHeight - 150; // 트리맵의 전체 높이
 
     const root = d3.hierarchy({ children: stocks.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정

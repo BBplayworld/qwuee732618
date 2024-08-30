@@ -6,8 +6,6 @@ import companyNews from '~/server/api/company-news';
             <EconomicIndicators />
             <CompanyNews />
         </div>
-        <div class="single-column">
-        </div>
     </div>
 </template>
 
@@ -33,7 +31,7 @@ h2 {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 20px;
+    padding: 10px 20px 10px 20px;
     margin: 5px;
     box-sizing: border-box;
     width: auto;
