@@ -10,13 +10,6 @@ import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 
 const treemapContainer = ref(null)
-const props = defineProps({
-    stocks: {
-        type: Array,
-        required: true
-    }
-})
-
 const stocks = ref([])
 
 const fetch = async () => {
@@ -32,10 +25,9 @@ const fetch = async () => {
 onMounted(() => {
     fetch() // 페이지가 로드될 때 최초 데이터 가져오기
 
-    // 1분마다 데이터 갱신
     const interval = setInterval(() => {
         fetch()
-    }, 60000) // 60,000 밀리초 = 1분
+    }, 65000) // 65,000 밀리초 = 1분5초
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
@@ -66,26 +58,30 @@ let func = {
         }
     },
     calcName(d) {
-        let isX = (d.x1 - d.x0) > (d.y1 - d.y0)
+        let size = d.value / 25
+        if (size < 15) size = 15
+        if (size > 15 & size < 50) size = 22
+        if (size > 50) size = 32
+
         return {
-            x: 20,
-            y: 50,
-            size: isX ? (d.x1 - d.x0) / 7 : (d.y1 - d.y0) / 10
+            size
         }
     },
     calcChange(d) {
-        let isX = (d.x1 - d.x0) > (d.y1 - d.y0)
+        let size = d.value / 30
+        if (size < 15) size = 15
+        if (size > 15 & size < 30) size = 18
+        if (size > 30) size = 20
+
         return {
-            x: 23,
-            y: 65,
-            size: isX ? (d.x1 - d.x0) / 11 : (d.y1 - d.y0) / 10
+            size
         }
     },
 }
 
 function createTreemap() {
-    const width = 900;  // 트리맵의 전체 너비
-    const height = 700; // 트리맵의 전체 높이
+    const width = window.innerWidth < 1050 ? 920 : 960;  // 트리맵의 전체 너비
+    const height = window.innerWidth < 1050 ? 500 : 660; // 트리맵의 전체 높이
 
     const root = d3.hierarchy({ children: stocks.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
@@ -97,7 +93,7 @@ function createTreemap() {
         (root);
 
     const svg = d3.select(treemapContainer.value)
-        .html('')  // 기존 내용을 지우고 새로 추가
+        .html('')
         .append('svg')
         .attr('width', width)
         .attr('height', height);
@@ -108,17 +104,25 @@ function createTreemap() {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`);
 
-    node.append('rect')
-        .attr('width', d => d.x1 - d.x0)
-        .attr('height', d => d.y1 - d.y0)
-        .attr('fill', d => func.getColor(d.data.change))
+    const rects = node.append('rect')
+        .attr('width', d => d.x1 - 5 - d.x0)
+        .attr('height', d => d.y1 - 5 - d.y0)
+        .attr('fill', d => func.getColor(d.data['dp']))
         .attr('stroke', '#222');
+
+    // D3 transition을 사용한 애니메이션
+    rects.transition()
+        .duration(1500) // 애니메이션 지속 시간 (2초)
+        .attr('fill', 'rgba(203, 203, 32, 1)') // 일시적 색상 변화
+        .transition()
+        .duration(1500) // 애니메이션 지속 시간 (2초)
+        .attr('fill', d => func.getColor(d.data['dp'])) // 원래 색상으로 복원
 
     node.append('foreignObject')
         .attr('x', 0)
         .attr('y', 0)
-        .attr('width', d => d.x1 - d.x0)
-        .attr('height', d => d.y1 - d.y0)
+        .attr('width', d => d.x1 - 5 - d.x0)
+        .attr('height', d => d.y1 - 5 - d.y0)
         .append('xhtml:div')
         .attr('class', 'node-container')
         .style('display', 'flex')
@@ -132,7 +136,7 @@ function createTreemap() {
                 <strong>${d.data.name}</strong>
             </div>
             <div class="node-change" style="font-size:${func.calcChange(d).size}px;">
-                ${d.data.change}%
+                ${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)
             </div>
         `);
 }
@@ -142,7 +146,7 @@ function createTreemap() {
 <style scoped>
 h1,
 h2 {
-    margin: 20px;
+    margin: 5px 20px 20px 20px;
 }
 
 .container {
@@ -150,7 +154,6 @@ h2 {
     display: block;
     justify-content: left;
     align-items: center;
-    margin: 5px;
 }
 
 .node-container {

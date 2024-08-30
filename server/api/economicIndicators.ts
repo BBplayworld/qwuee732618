@@ -1,10 +1,11 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
+import dayjs from 'dayjs'
 
 // 전역 변수로 캐싱 데이터를 저장
-let cachedData: any = null
+let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
-const CACHE_DURATION = 1000 * 60 // 1분
+const CACHE_DURATION = 1000 * 70 // 1분 10초
 
 export default defineEventHandler(async () => {
     const now = Date.now()
@@ -14,68 +15,82 @@ export default defineEventHandler(async () => {
         return cachedData
     }
 
-    // 테스트용 샘플 데이터 (실제 API 호출 전에 사용)
-    const sampleData = {
-        gdp: {
-            date: '2023-01-01',
-            value: '21.5 Trillion USD'
-        },
-        unemployment: {
-            date: '2023-01-01',
-            value: '3.8'
-        },
-        inflation: {
-            date: '2023-01-01',
-            value: '2.6'
+    // 캐시가 유효하지 않다면 데이터를 다시 가져옴
+    const indicators = [
+        { code: 'GDP', name: 'Gross Domestic Product (GDP)' }, // 미국 GDP
+        { code: 'UNRATE', name: 'Unemployment Rate' }, // 실업률
+        { code: 'CPIAUCSL', name: 'CPI: All Items in U.S. City Average' }, // 소비자물가지수(CPI)
+        { code: 'DFF', name: 'Effective Federal Funds Rate' }, // 연방 기금 금리
+        { code: 'INDPRO', name: 'Industrial Production Index' }, // 산업 생산지수
+        { code: 'PAYEMS', name: 'Nonfarm Payrolls' }, // 비농업 부문 고용지수
+        { code: 'DGS10', name: '10-Year Treasury Constant Maturity Rate' }, // 10년 만기 국채 수익률
+        { code: 'M2SL', name: 'M2 Money Stock' }, // M2 통화량
+        { code: 'RSAFS', name: 'Retail Sales' }, // 소매 판매
+        { code: 'BAA10YM', name: "Moody's Baa Corporate Bond Yield Relative to 10-Year Treasury Yield" }, // 무디스 Baa 회사채 수익률과 10년 만기 국채 수익률의 차이
+        { code: 'HOUST', name: 'Housing Starts' }, // 주택 착공 건수
+        { code: 'CES0500000003', name: 'Average Hourly Earnings of All Employees' }, // 평균 시간당 임금
+        { code: 'A191RL1Q225SBEA', name: 'Real Gross Domestic Product' }, // 실질 GDP
+    ]
+
+    const transferUnit = (code: any, value: any) => {
+        let fixValue = (Math.trunc(value * 100) / 100).toLocaleString()
+        switch (code) {
+            case 'GDP':
+            case 'A191RL1Q225SBEA':
+            case 'M2SL':
+                return `${fixValue}B`
+            case 'RSAFS':
+                return `${fixValue}M`
+            case 'HOUST':
+                return `${fixValue} Thousands of Units`
+            case 'CES0500000003':
+                return `${fixValue} Dollars per Hour`
+            case 'DFF':
+            case 'UNRATE':
+            case 'DGS10':
+            case 'BAA10YM':
+                return `${fixValue}%`
+            case 'CPIAUCSL':
+                return `${fixValue} (1982-1984=100)`
+            case 'INDPRO':
+                return `${fixValue} (2017=100)`
+            default:
+                return fixValue
         }
     }
 
+    const endDate = dayjs().format('YYYY-MM-DD')
+    const startDate = dayjs().subtract(1, 'year').format('YYYY-MM-DD') // 1년 전 데이터 조회
 
-    // TODO. 테스트
-    cachedData = sampleData
-    cacheTimestamp = now
+    const requests = indicators.map(async (indicator) => {
+        const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${indicator.code}&api_key=${process.env.FRED_API_KEY}&file_type=json&observation_start=${startDate}&observation_end=${endDate}`
 
-    return cachedData
+        let response
+        try {
+            response = await $fetch(url)
 
-    // 실제 API 호출
-    const apiKey = process.env.ALPHA_VANTAGE_KEY
+            const latestObservation = response.observations.pop() // 가장 최신의 데이터를 사용
 
-    try {
-        const gdpUrl = `https://www.alphavantage.co/query?function=REAL_GDP&apikey=${apiKey}`
-        const unemploymentUrl = `https://www.alphavantage.co/query?function=UNEMPLOYMENT&apikey=${apiKey}`
-        const inflationUrl = `https://www.alphavantage.co/query?function=CPI&apikey=${apiKey}`
-
-        const gdpResponse = await $fetch(gdpUrl)
-        const unemploymentResponse = await $fetch(unemploymentUrl)
-        const inflationResponse = await $fetch(inflationUrl)
-
-        // 필요한 데이터만 추출
-        const gdpData = gdpResponse.data[0] || {}
-        const unemploymentData = unemploymentResponse.data[0] || {}
-        const inflationData = inflationResponse.data[0] || {}
-
-        cachedData = {
-            gdp: {
-                date: gdpData.date || sampleData.gdp.date,
-                value: gdpData.value || sampleData.gdp.value,
-            },
-            unemployment: {
-                date: unemploymentData.date || sampleData.unemployment.date,
-                value: unemploymentData.value || sampleData.unemployment.value,
-            },
-            inflation: {
-                date: inflationData.date || sampleData.inflation.date,
-                value: inflationData.value || sampleData.inflation.value,
+            return {
+                name: indicator.name,
+                date: latestObservation.date,
+                value: transferUnit(indicator.code, latestObservation.value), // 지표 값
+            }
+        } catch (e) {
+            console.log('e', e)
+            return {
+                name: indicator.name,
+                date: '',
+                value: 0
             }
         }
+    })
 
-    } catch (error) {
-        // API 호출이 실패하면 샘플 데이터를 사용
-        cachedData = sampleData
-    }
+    const result = await Promise.all(requests)
 
-    // 캐시 타임스탬프 업데이트
+    // 새로운 데이터를 캐시에 저장
+    cachedData = result
     cacheTimestamp = now
 
-    return cachedData
+    return result
 })
