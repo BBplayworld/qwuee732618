@@ -65,6 +65,7 @@ export default defineEventHandler(async () => {
             return {
                 name: symbol['name'],
                 headline: response[ranIdx]['headline'],
+                source: response[ranIdx]['source'],
                 summary: response[ranIdx]['summary'],
                 datetime: response[ranIdx]['datetime'],
             }

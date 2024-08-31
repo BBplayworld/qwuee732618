@@ -31,8 +31,8 @@ h2 {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 10px 20px 10px 20px;
-    margin: 5px;
+    padding: 10px;
+    margin: 5px 10px 5px 10px;
     box-sizing: border-box;
     width: auto;
     max-width: 100%;
@@ -46,6 +46,15 @@ h2 {
     max-height: 820px;
 }
 
+/* font */
+.font-opensans {
+    font-family: 'Roboto', sans-serif;
+}
+
+.font-roboto {
+    font-family: 'Open Sans', sans-serif;
+}
+
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     .container-wrapper {
@@ -55,15 +64,8 @@ h2 {
     .container {
         flex-wrap: wrap;
         align-content: stretch;
-    }
-
-    .container>* {
-        margin: 15px 0;
-        /* 태블릿 화면에서 전체 너비 사용 */
-    }
-
-    .single-column {
-        padding: 0;
+        padding: 5px 10px 0 10px;
+        margin: 0;
     }
 }
 </style>

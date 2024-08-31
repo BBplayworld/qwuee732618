@@ -59,7 +59,7 @@ let func = {
     },
     calcName(d) {
         let size = d.value / 25
-        if (size < 15) size = 15
+        if (size < 15) size = 13
         if (size > 15 & size < 50) size = 22
         if (size > 50) size = 32
 
@@ -69,7 +69,7 @@ let func = {
     },
     calcChange(d) {
         let size = d.value / 30
-        if (size < 15) size = 15
+        if (size < 15) size = 13
         if (size > 15 & size < 30) size = 18
         if (size > 30) size = 20
 
@@ -80,9 +80,11 @@ let func = {
 }
 
 function createTreemap() {
-    let width = window.innerWidth < 1279 ? window.innerWidth - 80 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
-    const height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
-    if (width > 1600) width = 1300
+    let width = window.innerWidth < 1279 ? window.innerWidth - 40 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
+    let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
+    if (width > 1100) width = 1100
+    if (height > 660) height = 660
+    if (window.innerWidth < 1279 && height >= 660) height = 470
 
     const root = d3.hierarchy({ children: stocks.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
@@ -133,10 +135,10 @@ function createTreemap() {
         .style('height', '100%')
         .style('text-align', 'center')
         .html(d => `
-            <div class="node-name" style="font-size:${func.calcName(d).size}px; word-break: break-word;">
+            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word;">
                 <strong>${d.data.name}</strong>
             </div>
-            <div class="node-change" style="font-size:${func.calcChange(d).size}px;">
+            <div class="node-change font-roboto" style="font-size:${func.calcChange(d).size}px;line-height:1.1em">
                 ${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)
             </div>
         `);
@@ -152,7 +154,7 @@ h2 {
 
 .container {
     max-width: 60%;
-    border: 2px solid #ddd;
+    border-right: 2px solid #ddd;
     display: block;
     justify-content: left;
     align-items: center;
@@ -187,6 +189,7 @@ h2 {
 @media all and (max-width:1279px) {
     .container {
         min-width: 100%;
+        border-right: 0;
     }
 }
 </style>

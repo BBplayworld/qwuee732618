@@ -1,14 +1,20 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import dayjs from 'dayjs'
+import { useMarketOpen } from '~/composables/useMarketOpen'
 
 // 전역 변수로 캐싱 데이터를 저장
 let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 70 // 1분 10초
+const { isMarketOpen } = useMarketOpen()
 
 export default defineEventHandler(async () => {
     const now = Date.now()
+
+    if (cachedData && !isMarketOpen) {
+        return cachedData
+    }
 
     // 캐시가 유효한지 확인
     if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {

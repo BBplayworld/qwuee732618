@@ -1,18 +1,18 @@
 <template>
     <div class="container">
-        <h1 :class="{ 'color-animation': animateH1 }">Company News</h1>
+        <h1 :class="{ 'color-animation': animateH1 }">Company <br />News</h1>
         <div class="content">
             <div v-if="result">
-                <div v-for="item in result">
-                    <div v-if="item['datetime']">
-                        <p><strong style="color: #32D732;">{{ item['name'] }}</strong>
-                            &nbsp;{{ dayjs.unix(item['datetime']).format('YYYY-MM-DD HH:mm') }}
-                            &nbsp;<span style="color: #28ac28">{{ item['headline'] }}</span>
-                        </p>
-                        <p>
-                            {{ item['summary'] }}
-                        </p>
-                        <br />
+                <div v-for="item in result" :key="item.name">
+                    <div v-if="Object.keys(item).length > 0" class="box">
+                        <div class="name font-opensans">{{ item.name }} <span class="headline">[{{ item['source'] }}] {{
+            item['headline']
+        }}</span>
+                        </div>
+                        <div class="value font-roboto">{{ item['summary'] }}</div>
+                        <div class="date font-roboto">
+                            {{ dayjs.unix(item['datetime']).format('YYYY-MM-DD HH:mm') }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,12 +80,9 @@ onMounted(async () => {
 }
 
 .container {
-    max-width: 560px;
-    border: 2px solid #ddd;
+    max-width: 470px;
     display: block;
     justify-content: left;
-    align-items: left;
-    padding: 20px 0 10px 10px;
 }
 
 .content {
@@ -93,21 +90,77 @@ onMounted(async () => {
     height: 690px;
 }
 
-p {
-    font-size: 15.5px;
-    margin: 10px 5px 10px 5px;
-    line-height: 0.58cm;
+/* WebKit 기반 브라우저 (Chrome, Safari)에서 스크롤바 스타일링 */
+.content::-webkit-scrollbar {
+    width: 5px;
+    /* 스크롤바의 너비 */
+}
+
+.content::-webkit-scrollbar-thumb {
+    background-color: #111;
+    /* 스크롤바의 손잡이(thumb)를 흰색으로 설정 */
+    border-radius: 6px;
+    /* 둥근 모서리 */
+    border: 3px solid #ddd;
+    /* 스크롤바와 트랙 사이에 여백 효과를 주기 위해 테두리 추가 */
+}
+
+.content::-webkit-scrollbar-track {
+    background-color: #111;
+    /* 스크롤바의 트랙을 연한 회색으로 설정 */
+    border-radius: 6px;
+    /* 둥근 모서리 */
+}
+
+/* Box */
+.box {
+    border-radius: 7px;
+    padding: 10px;
+    color: white;
+    /* 너비를 고정하여 일정한 크기의 박스 유지 */
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.box .name {
+    font-size: 17px;
+    color: #32D732;
+    font-weight: bold;
+    padding: 10px 0;
+    border-radius: 8px 8px 0 0;
+    text-align: left;
+}
+
+.box .headline {
+    color: #28ac28;
+}
+
+.box .value {
+    font-size: 15px;
+    color: white;
+    /* 중간 강조 색상 */
+    margin: 5px 0 15px 0;
+    font-weight: bold;
+    text-align: left;
+}
+
+.box .date {
+    font-size: 14px;
+    background-color: #e0e0e0;
+    color: black;
+    padding: 10px 0;
+    border-radius: 0 0 5px 5px;
+    font-weight: bold;
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     .container {
-        max-width: 60%;
-        max-height: 350px;
+        max-width: 100%;
     }
 
     .content {
-        max-height: 250px;
+        max-height: 450px;
     }
 }
 </style>

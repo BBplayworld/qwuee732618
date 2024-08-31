@@ -1,22 +1,23 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
+import { useMarketOpen } from '~/composables/useMarketOpen'
 
 // 전역 변수로 캐싱 데이터를 저장
-let cachedStocks: any[] | null = null
+let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 65 // 1분 5초
+const { isMarketOpen } = useMarketOpen()
 
 export default defineEventHandler(async () => {
     const now = Date.now()
-    const hours = new Date().getHours()
 
-    if (cachedStocks && hours < 22) {
-        return cachedStocks
+    if (cachedData && !isMarketOpen) {
+        return cachedData
     }
 
     // 캐시가 유효한지 확인
-    if (cachedStocks && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
-        return cachedStocks
+    if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
+        return cachedData
     }
 
     // 캐시가 유효하지 않다면 데이터를 다시 가져옴
@@ -69,7 +70,7 @@ export default defineEventHandler(async () => {
     const result = await Promise.all(requests)
 
     // 새로운 데이터를 캐시에 저장
-    cachedStocks = result
+    cachedData = result
     cacheTimestamp = now
 
     return result
