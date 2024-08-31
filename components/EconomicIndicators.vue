@@ -27,7 +27,7 @@ const fetch = async () => {
     animateH1.value = true
     const { data } = await useFetch('/api/economicIndicators')
     if (!data.value) {
-        return fetch()
+        return setTimeout(fetch, 1000)
     }
 
     result.value = data.value

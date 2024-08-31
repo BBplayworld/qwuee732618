@@ -15,7 +15,7 @@ const stocks = ref([])
 const fetch = async () => {
     const { data } = await useFetch('/api/stocks')
     if (!data.value) {
-        return fetch()
+        return setTimeout(fetch, 1000)
     }
 
     stocks.value = data.value

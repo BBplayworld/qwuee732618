@@ -35,7 +35,7 @@ const fetch = async () => {
     animateH1.value = true
     const { data } = await useFetch('/api/company-news')
     if (!data.value) {
-        return fetch()
+        return setTimeout(fetch, 1000)
     }
 
     result.value = data.value
