@@ -1,23 +1,24 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import dayjs from 'dayjs'
+import { useMarketOpen } from '~/composables/useMarketOpen'
 
 // 전역 변수로 캐싱 데이터를 저장
-let cachedStocks: any[] | null = null
+let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 120 // 1분 5초
+const { isMarketOpen } = useMarketOpen()
 
 export default defineEventHandler(async () => {
     const now = Date.now()
-    const hours = new Date().getHours()
 
-    if (cachedStocks && hours < 22) {
-        return cachedStocks
+    if (cachedData && !isMarketOpen) {
+        return cachedData
     }
 
     // 캐시가 유효한지 확인
-    if (cachedStocks && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
-        return cachedStocks
+    if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
+        return cachedData
     }
 
     // 캐시가 유효하지 않다면 데이터를 다시 가져옴
@@ -41,22 +42,18 @@ export default defineEventHandler(async () => {
         { name: 'QCOM', marketCap: 193 },
     ] // 필요한 주식 심볼들
 
-    let from = dayjs().format('YYYY-MM-DD')
-    let to = dayjs().add(1, 'day').format('YYYY-MM-DD')
-
-    if (hours >= 24 || hours < 20) {
-        from = dayjs().add(-1, 'day').format('YYYY-MM-DD')
-        to = dayjs().format('YYYY-MM-DD')
-    }
+    let from = dayjs().add(-1, 'day').format('YYYY-MM-DD')
+    let to = dayjs().format('YYYY-MM-DD')
 
     const requests = symbols.map(async (symbol) => {
         const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol['name']}&from=${from}&to=${to}`
 
-        let response
         try {
-            response = await $fetch(url, {
+            const response = await $fetch(url, {
                 headers: {
-                    'X-Finnhub-Token': process.env.STOCK_KEY
+                    'X-Finnhub-Token': process.env.STOCK_KEY,
+                    'Content-Type': 'application/json',
+                    'Accept-Charset': 'utf-8',
                 }
             })
 
@@ -78,7 +75,7 @@ export default defineEventHandler(async () => {
     const result = await Promise.all(requests)
 
     // 새로운 데이터를 캐시에 저장
-    cachedStocks = result
+    cachedData = result
     cacheTimestamp = now
 
     return result

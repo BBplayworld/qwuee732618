@@ -13,7 +13,10 @@ const treemapContainer = ref(null)
 const stocks = ref([])
 
 const fetch = async () => {
-    const { data } = await useFetch('/api/stocks')
+    const { data } = await useFetch('/api/stocks', {
+        retry: false
+    })
+
     if (!data.value) {
         return setTimeout(fetch, 1000)
     }

@@ -33,7 +33,10 @@ const animateH1 = ref(false)
 
 const fetch = async () => {
     animateH1.value = true
-    const { data } = await useFetch('/api/company-news')
+    const { data } = await useFetch('/api/company-news', {
+        retry: false
+    })
+
     if (!data.value) {
         return setTimeout(fetch, 1000)
     }
