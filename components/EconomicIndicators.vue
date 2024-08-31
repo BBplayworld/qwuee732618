@@ -84,28 +84,24 @@ onMounted(async () => {
 .content {
     overflow-y: scroll;
     height: 690px;
-}
 
-/* WebKit 기반 브라우저 (Chrome, Safari)에서 스크롤바 스타일링 */
-.content::-webkit-scrollbar {
-    width: 5px;
-    /* 스크롤바의 너비 */
-}
+    -webkit-overflow-scrolling: touch;
 
-.content::-webkit-scrollbar-thumb {
-    background-color: #111;
-    /* 스크롤바의 손잡이(thumb)를 흰색으로 설정 */
-    border-radius: 6px;
-    /* 둥근 모서리 */
-    border: 3px solid #ddd;
-    /* 스크롤바와 트랙 사이에 여백 효과를 주기 위해 테두리 추가 */
-}
+    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
 
-.content::-webkit-scrollbar-track {
-    background-color: #111;
-    /* 스크롤바의 트랙을 연한 회색으로 설정 */
-    border-radius: 6px;
-    /* 둥근 모서리 */
+    &::-webkit-scrollbar-thumb {
+        background-color: #111;
+        border-radius: 6px;
+        border: 3px solid #ddd;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: #111;
+        border-radius: 6px;
+    }
 }
 
 /* Box */
@@ -147,11 +143,29 @@ onMounted(async () => {
 @media all and (max-width:1279px) {
     .container {
         max-width: 100%;
-        margin-right: 10px;
+        margin: 0 10px 20px 0;
     }
 
     .content {
-        max-height: 450px;
+        max-height: 350px;
+    }
+}
+
+/* 아이패드에서 스크롤 문제 해결을 위한 추가 스타일 */
+@supports (-webkit-touch-callout: none) {
+    .content {
+        overflow-y: scroll !important;
+        /* 스크롤이 항상 표시되도록 보장 */
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 아이패드에서 스크롤 문제 해결을 위한 추가 스타일 */
+@supports (-webkit-touch-callout: none) {
+    .content {
+        overflow-y: scroll !important;
+        /* 스크롤이 항상 표시되도록 보장 */
+        -webkit-overflow-scrolling: touch;
     }
 }
 </style>

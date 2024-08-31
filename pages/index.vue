@@ -15,6 +15,8 @@ body {
     font-family: Arial, sans-serif;
     background-color: #111;
     color: #fff;
+    overscroll-behavior: contain;
+    overflow-x: hidden;
 }
 
 h1,
