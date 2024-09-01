@@ -76,15 +76,9 @@ h2 {
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     body {
-        touch-action: manipulation;
+        touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
-        -ms-touch-action: manipulation;
-    }
-
-    html {
-        /* 터치 줌 비활성화 */
-        touch-action: manipulation;
-        -ms-touch-action: manipulation;
+        -ms-touch-action: pan-y;
         -webkit-user-select: none;
         -ms-user-select: none;
         user-select: none;
@@ -108,15 +102,9 @@ h2 {
 
 @media all and (max-width: 767px) {
     body {
-        touch-action: manipulation;
+        touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
-        -ms-touch-action: manipulation;
-    }
-
-    html {
-        /* 터치 줌 비활성화 */
-        touch-action: manipulation;
-        -ms-touch-action: manipulation;
+        -ms-touch-action: pan-y;
         -webkit-user-select: none;
         -ms-user-select: none;
         user-select: none;
