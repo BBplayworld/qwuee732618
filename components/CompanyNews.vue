@@ -164,12 +164,15 @@ onMounted(async () => {
     }
 }
 
-/* 아이패드에서 스크롤 문제 해결을 위한 추가 스타일 */
-@supports (-webkit-touch-callout: none) {
+/* 일반적인 모바일 기기 (아이폰, 갤럭시 등) 타겟팅 */
+@media all and (max-width: 767px) {
+    .container {
+        max-width: 100%;
+        margin: 0 0 120px 0;
+    }
+
     .content {
-        overflow-y: scroll !important;
-        /* 스크롤이 항상 표시되도록 보장 */
-        -webkit-overflow-scrolling: touch;
+        max-height: 400px;
     }
 }
 </style>

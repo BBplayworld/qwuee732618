@@ -1,13 +1,17 @@
 <template>
     <div class="container">
-        <h1>Nasdaq 100 Treemap</h1>
-        <div ref="treemapContainer"></div>
+        <div class="header">
+            <h1>Nasdaq 100 Treemap</h1>
+            <div class="copyright">© {{ dayjs().format('YYYY') }} NasdaqNow</div>
+        </div>
+        <div ref="treemapContainer" class="content"></div>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
+import dayjs from 'dayjs'
 
 const treemapContainer = ref(null)
 const stocks = ref([])
@@ -66,6 +70,8 @@ let func = {
         if (size > 15 & size < 50) size = 22
         if (size > 50) size = 32
 
+        if (window.innerWidth < 767 && size <= 22) size = 11.5
+
         return {
             size
         }
@@ -76,6 +82,8 @@ let func = {
         if (size > 15 & size < 30) size = 18
         if (size > 30) size = 20
 
+        if (window.innerWidth < 767 && size <= 18) size = 8.5
+
         return {
             size
         }
@@ -83,11 +91,12 @@ let func = {
 }
 
 function createTreemap() {
-    let width = window.innerWidth < 1279 ? window.innerWidth - 40 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
+    let width = window.innerWidth < 1279 ? window.innerWidth - 30 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
-    if (width > 1130) width = 1130
+    if (width > 1000) width = 1000
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
+    if (window.innerWidth < 767) height = 500
 
     const root = d3.hierarchy({ children: stocks.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
@@ -153,14 +162,31 @@ function createTreemap() {
 h1,
 h2 {
     margin: 5px 20px 20px 20px;
+    color: #F08;
 }
 
 .container {
     max-width: 60%;
-    border-right: 2px solid #ddd;
+    border-right: 3px solid #ddd;
     display: block;
     justify-content: left;
     align-items: center;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 20px;
+}
+
+.copyright {
+    font-size: 14px;
+    color: #666;
+}
+
+.content {
+    margin-right: 15px;
 }
 
 .node-container {
