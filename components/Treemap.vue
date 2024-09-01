@@ -91,9 +91,9 @@ let func = {
 }
 
 function createTreemap() {
-    let width = window.innerWidth < 1279 ? window.innerWidth - 30 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
+    let width = window.innerWidth < 1279 ? window.innerWidth - 35 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
-    if (width > 1000) width = 1000
+    if (width > 1279) width = 1000
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
     if (window.innerWidth < 767) height = 500
@@ -219,6 +219,7 @@ h2 {
     .container {
         min-width: 100%;
         border-right: 0;
+        margin-bottom: 10px;
     }
 }
 </style>
