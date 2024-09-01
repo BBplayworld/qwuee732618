@@ -7,7 +7,7 @@ export default defineNuxtConfig({
       title: 'Nasdaq Now: Real-Time Market Data, Economic Indicators, and Corporate News',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' },
 
         { name: 'description', content: 'Stay updated with Nasdaq100 using real-time market data, detailed economic indicators, and the latest corporate news. Get a comprehensive view of the market with interactive treemaps and expert insights.' },
         { name: 'keywords', content: 'Nasdaq100, market data, economic indicators, corporate news, Nasdaq, stock market, financial news, treemap, market analysis' },
