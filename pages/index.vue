@@ -48,6 +48,22 @@ h2 {
     max-height: 820px;
 }
 
+/* Scrollbar div that overlaps content */
+.scrollbar {
+    position: absolute;
+    top: 104px;
+    right: 9px;
+    width: 7px;
+    height: 330px;
+    /* Same height as .content */
+    z-index: 10;
+    /* Higher z-index to be on top */
+    pointer-events: none;
+    /* Prevent interaction with this div */
+    background: #ddd;
+    border-radius: 8px;
+}
+
 /* font */
 .font-opensans {
     font-family: 'Roboto', sans-serif;

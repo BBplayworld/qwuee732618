@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Company <br />News</h1>
-        <div class="content">
+        <div class="content" @scroll="handleScroll">
             <div v-if="result">
                 <div v-for="item in result" :key="item.name">
                     <div v-if="Object.keys(item).length > 0" class="box">
@@ -20,6 +20,7 @@
                 <p>Loading...</p>
             </div>
         </div>
+        <div class="scrollbar" v-show="showScrollbar"></div>
     </div>
 </template>
 
@@ -30,6 +31,11 @@ import dayjs from 'dayjs'
 
 const result = ref(null)
 const animateH1 = ref(false)
+const showScrollbar = ref(true)
+
+const handleScroll = () => {
+    showScrollbar.value = false
+}
 
 const fetch = async () => {
     animateH1.value = true
@@ -86,6 +92,7 @@ onMounted(async () => {
     max-width: 470px;
     display: block;
     justify-content: left;
+    position: relative;
 }
 
 .content {
@@ -109,6 +116,10 @@ onMounted(async () => {
         background-color: #111;
         border-radius: 6px;
     }
+}
+
+.scrollbar {
+    right: 9.5px;
 }
 
 /* Box */
@@ -172,7 +183,8 @@ onMounted(async () => {
     }
 
     .content {
-        max-height: 400px;
+        height: auto;
+        max-height: 710px;
     }
 }
 </style>

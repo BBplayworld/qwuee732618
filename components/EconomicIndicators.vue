@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Economic <br />Indicators</h1>
-        <div class="content">
+        <div class="content" @scroll="handleScroll">
             <div v-if="result">
                 <div v-for="item in result" :key="item.name" class="box">
                     <div class="name font-opensans">{{ item.name }}</div>
@@ -13,6 +13,7 @@
                 <p>Loading...</p>
             </div>
         </div>
+        <div class="scrollbar" v-show="showScrollbar"></div>
     </div>
 </template>
 
@@ -22,6 +23,11 @@ import { useFetch } from '#app'
 
 const result = ref(null)
 const animateH1 = ref(false)
+const showScrollbar = ref(true)
+
+const handleScroll = () => {
+    showScrollbar.value = false
+}
 
 const fetch = async () => {
     animateH1.value = true
@@ -76,13 +82,14 @@ onMounted(async () => {
 }
 
 .container {
-    max-width: 350px;
+    max-width: 330px;
     display: block;
     justify-content: left;
+    position: relative;
 }
 
 .content {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 690px;
 
     -webkit-overflow-scrolling: touch;
@@ -155,11 +162,11 @@ onMounted(async () => {
 @media all and (max-width: 767px) {
     .container {
         max-width: 100%;
-        margin: 10px 5px 20px 5px;
+        margin: 10px 5px 25px 5px;
     }
 
     .content {
-        max-height: 300px;
+        max-height: 480px;
     }
 }
 </style>

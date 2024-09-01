@@ -177,7 +177,7 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0 20px;
+    margin: 0 20px 0 0;
 }
 
 .copyright {
@@ -219,7 +219,7 @@ h2 {
     .container {
         min-width: 100%;
         border-right: 0;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
 }
 </style>
