@@ -54,7 +54,7 @@ h2 {
     top: 104px;
     right: 9px;
     width: 7px;
-    height: 330px;
+    height: 250px;
     /* Same height as .content */
     z-index: 10;
     /* Higher z-index to be on top */
@@ -84,6 +84,16 @@ h2 {
         align-content: stretch;
         padding: 5px 10px 0 10px;
         margin: 0;
+    }
+
+    .scrollbar {
+        height: 130px;
+    }
+}
+
+@media all and (max-width: 767px) {
+    .scrollbar {
+        height: 160px;
     }
 }
 </style>
