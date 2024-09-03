@@ -75,7 +75,9 @@ h2 {
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
-    body {
+
+    body,
+    html {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;
@@ -101,7 +103,9 @@ h2 {
 }
 
 @media all and (max-width: 767px) {
-    body {
+
+    body,
+    html {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;

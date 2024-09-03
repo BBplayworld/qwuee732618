@@ -3,25 +3,16 @@ import { $fetch } from 'ohmyfetch'
 import dayjs from 'dayjs'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 
-// 전역 변수로 캐싱 데이터를 저장
-let cachedData: any[] | null = null
-let cacheTimestamp: number | null = null
-const CACHE_DURATION = 1000 * 120 // 1분 5초
+// 전역 변수로 캐시 데이터를 저장 (각 심볼별로 캐싱)
+let cache = new Map<string, { data: any[] }>()
+let cacheTimestamp: number
+
+const CACHE_DURATION = 1000 * 600 // 10분
 const { isMarketOpen } = useMarketOpen()
 
 export default defineEventHandler(async () => {
     const now = Date.now()
 
-    if (cachedData && !isMarketOpen) {
-        return cachedData
-    }
-
-    // 캐시가 유효한지 확인
-    if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
-        return cachedData
-    }
-
-    // 캐시가 유효하지 않다면 데이터를 다시 가져옴
     const symbols = [
         { name: 'QQQ', marketCap: 3000 },
         { name: 'VOO', marketCap: 3000 },
@@ -46,6 +37,16 @@ export default defineEventHandler(async () => {
     let to = dayjs().format('YYYY-MM-DD')
 
     const requests = symbols.map(async (symbol) => {
+        const cacheKey = symbol.name
+        const cached = cache.get(cacheKey)
+
+        // 캐시가 유효하고 시장이 닫혀 있으면 캐시된 데이터 사용
+        if ((cached && !isMarketOpen) || (cached && now - cacheTimestamp < CACHE_DURATION)) {
+            let ranIdx = Math.floor(Math.random() * cached.data.length)
+            return cached.data.length > 0 ? cached.data[ranIdx] : {}
+        }
+
+        // 캐시가 유효하지 않다면 데이터를 다시 가져옴
         const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol['name']}&from=${from}&to=${to}`
 
         try {
@@ -55,28 +56,22 @@ export default defineEventHandler(async () => {
                     'Content-Type': 'application/json',
                     'Accept-Charset': 'utf-8',
                 }
-            })
+            });
+
+            // 새로운 데이터를 캐시에 저장
+            cache.set(cacheKey, { data: response })
 
             let ranIdx = Math.floor(Math.random() * response.length)
-
-            return {
-                name: symbol['name'],
-                headline: response[ranIdx]['headline'],
-                source: response[ranIdx]['source'],
-                summary: response[ranIdx]['summary'],
-                datetime: response[ranIdx]['datetime'],
-            }
+            return response[ranIdx]
         } catch (e) {
-            return {
-            }
+            return {}
         }
     })
 
-    const result = await Promise.all(requests)
-
-    // 새로운 데이터를 캐시에 저장
-    cachedData = result
+    let result = await Promise.all(requests)
+    result = result.filter(item => (item)) // 빈 객체 제거
+    result = result.sort(() => Math.random() - 0.5)
     cacheTimestamp = now
 
-    return result
+    return result;
 })

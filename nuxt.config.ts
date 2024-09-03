@@ -48,7 +48,13 @@ export default defineNuxtConfig({
   },
 
   gtag: {
-    id: 'G-CHKS355R0L'
+    id: 'G-CHKS355R0L',
+    debug: false,
+    config: {
+      anonymize_ip: true, // GDPR에 따른 IP 익명화
+      send_page_view: process.env.NODE_ENV === 'production', // production 환경에서만 페이지 뷰 전송
+    },
+    enabled: process.env.NODE_ENV === 'production',
   },
 
   compatibilityDate: '2024-09-01'

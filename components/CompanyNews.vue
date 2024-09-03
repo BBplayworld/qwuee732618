@@ -5,7 +5,8 @@
             <div v-if="result">
                 <div v-for="item in result" :key="item.name">
                     <div v-if="Object.keys(item).length > 0" class="box">
-                        <div class="name font-opensans">{{ item.name }} <span class="headline">[{{ item['source'] }}] {{
+                        <div class="name font-opensans">{{ item['related'] }} <span class="headline">[{{
+            item['source'] }}] {{
             item['headline']
         }}</span>
                         </div>

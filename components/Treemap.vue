@@ -2,7 +2,7 @@
     <div class="container">
         <div class="header">
             <h1>Nasdaq 100 Treemap</h1>
-            <div class="copyright">© {{ dayjs().format('YYYY') }} NasdaqNow</div>
+            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © NasdaqNow</div>
         </div>
         <div ref="treemapContainer" class="content"></div>
     </div>
