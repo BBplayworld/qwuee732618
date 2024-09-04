@@ -1,10 +1,12 @@
 <template>
     <div class="container">
         <div class="header">
-            <h1>Nasdaq 100 Treemap</h1>
-            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © NasdaqNow</div>
+            <h1>Market Treemap</h1>
+            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © Treastock</div>
         </div>
         <div ref="treemapContainer" class="content"></div>
+        <!-- Finhub 데이터 출처 표기 추가 -->
+        <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
     </div>
 </template>
 
@@ -212,6 +214,23 @@ h2 {
 .node-change {
     font-size: 10px;
     /* 기본 폰트 크기, 상황에 따라 조정 가능 */
+}
+
+.data-source {
+    font-size: 12px;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+    padding-right: 20px;
+}
+
+.data-source a {
+    color: #0073e6;
+    text-decoration: none;
+}
+
+.data-source a:hover {
+    text-decoration: underline;
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */

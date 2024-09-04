@@ -52,8 +52,8 @@ h2 {
 .scrollbar {
     position: absolute;
     top: 104px;
-    right: 9px;
-    width: 7px;
+    right: 10px;
+    width: 6px;
     height: 250px;
     /* Same height as .content */
     z-index: 10;
@@ -61,7 +61,7 @@ h2 {
     pointer-events: none;
     /* Prevent interaction with this div */
     background: #ddd;
-    border-radius: 8px;
+    border-radius: 15px;
 }
 
 /* font */

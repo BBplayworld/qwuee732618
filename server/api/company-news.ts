@@ -10,8 +10,21 @@ let cacheTimestamp: number
 const CACHE_DURATION = 1000 * 600 // 10분
 const { isMarketOpen } = useMarketOpen()
 
+// 미리 정의된 뉴스 데이터 (production 환경이 아닐 때 사용)
+const predefinedNews = [
+    { related: 'AAPL', source: 'Yahoo', headline: 'Apple launches new iPhone model', datetime: '1725459956', summary: 'Apple announced its latest iPhone model, featuring new camera improvements.' },
+    { related: 'MSFT', source: 'SeekingAlpha', headline: 'Microsoft acquires AI startup', datetime: '1725459956', summary: 'Microsoft has acquired an AI startup to enhance its cloud offerings.' },
+    { related: 'GOOG', source: 'Yahoo', headline: 'Google introduces AI-powered search', datetime: '1725459956', summary: 'Google has launched a new AI-powered search engine feature to improve user experience.' },
+    { related: 'AMZN', source: 'SeekingAlpha', headline: 'Amazon expands grocery delivery', datetime: '1725459956', summary: 'Amazon has expanded its grocery delivery services to more cities.' },
+]
+
 export default defineEventHandler(async () => {
     const now = Date.now()
+
+    // production 환경이 아닐 때 미리 정의된 뉴스 데이터를 리턴
+    if (process.env.NODE_ENV !== 'production') {
+        return predefinedNews
+    }
 
     const symbols = [
         { name: 'QQQ', marketCap: 3000 },

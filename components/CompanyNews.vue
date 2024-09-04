@@ -120,7 +120,8 @@ onMounted(async () => {
 }
 
 .scrollbar {
-    right: 9.5px;
+    right: 9px;
+    width: 7px;
 }
 
 /* Box */

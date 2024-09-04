@@ -9,8 +9,30 @@ let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 70 // 1분 10초
 const { isMarketOpen } = useMarketOpen()
 
+// 미리 정의된 데이터 (production 환경이 아닐 때 사용)
+const predefinedData = [
+    { name: 'Gross Domestic Product (GDP)', date: '2023-09-30', value: '21.43B' },
+    { name: 'Unemployment Rate', date: '2023-09-30', value: '4.5%' },
+    { name: 'CPI: All Items in U.S. City Average', date: '2023-09-30', value: '271.55 (1982-1984=100)' },
+    { name: 'Effective Federal Funds Rate', date: '2023-09-30', value: '0.25%' },
+    { name: 'Industrial Production Index', date: '2023-09-30', value: '110.5 (2017=100)' },
+    { name: 'Nonfarm Payrolls', date: '2023-09-30', value: '149.2M' },
+    { name: '10-Year Treasury Constant Maturity Rate', date: '2023-09-30', value: '1.45%' },
+    { name: 'M2 Money Stock', date: '2023-09-30', value: '18.2B' },
+    { name: 'Retail Sales', date: '2023-09-30', value: '572.6M' },
+    { name: "Moody's Baa Corporate Bond Yield Relative to 10-Year Treasury Yield", date: '2023-09-30', value: '1.05%' },
+    { name: 'Housing Starts', date: '2023-09-30', value: '1.57 Thousands of Units' },
+    { name: 'Average Hourly Earnings of All Employees', date: '2023-09-30', value: '29.8 Dollars per Hour' },
+    { name: 'Real Gross Domestic Product', date: '2023-09-30', value: '21.43B' },
+]
+
 export default defineEventHandler(async () => {
     const now = Date.now()
+
+    // production 환경이 아닐 때 미리 정의된 데이터를 리턴
+    if (process.env.NODE_ENV !== 'production') {
+        return predefinedData
+    }
 
     if (cachedData && !isMarketOpen) {
         return cachedData
