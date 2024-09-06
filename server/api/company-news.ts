@@ -7,7 +7,7 @@ import { useMarketOpen } from '~/composables/useMarketOpen'
 let cache = new Map<string, { data: any[] }>()
 let cacheTimestamp: number
 
-const CACHE_DURATION = 1000 * 600 // 10분
+const CACHE_DURATION = 1000 * 600 * 3 // 30분
 const { isMarketOpen } = useMarketOpen()
 
 // 미리 정의된 뉴스 데이터 (production 환경이 아닐 때 사용)
@@ -65,7 +65,7 @@ export default defineEventHandler(async () => {
         try {
             const response = await $fetch(url, {
                 headers: {
-                    'X-Finnhub-Token': process.env.STOCK_KEY,
+                    'X-Finnhub-Token': process.env.FINN_2_KEY,
                     'Content-Type': 'application/json',
                     'Accept-Charset': 'utf-8',
                 }

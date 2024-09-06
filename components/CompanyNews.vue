@@ -61,7 +61,7 @@ onMounted(async () => {
 
     const interval = setInterval(() => {
         fetch()
-    }, 80000) // 60,000 = 1분20초
+    }, 60000) // 60,000 = 1분
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {

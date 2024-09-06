@@ -53,7 +53,7 @@ onMounted(async () => {
     // 1분마다 데이터 갱신
     const interval = setInterval(() => {
         fetch()
-    }, 80000) // 1분 20초
+    }, 60000) // 1분
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {

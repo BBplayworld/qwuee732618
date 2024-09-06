@@ -6,7 +6,7 @@ import { useMarketOpen } from '~/composables/useMarketOpen'
 // 전역 변수로 캐싱 데이터를 저장
 let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
-const CACHE_DURATION = 1000 * 70 // 1분 10초
+const CACHE_DURATION = 1000 * 300 // 5분
 const { isMarketOpen } = useMarketOpen()
 
 // 미리 정의된 데이터 (production 환경이 아닐 때 사용)
