@@ -1,5 +1,6 @@
 import companyNews from '~/server/api/company-news';
 <template>
+    <SpeedInsights />
     <div class="container-wrapper">
         <div class="container">
             <Treemap />
@@ -119,3 +120,6 @@ h2 {
     }
 }
 </style>
+<script setup lang="ts">
+import { SpeedInsights } from '@vercel/speed-insights/vue';
+</script>
