@@ -65,7 +65,7 @@ export default defineEventHandler(async () => {
         try {
             const response = await $fetch(url, {
                 headers: {
-                    'X-Finnhub-Token': process.env.FINN_2_KEY,
+                    'X-Finnhub-Token': process.env.FINN_4_KEY,
                     'Content-Type': 'application/json',
                     'Accept-Charset': 'utf-8',
                 }

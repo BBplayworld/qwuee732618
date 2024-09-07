@@ -8,7 +8,7 @@ let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 300 // 3분
 const { isMarketOpen } = useMarketOpen()
-const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY]
+const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
 

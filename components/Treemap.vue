@@ -2,7 +2,7 @@
     <div class="container">
         <div class="header">
             <h1>Market Treemap</h1>
-            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © Treastock</div>
+            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © BBstoqq</div>
         </div>
         <div ref="treemapContainer" class="content"></div>
         <!-- Finhub 데이터 출처 표기 추가 -->
@@ -24,7 +24,7 @@ const fetch = async () => {
     })
 
     if (!data.value) {
-        return setTimeout(fetch, 1000)
+        return setTimeout(fetch, 5000)
     }
 
     stocks.value = data.value
@@ -36,7 +36,7 @@ onMounted(() => {
 
     const interval = setInterval(() => {
         fetch()
-    }, 60000) // 60,000 밀리초 = 1분
+    }, 180000) // 3분
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
