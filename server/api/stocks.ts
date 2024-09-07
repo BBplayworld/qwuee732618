@@ -38,7 +38,7 @@ export default defineEventHandler(async () => {
 
     // production 환경이 아니면 미리 정의된 데이터를 리턴
     if (process.env.NODE_ENV !== 'production') {
-        //return predefinedData
+        return predefinedData
     }
 
     if (cachedData && !isMarketOpen) {
@@ -92,6 +92,8 @@ export default defineEventHandler(async () => {
             cache.set(symbol.name, data)
             return data
         } catch (error) {
+            console.log('[ERR-stocks]', error)
+
             if (error.response?.status === 429 || error.response?.status === 401) {
                 throw new Error('Rate limit exceeded') // 429 오류 발생 시 예외 처리
             } else {
@@ -113,7 +115,7 @@ export default defineEventHandler(async () => {
                 tokenKey = tokenIter.next().value || tokenArr[0] // 토큰 변경 및 재시도
                 attempts++
             } else {
-                console.error(error) // 다른 에러는 로깅
+                console.log('[ERR-stocks]', error)
                 break
             }
         }
