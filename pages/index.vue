@@ -23,7 +23,7 @@ body {
 
 h1,
 h2 {
-    margin: 5px 20px 20px 20px;
+    margin: 5px 20px 20px 10px;
 }
 
 .container-wrapper {

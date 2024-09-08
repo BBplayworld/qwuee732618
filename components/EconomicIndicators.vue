@@ -86,7 +86,7 @@ onMounted(async () => {
     display: block;
     justify-content: left;
     position: relative;
-    border-right: 2px solid #ddd;
+    border-right: 2px solid #666;
 }
 
 .content {
@@ -173,6 +173,11 @@ onMounted(async () => {
 
     .content {
         max-height: 480px;
+        margin: 20px 5px 0 0;
+    }
+
+    .scrollbar {
+        right: 15px;
     }
 }
 </style>

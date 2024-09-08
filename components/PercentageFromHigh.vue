@@ -69,7 +69,7 @@ const getColor = (percentage) => {
 <style scoped>
 h1,
 h2 {
-    margin: 5px 20px 20px 20px;
+    margin: 5px 20px 20px 10px;
     color: #F08;
 }
 
@@ -77,14 +77,14 @@ h2 {
     display: block;
     justify-content: center;
     position: relative;
-    border-right: 2px solid #ddd;
+    border-right: 2px solid #666;
 }
 
 .content {
     overflow-y: auto;
     overflow-x: hidden;
     height: 680px;
-    margin: 20px 20px 0 0;
+    margin: 0 10px 0 0;
     border-collapse: separate;
     border-spacing: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -155,7 +155,7 @@ td:last-child {
 
 .scrollbar {
     top: 70px;
-    right: 30px;
+    right: 20px;
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
@@ -164,6 +164,17 @@ td:last-child {
     th,
     td {
         padding: 10px;
+    }
+}
+
+@media all and (max-width: 767px) {
+    .content {
+        margin: 20px 10px 0 0;
+    }
+
+    .scrollbar {
+        top: 105px;
+        right: 20px;
     }
 }
 </style>

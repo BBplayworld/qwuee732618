@@ -98,6 +98,7 @@ onMounted(async () => {
 .content {
     overflow-y: scroll;
     height: 690px;
+    margin: 0 10px 0 0;
 
     -webkit-overflow-scrolling: touch;
 
@@ -164,6 +165,10 @@ onMounted(async () => {
     font-weight: bold;
 }
 
+.scrollbar {
+    right: 19px;
+}
+
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     .container {
@@ -186,6 +191,7 @@ onMounted(async () => {
     .content {
         height: auto;
         max-height: 710px;
+        margin: 0 10px 0 0;
     }
 }
 </style>
