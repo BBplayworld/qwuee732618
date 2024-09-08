@@ -1,22 +1,30 @@
 <template>
-    <div class="container">
+    <div ref="container" class="container-treemap">
         <div class="header">
             <h1>Market Treemap</h1>
-            <div class="copyright">{{ dayjs().format('YYYY-MM-DD') }} © BBstoqq</div>
+            <Copyright />
         </div>
         <div ref="treemapContainer" class="content"></div>
         <!-- Finhub 데이터 출처 표기 추가 -->
         <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
     </div>
+    <PercentageFromHigh :items="items" />
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
-import dayjs from 'dayjs'
 
+const container = ref(null)
 const treemapContainer = ref(null)
-const stocks = ref([])
+const items = ref([{
+    "name": "MARKET",
+    "marketCap": 1000,
+    "c": 100,
+    "dp": 0,
+    "high52": 100,
+    "percentageFrom52WeekHigh": "0"
+}])
 
 const fetch = async () => {
     const { data } = await useFetch('/api/stocks', {
@@ -24,10 +32,11 @@ const fetch = async () => {
     })
 
     if (!data.value) {
-        return setTimeout(fetch, 5000)
+        createTreemap()
+        return setTimeout(fetch, 1000)
     }
 
-    stocks.value = data.value
+    items.value = data.value
     createTreemap()
 }
 
@@ -36,7 +45,7 @@ onMounted(() => {
 
     const interval = setInterval(() => {
         fetch()
-    }, 180000) // 3분
+    }, 60000) // 1분
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
@@ -93,14 +102,16 @@ let func = {
 }
 
 function createTreemap() {
-    let width = window.innerWidth < 1279 ? window.innerWidth - 35 : (window.innerWidth * 0.56);  // 트리맵의 전체 너비
+    let width = window.innerWidth < 1279 ? window.innerWidth - 150 : (window.innerWidth * 0.85);  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
-    if (width > 1279) width = 1000
+
+    if (width > 1400) width = container.value.getBoundingClientRect().width + 10
+    if (window.innerWidth > 1279 && width < 1100) width = 1100
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
     if (window.innerWidth < 767) height = 500
 
-    const root = d3.hierarchy({ children: stocks.value })
+    const root = d3.hierarchy({ children: items.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
         .sort((a, b) => b.value - a.value);
 
@@ -167,24 +178,18 @@ h2 {
     color: #F08;
 }
 
-.container {
-    max-width: 60%;
-    border-right: 3px solid #ddd;
+.container-treemap {
+    min-width: 100%;
     display: block;
     justify-content: left;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0 20px 0 0;
-}
-
-.copyright {
-    font-size: 14px;
-    color: #666;
 }
 
 .content {
@@ -220,8 +225,8 @@ h2 {
     font-size: 12px;
     color: #666;
     text-align: right;
-    margin-top: 10px;
-    padding-right: 20px;
+    margin: 10px 0 0 0;
+    padding-right: 30px;
 }
 
 .data-source a {
@@ -231,6 +236,11 @@ h2 {
 
 .data-source a:hover {
     text-decoration: underline;
+}
+
+.percentage-high-container {
+    margin: 30px 0 30px 0;
+    padding: 10px;
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */

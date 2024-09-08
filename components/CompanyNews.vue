@@ -2,13 +2,13 @@
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Company <br />News</h1>
         <div class="content" @scroll="handleScroll">
-            <div v-if="result">
-                <div v-for="item in result" :key="item.name">
+            <div v-if="items">
+                <div v-for="item in items" :key="item.name">
                     <div v-if="Object.keys(item).length > 0" class="box">
                         <div class="name font-opensans">{{ item['related'] }} <span class="headline">[{{
-            item['source'] }}] {{
-            item['headline']
-        }}</span>
+                            item['source'] }}] {{
+                                    item['headline']
+                                }}</span>
                         </div>
                         <div class="value font-roboto">{{ item['summary'] }}</div>
                         <div class="date font-roboto">
@@ -30,7 +30,7 @@ import { ref, onMounted } from 'vue'
 import { useFetch } from '#app'
 import dayjs from 'dayjs'
 
-const result = ref(null)
+const items = ref(null)
 const animateH1 = ref(false)
 const showScrollbar = ref(true)
 
@@ -48,7 +48,7 @@ const fetch = async () => {
         return setTimeout(fetch, 1000)
     }
 
-    result.value = data.value
+    items.value = data.value
 
     // Stop the animation after it's done
     setTimeout(() => {
@@ -90,7 +90,6 @@ onMounted(async () => {
 }
 
 .container {
-    max-width: 470px;
     display: block;
     justify-content: left;
     position: relative;
@@ -169,11 +168,11 @@ onMounted(async () => {
 @media all and (max-width:1279px) {
     .container {
         max-width: 100%;
-        margin: 0 0 100px 0;
+        margin: 20px 0 100px 0;
     }
 
     .content {
-        max-height: 350px;
+        max-height: 650px;
     }
 }
 
@@ -181,7 +180,7 @@ onMounted(async () => {
 @media all and (max-width: 767px) {
     .container {
         max-width: 100%;
-        margin: 0 0 120px 0;
+        margin: 10px 0 120px 0;
     }
 
     .content {

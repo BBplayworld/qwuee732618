@@ -1,6 +1,7 @@
 import companyNews from '~/server/api/company-news';
 <template>
     <SpeedInsights />
+    <Ad />
     <div class="container-wrapper">
         <div class="container">
             <Treemap />
@@ -31,14 +32,13 @@ h2 {
 }
 
 .container {
+    max-width: 1600px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
     padding: 10px;
-    margin: 5px 10px 5px 10px;
+    margin: 5px 10px 50px 10px;
     box-sizing: border-box;
-    width: auto;
-    max-width: 100%;
     /* 작은 화면에서 화면 크기에 맞게 축소 */
 }
 
@@ -46,7 +46,6 @@ h2 {
 .container>* {
     flex: 1;
     box-sizing: border-box;
-    max-height: 820px;
 }
 
 /* Scrollbar div that overlaps content */

@@ -2,8 +2,8 @@
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Economic <br />Indicators</h1>
         <div class="content" @scroll="handleScroll">
-            <div v-if="result">
-                <div v-for="item in result" :key="item.name" class="box">
+            <div v-if="items">
+                <div v-for="item in items" :key="item.name" class="box">
                     <div class="name font-opensans">{{ item.name }}</div>
                     <div class="value font-roboto">{{ item.value }}</div>
                     <div class="date font-roboto">{{ item.date }}</div>
@@ -21,7 +21,7 @@
 import { ref, onMounted } from 'vue'
 import { useFetch } from '#app'
 
-const result = ref(null)
+const items = ref(null)
 const animateH1 = ref(false)
 const showScrollbar = ref(true)
 
@@ -31,7 +31,7 @@ const handleScroll = () => {
 
 const fetch = async () => {
     animateH1.value = true
-    const { data } = await useFetch('/api/economicIndicators', {
+    const { data } = await useFetch('/api/economic-indicators', {
         retry: false
     })
 
@@ -39,7 +39,7 @@ const fetch = async () => {
         return setTimeout(fetch, 1000)
     }
 
-    result.value = data.value
+    items.value = data.value
 
     // Stop the animation after it's done
     setTimeout(() => {
@@ -86,11 +86,13 @@ onMounted(async () => {
     display: block;
     justify-content: left;
     position: relative;
+    border-right: 2px solid #ddd;
 }
 
 .content {
     overflow-y: auto;
     height: 690px;
+    margin: 0 20px 0 0;
 
     -webkit-overflow-scrolling: touch;
 
@@ -146,15 +148,19 @@ onMounted(async () => {
     font-weight: bold;
 }
 
+.scrollbar {
+    right: 30px;
+}
+
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     .container {
         max-width: 100%;
-        margin: 0 10px 20px 0;
+        margin: 20px 10px 20px 0;
     }
 
     .content {
-        max-height: 350px;
+        max-height: 650px;
     }
 }
 
