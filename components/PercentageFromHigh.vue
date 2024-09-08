@@ -170,6 +170,12 @@ td:last-child {
 @media all and (max-width: 767px) {
     .content {
         margin: 20px 10px 0 0;
+        border-right: 0;
+    }
+
+    th,
+    td {
+        font-size: 12px;
     }
 
     .scrollbar {

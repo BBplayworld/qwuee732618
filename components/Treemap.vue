@@ -81,7 +81,9 @@ let func = {
         if (size > 15 & size < 50) size = 22
         if (size > 50) size = 32
 
-        if (window.innerWidth < 767 && size <= 22) size = 11.5
+        if (window.innerWidth < 767 && size >= 32) size = 20
+        else if (window.innerWidth < 767 && size >= 22) size = 17
+        else if (window.innerWidth < 767 && size >= 13) size = 8
 
         return {
             size
@@ -93,7 +95,9 @@ let func = {
         if (size > 15 & size < 30) size = 18
         if (size > 30) size = 20
 
-        if (window.innerWidth < 767 && size <= 18) size = 8.5
+        if (window.innerWidth < 767 && size >= 20) size = 17
+        else if (window.innerWidth < 767 && size >= 18) size = 13
+        else if (window.innerWidth < 767 && size >= 13) size = 8
 
         return {
             size
@@ -107,7 +111,7 @@ function createTreemap() {
 
     if (width > 1400) width = container.value.getBoundingClientRect().width + 10
     if (window.innerWidth > 1279 && width < 1100) width = 1100
-    if (window.innerWidth < 767 && width < 330) width = 330
+    if (window.innerWidth < 767 && width < 250) width = 250
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
     if (window.innerWidth < 767) height = 500
