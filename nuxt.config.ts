@@ -45,5 +45,11 @@ export default defineNuxtConfig({
     }
   },
 
+  runtimeConfig: {
+    public: {
+      appEnv: process.env.APP_ENV || 'production', // APP_ENV를 public에 노출
+    },
+  },
+
   compatibilityDate: '2024-09-01'
 })
