@@ -5,10 +5,7 @@
         }
     },
     "devCommand": "nuxt dev",
-    "commands": {
-        "build": "nuxt build",
-        "dev": "nuxt dev"
-    },
+    "buildCommand": "nuxt build",
     "routes": [
         {
             "src": "/(.*)",
