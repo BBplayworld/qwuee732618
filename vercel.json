@@ -1,0 +1,22 @@
+{
+    "build": {
+        "env": {
+            "NODE_ENV": "production"
+        }
+    },
+    "devCommand": "nuxt dev",
+    "commands": {
+        "build": "nuxt build",
+        "dev": "nuxt dev"
+    },
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/"
+        }
+    ],
+    "preview": {
+        "buildCommand": "nuxt build",
+        "devCommand": "nuxt preview"
+    }
+}
