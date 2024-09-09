@@ -2,9 +2,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Gtag ID를 상수로 정의
     const GTAG_ID = 'G-CHKS355R0L'; // Gtag ID를 여기서 관리
 
+    console.log('ENV', process.env.NODE_ENV, process.env.APP_ENV)
+
     // Gtag가 로드되지 않을 조건 설정
     const isDev = process.env.NODE_ENV === 'development';
-    const isPreview = process.env.APP_ENV === 'preview';
+    const isPreview = process.env.NODE_ENV === 'preview' || process.env.APP_ENV === 'preview';
 
     // development 환경이거나 preview 환경인 경우 Gtag 로드 안 함
     if (isDev || isPreview) {
