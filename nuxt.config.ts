@@ -46,19 +46,5 @@ export default defineNuxtConfig({
     }
   },
 
-  runtimeConfig: {
-    public: {
-      gtag: {
-        id: 'G-CHKS355R0L',
-        debug: false,
-        config: {
-          anonymize_ip: true, // GDPR에 따른 IP 익명화
-          send_page_view: process.env.NODE_ENV === 'production',
-        },
-        enabled: process.env.NODE_ENV === 'production' && process.env.APP_ENV !== 'preview',
-      },
-    },
-  },
-
   compatibilityDate: '2024-09-01'
 })
