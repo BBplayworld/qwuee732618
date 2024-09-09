@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['nuxt-gtag'],
   app: {
     head: {
       title: 'BBstoqq: Real-Time Market Data, Economic Indicators, and Corporate News',
