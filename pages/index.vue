@@ -77,7 +77,9 @@ h2 {
 @media all and (max-width:1279px) {
 
     body,
-    html {
+    html,
+    .container,
+    .content {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;
@@ -105,7 +107,9 @@ h2 {
 @media all and (max-width: 767px) {
 
     body,
-    html {
+    html,
+    .container,
+    .content {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;
