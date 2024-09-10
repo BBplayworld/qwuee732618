@@ -12,16 +12,6 @@ import companyNews from '~/server/api/company-news';
 </template>
 
 <style>
-body,
-html {
-    touch-action: none;
-    /* 확대 및 축소 제스처 비활성화 */
-    -ms-touch-action: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -85,6 +75,17 @@ h2 {
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
+
+    body,
+    html {
+        touch-action: pan-y;
+        /* 확대 및 축소 제스처 비활성화 */
+        -ms-touch-action: pan-y;
+        -webkit-user-select: pan-y;
+        -ms-user-select: pan-y;
+        user-select: pan-y;
+    }
+
     .container-wrapper {
         min-width: 0;
     }
@@ -102,6 +103,17 @@ h2 {
 }
 
 @media all and (max-width: 767px) {
+
+    body,
+    html {
+        touch-action: pan-y;
+        /* 확대 및 축소 제스처 비활성화 */
+        -ms-touch-action: pan-y;
+        -webkit-user-select: pan-y;
+        -ms-user-select: pan-y;
+        user-select: pan-y;
+    }
+
     .scrollbar {
         height: 160px;
     }
