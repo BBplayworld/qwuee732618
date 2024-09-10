@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'ko'
+      },
       title: 'BBstoqq: Real-Time Market Data, Economic Indicators, and Corporate News',
       meta: [
         { charset: 'utf-8' },

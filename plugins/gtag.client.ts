@@ -8,8 +8,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     const isDev = process.env.NODE_ENV === 'development';
     const isPreview = appEnv === 'preview';
 
-    console.log('ENV', process.env.NODE_ENV, appEnv)
-
     // development 환경이거나 preview 환경인 경우 Gtag 로드 안 함
     if (isDev || isPreview) {
         console.log('Gtag is disabled in development or preview environment');
