@@ -1,5 +1,5 @@
 <template>
-    <div ref="container" class="container-treemap">
+    <div class="container-treemap">
         <div class="header">
             <h1>Market Treemap</h1>
             <Copyright />
@@ -15,7 +15,6 @@
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 
-const container = ref(null)
 const treemapContainer = ref(null)
 const items = ref([{
     "name": "MARKET",
@@ -109,7 +108,8 @@ function createTreemap() {
     let width = window.innerWidth < 1279 ? window.innerWidth - 140 : (window.innerWidth * 0.9);  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
 
-    if (width > 1400) width = container.value.getBoundingClientRect().width + 10
+    if (window.innerWidth > 1279) width = treemapContainer.value.getBoundingClientRect().width
+    if (window.innerWidth > 1279 && window.innerWidth < 1750) width = window.innerWidth - 170
     if (window.innerWidth > 1279 && width < 1100) width = 1100
     if (window.innerWidth < 767 && width < 250) width = 250
     if (height > 660) height = 660

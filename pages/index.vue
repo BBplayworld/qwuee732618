@@ -83,9 +83,9 @@ h2 {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;
-        -webkit-user-select: pan-y;
-        -ms-user-select: pan-y;
-        user-select: pan-y;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 
     .container-wrapper {
@@ -113,9 +113,9 @@ h2 {
         touch-action: pan-y;
         /* 확대 및 축소 제스처 비활성화 */
         -ms-touch-action: pan-y;
-        -webkit-user-select: pan-y;
-        -ms-user-select: pan-y;
-        user-select: pan-y;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 
     .scrollbar {
