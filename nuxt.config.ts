@@ -24,6 +24,7 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'canonical', href: 'https://www.bbstoqq.com/' },
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap',
@@ -37,6 +38,7 @@ export default defineNuxtConfig({
             "@type": "WebSite",
             "name": "BBstoqq",
             "url": "https://www.bbstoqq.com/",
+            "logo": "https://www.bbstoqq.com/favicon.ico",
             "description": "Stay updated with real-time market data, economic indicators, and corporate news on BBstoqq. Explore interactive treemaps for comprehensive market analysis.",
             "publisher": {
               "@type": "Organization",
