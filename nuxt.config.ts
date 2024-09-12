@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  modules: ['nuxt-gtag'],
   app: {
     head: {
       htmlAttrs: {
@@ -50,10 +51,17 @@ export default defineNuxtConfig({
     }
   },
 
-  runtimeConfig: {
-    public: {
-      appEnv: process.env.APP_ENV || 'production', // APP_ENV를 public에 노출
+  gtag: {
+    id: 'G-CHKS355R0L',
+    config: {
+      anonymize_ip: true, // GDPR에 따른 IP 익명화
+      send_page_view: true,
     },
+    enabled: process.env.NODE_ENV === 'production' && process.env.APP_ENV !== 'preview',
+  },
+
+  routeRules: {
+    '/api/**': { cache: false },
   },
 
   compatibilityDate: '2024-09-01'

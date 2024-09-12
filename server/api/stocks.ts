@@ -11,6 +11,7 @@ const { isMarketOpen } = useMarketOpen()
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
+let isOpenInit = false
 
 // 개발 데이터
 const predefinedData = [
@@ -47,7 +48,16 @@ export default defineEventHandler(async () => {
         })
     }
 
-    if (cachedData && !isMarketOpen) {
+    if (isMarketOpen && !isOpenInit) {
+        cachedData = null
+        isOpenInit = true
+    }
+
+    if (!isMarketOpen && isOpenInit) {
+        isOpenInit = false
+    }
+
+    if (!isMarketOpen && cachedData) {
         return cachedData
     }
 

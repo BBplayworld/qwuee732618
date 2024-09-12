@@ -12,7 +12,8 @@ import dayjs from 'dayjs'
 const items = ref(null)
 const fetch = async () => {
     const { data } = await useFetch('/api/market', {
-        retry: false
+        retry: false,
+        cache: 'no-cache'
     })
 
     if (!data.value) {
