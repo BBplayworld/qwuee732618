@@ -11,46 +11,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
-import { SpeedInsights } from '@vercel/speed-insights/vue';
-
-let lastTouchTime = 0;
-
-const preventDoubleTapZoom = (e: TouchEvent) => {
-    const currentTime = new Date().getTime()
-    const timeSinceLastTouch = currentTime - lastTouchTime
-
-    if (timeSinceLastTouch < 300 && timeSinceLastTouch > 0) {
-        // 300ms 이하 간격의 두 번의 터치 시 기본 동작(줌)을 차단
-        e.preventDefault()
-    }
-
-    lastTouchTime = currentTime
-};
-
-const preventZoomGesture = (e: TouchEvent) => {
-    if (e.touches.length > 1) {
-        // 두 손가락으로 확대 동작을 감지하고 차단
-        e.preventDefault()
-    }
-}
-
-const preventGestureStart = (e: Event) => {
-    e.preventDefault() // gesturestart 이벤트를 차단
-}
+import { onMounted } from 'vue'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 onMounted(() => {
-    document.addEventListener('touchstart', preventDoubleTapZoom)
-    document.addEventListener('touchend', preventGestureStart)
-    document.addEventListener('touchmove', preventZoomGesture, { passive: false })
-    document.addEventListener('gesturestart', preventGestureStart)
-});
-
-onUnmounted(() => {
-    document.removeEventListener('touchstart', preventDoubleTapZoom)
-    document.removeEventListener('touchend', preventGestureStart)
-    document.removeEventListener('touchmove', preventZoomGesture)
-    document.removeEventListener('gesturestart', preventGestureStart)
+    document.addEventListener('touchend', (e: Event) => {
+        e.preventDefault()
+    })
 })
 </script>
 
