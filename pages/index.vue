@@ -1,4 +1,3 @@
-import companyNews from '~/server/api/company-news';
 <template>
     <SpeedInsights />
     <Sidebar />
@@ -12,23 +11,39 @@ import companyNews from '~/server/api/company-news';
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { SpeedInsights } from '@vercel/speed-insights/vue';
-import { onMounted } from 'vue'
 
-let lastTap = 0
+let lastTouchTime = 0;
+
+const preventDoubleTapZoom = (e: TouchEvent) => {
+    const currentTime = new Date().getTime()
+    const timeSinceLastTouch = currentTime - lastTouchTime
+
+    if (timeSinceLastTouch < 300 && timeSinceLastTouch > 0) {
+        // 300ms 이하 간격의 두 번의 터치 시 기본 동작(줌)을 차단
+        e.preventDefault()
+    }
+
+    lastTouchTime = currentTime
+};
+
+const preventZoomGesture = (e: TouchEvent) => {
+    if (e.touches.length > 1) {
+        // 두 손가락으로 확대 동작을 감지하고 차단
+        e.preventDefault()
+    }
+};
+
 onMounted(() => {
-    document.addEventListener('touchstart', (e: TouchEvent) => {
-        const currentTime = new Date().getTime()
-        const tapLength = currentTime - lastTap
-
-        if (tapLength < 300 && tapLength > 0) {
-            // 더블 탭 발생 시 기본 동작 차단
-            e.preventDefault()
-        }
-
-        lastTap = currentTime
-    })
+    document.addEventListener('touchstart', preventDoubleTapZoom)
+    document.addEventListener('touchmove', preventZoomGesture, { passive: false })
 });
+
+onUnmounted(() => {
+    document.removeEventListener('touchstart', preventDoubleTapZoom)
+    document.removeEventListener('touchmove', preventZoomGesture)
+})
 </script>
 
 <style>
@@ -72,13 +87,11 @@ h2 {
     /* 작은 화면에서 화면 크기에 맞게 축소 */
 }
 
-/* 개별 컴포넌트 */
 .container>* {
     flex: 1;
     box-sizing: border-box;
 }
 
-/* Scrollbar div that overlaps content */
 .scrollbar {
     position: absolute;
     top: 104px;
@@ -104,7 +117,7 @@ h2 {
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width:1279px) {
+@media all and (max-width: 1279px) {
     .scrollbar {
         height: 130px;
     }
