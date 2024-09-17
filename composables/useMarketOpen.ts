@@ -44,6 +44,8 @@ export function useMarketOpen() {
     // 시장이 열려 있는지 여부를 결정
     const isMarketOpen = !isWeekend && !isHoliday && now.isBetween(marketOpenTime, marketCloseTime, null, '[)')
 
+    console.log('[isMarketOpen]', isMarketOpen, isWeekend, isHoliday, now.isBetween(marketOpenTime, marketCloseTime, null, '[)'), now)
+
     return {
         currentTime: now.format('YYYY-MM-DD HH:mm:ss'),
         isMarketOpen,
