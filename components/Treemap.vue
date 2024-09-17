@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+import { isClient } from '@vueuse/core'
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 
@@ -105,6 +106,10 @@ let func = {
 }
 
 function createTreemap() {
+    if (!isClient) {
+        return
+    }
+
     let width = treemapContainer.value.getBoundingClientRect().width;  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
 

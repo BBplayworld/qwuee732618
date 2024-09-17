@@ -11,6 +11,26 @@ import companyNews from '~/server/api/company-news';
     </div>
 </template>
 
+<script setup lang="ts">
+import { SpeedInsights } from '@vercel/speed-insights/vue';
+import { onMounted } from 'vue'
+
+let lastTap = 0
+onMounted(() => {
+    document.addEventListener('touchstart', (e: TouchEvent) => {
+        const currentTime = new Date().getTime()
+        const tapLength = currentTime - lastTap
+
+        if (tapLength < 300 && tapLength > 0) {
+            // 더블 탭 발생 시 기본 동작 차단
+            e.preventDefault()
+        }
+
+        lastTap = currentTime
+    })
+});
+</script>
+
 <style>
 body {
     margin: 0;
@@ -22,9 +42,7 @@ body {
 }
 
 body,
-html,
-.container,
-.content {
+html {
     touch-action: pan-y;
     /* 확대 및 축소 제스처 비활성화 */
     -ms-touch-action: pan-y;
@@ -103,6 +121,3 @@ h2 {
     }
 }
 </style>
-<script setup lang="ts">
-import { SpeedInsights } from '@vercel/speed-insights/vue';
-</script>
