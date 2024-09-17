@@ -31,8 +31,7 @@ const fetch = async () => {
     })
 
     if (!data.value) {
-        createTreemap()
-        return setTimeout(fetch, 1000)
+        return setTimeout(fetch, 500)
     }
 
     items.value = data.value
@@ -40,6 +39,7 @@ const fetch = async () => {
 }
 
 onMounted(() => {
+    createTreemap()
     fetch() // 페이지가 로드될 때 최초 데이터 가져오기
 
     const interval = setInterval(() => {

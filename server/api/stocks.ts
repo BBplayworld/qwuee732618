@@ -3,7 +3,6 @@ import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 
 // 전역 변수로 캐싱 데이터를 저장
-let cache = new Map<string, {}>()
 let cachedData: any[] | null = null
 let cacheTimestamp: number | null = null
 const CACHE_DURATION = 1000 * 300 // 3분
@@ -48,8 +47,12 @@ export default defineEventHandler(async () => {
         })
     }
 
+
+    console.log('[api/stocks]', now, isMarketOpen, isOpenInit, cachedData?.length)
+
     if (isMarketOpen && !isOpenInit) {
         cachedData = null
+        cacheTimestamp = now + CACHE_DURATION
         isOpenInit = true
     }
 
@@ -61,7 +64,6 @@ export default defineEventHandler(async () => {
         return cachedData
     }
 
-    // 캐시가 유효한지 확인
     if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
         return cachedData
     }
@@ -108,7 +110,6 @@ export default defineEventHandler(async () => {
                 percentageFrom52WeekHigh: percentage.toFixed(2) // 52주 최고가 대비 퍼센트 계산
             }
 
-            cache.set(symbol.name, data)
             return data
         } catch (error) {
             console.log('[ERR-stocks]', error)

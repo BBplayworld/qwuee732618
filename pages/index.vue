@@ -21,6 +21,18 @@ body {
     overflow-x: hidden;
 }
 
+body,
+html,
+.container,
+.content {
+    touch-action: pan-y;
+    /* 확대 및 축소 제스처 비활성화 */
+    -ms-touch-action: pan-y;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 h1,
 h2 {
     margin: 5px 20px 20px 0px;
@@ -75,38 +87,12 @@ h2 {
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
-
-    body,
-    html,
-    .container,
-    .content {
-        touch-action: pan-y;
-        /* 확대 및 축소 제스처 비활성화 */
-        -ms-touch-action: pan-y;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
     .scrollbar {
         height: 130px;
     }
 }
 
 @media all and (max-width: 767px) {
-
-    body,
-    html,
-    .container,
-    .content {
-        touch-action: pan-y;
-        /* 확대 및 축소 제스처 비활성화 */
-        -ms-touch-action: pan-y;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
     .container {
         padding: 3px;
         margin: 0;
