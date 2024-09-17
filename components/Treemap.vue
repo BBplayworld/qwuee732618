@@ -105,13 +105,9 @@ let func = {
 }
 
 function createTreemap() {
-    let width = window.innerWidth < 1279 ? window.innerWidth - 140 : (window.innerWidth * 0.9);  // 트리맵의 전체 너비
+    let width = treemapContainer.value.getBoundingClientRect().width;  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
 
-    if (window.innerWidth > 1279) width = treemapContainer.value.getBoundingClientRect().width
-    if (window.innerWidth > 1279 && window.innerWidth < 1750) width = window.innerWidth - 170
-    if (window.innerWidth > 1279 && width < 1100) width = 1100
-    if (window.innerWidth < 767 && width < 250) width = 250
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
     if (window.innerWidth < 767) height = 500
@@ -179,7 +175,6 @@ function createTreemap() {
 <style scoped>
 h1,
 h2 {
-    margin: 5px 20px 20px 10px;
     color: #F08;
 }
 
@@ -188,7 +183,8 @@ h2 {
     display: block;
     justify-content: left;
     align-items: center;
-    margin-bottom: 20px;
+    margin: 0 0 20px 10px;
+    padding: 10px;
 }
 
 .header {
@@ -243,17 +239,10 @@ h2 {
     text-decoration: underline;
 }
 
-.percentage-high-container {
-    margin: 30px 0 30px 0;
-    padding: 10px;
-}
-
-/* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width:1279px) {
-    .container {
-        min-width: 100%;
-        border-right: 0;
-        margin-bottom: 15px;
+@media all and (max-width: 767px) {
+    .container-treemap {
+        padding: 3px;
+        margin: 0;
     }
 }
 </style>

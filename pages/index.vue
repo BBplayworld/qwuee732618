@@ -1,7 +1,7 @@
 import companyNews from '~/server/api/company-news';
 <template>
     <SpeedInsights />
-    <Ad />
+    <Sidebar />
     <div class="container-wrapper">
         <div class="container">
             <Treemap />
@@ -23,7 +23,7 @@ body {
 
 h1,
 h2 {
-    margin: 5px 20px 20px 10px;
+    margin: 5px 20px 20px 0px;
 }
 
 .container-wrapper {
@@ -88,17 +88,6 @@ h2 {
         user-select: none;
     }
 
-    .container-wrapper {
-        min-width: 0;
-    }
-
-    .container {
-        flex-wrap: wrap;
-        align-content: stretch;
-        padding: 5px 10px 0 10px;
-        margin: 0;
-    }
-
     .scrollbar {
         height: 130px;
     }
@@ -116,6 +105,11 @@ h2 {
         -webkit-user-select: none;
         -ms-user-select: none;
         user-select: none;
+    }
+
+    .container {
+        padding: 3px;
+        margin: 0;
     }
 
     .scrollbar {

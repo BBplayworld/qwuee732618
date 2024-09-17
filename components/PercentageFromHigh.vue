@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1>Percentage from 52-week High</h1>
+        <h1>Percentage from<br />52-week High</h1>
         <div class="content" @scroll="handleScroll">
             <div v-if="items.length > 1">
                 <table>
@@ -69,7 +69,6 @@ const getColor = (percentage) => {
 <style scoped>
 h1,
 h2 {
-    margin: 5px 20px 20px 10px;
     color: #F08;
 }
 
@@ -129,6 +128,7 @@ th {
     font-weight: 600;
     text-align: left;
     font-size: 16px;
+    line-height: 20px;
 }
 
 td {
@@ -154,7 +154,7 @@ td:last-child {
 }
 
 .scrollbar {
-    top: 70px;
+    top: 110px;
     right: 20px;
 }
 
@@ -164,6 +164,11 @@ td:last-child {
     th,
     td {
         padding: 10px;
+        font-size: 12.5px;
+    }
+
+    th {
+        text-align: center;
     }
 }
 
@@ -179,8 +184,8 @@ td:last-child {
     }
 
     .scrollbar {
-        top: 105px;
-        right: 20px;
+        top: 100px;
+        right: 13px;
     }
 }
 </style>

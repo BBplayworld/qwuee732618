@@ -46,6 +46,11 @@ export default defineNuxtConfig({
               "name": "BBstoqq",
             }
           })
+        },
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7852495050691458',
+          async: true,
+          crossorigin: 'anonymous',
         }
       ],
     }

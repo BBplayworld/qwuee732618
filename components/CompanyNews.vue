@@ -99,6 +99,7 @@ onMounted(async () => {
     overflow-y: scroll;
     height: 690px;
     margin: 0 10px 0 0;
+    line-height: 20px;
 
     -webkit-overflow-scrolling: touch;
 
@@ -171,13 +172,8 @@ onMounted(async () => {
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
-    .container {
-        max-width: 100%;
-        margin: 20px 0 100px 0;
-    }
-
     .content {
-        max-height: 650px;
+        max-height: 800px;
     }
 }
 
@@ -190,8 +186,13 @@ onMounted(async () => {
 
     .content {
         height: auto;
-        max-height: 710px;
+        max-height: 700px;
         margin: 0 10px 0 0;
+    }
+
+    .scrollbar {
+        top: 100px;
+        right: 12px;
     }
 }
 </style>

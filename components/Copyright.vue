@@ -47,7 +47,7 @@ onMounted(() => {
 @media all and (max-width: 767px) {
     .copyright {
         font-size: 12px;
-        padding: 30px 15px 0 0;
+        padding: 30px 10px 0 0;
     }
 }
 </style>
