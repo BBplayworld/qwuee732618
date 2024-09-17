@@ -40,7 +40,7 @@ const fetch = async () => {
 
 onMounted(() => {
     createTreemap()
-    setTimeout(fetch, 1500)
+    fetch()
 
     const interval = setInterval(() => {
         fetch()

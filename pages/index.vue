@@ -33,16 +33,24 @@ const preventZoomGesture = (e: TouchEvent) => {
         // 두 손가락으로 확대 동작을 감지하고 차단
         e.preventDefault()
     }
-};
+}
+
+const preventGestureStart = (e: Event) => {
+    e.preventDefault() // gesturestart 이벤트를 차단
+}
 
 onMounted(() => {
     document.addEventListener('touchstart', preventDoubleTapZoom)
+    document.addEventListener('touchend', preventGestureStart)
     document.addEventListener('touchmove', preventZoomGesture, { passive: false })
+    document.addEventListener('gesturestart', preventGestureStart)
 });
 
 onUnmounted(() => {
     document.removeEventListener('touchstart', preventDoubleTapZoom)
+    document.removeEventListener('touchend', preventGestureStart)
     document.removeEventListener('touchmove', preventZoomGesture)
+    document.removeEventListener('gesturestart', preventGestureStart)
 })
 </script>
 
