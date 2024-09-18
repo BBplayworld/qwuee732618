@@ -61,7 +61,7 @@ export default defineEventHandler(async () => {
         stockCache = await kv.get(DATA_KEY) as object[]
     } catch (e) { }
 
-    console.log('[api/stocks]', isMarketOpen, cacheInitialized, stockCache.length)
+    console.log('[api/stocks]', isMarketOpen, cacheInitialized, stockCache?.length)
 
     if (stockCache?.length > 0) {
         return stockCache
