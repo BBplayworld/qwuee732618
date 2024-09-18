@@ -1,16 +1,11 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import dayjs from 'dayjs'
-import { useMarketOpen } from '~/composables/useMarketOpen'
+import { kv } from '@vercel/kv'
 
-// 전역 변수로 캐시 데이터를 저장 (각 심볼별로 캐싱)
-let cache = new Map<string, { data: any[] }>()
-let cacheTimestamp: number
+const DATA_KEY = 'company-news'
+const DATA_TTL = 3600
 
-const CACHE_DURATION = 1000 * 600 * 3 // 30분
-const { isMarketOpen } = useMarketOpen()
-
-// 미리 정의된 뉴스 데이터 (production 환경이 아닐 때 사용)
 const predefinedNews = [
     { related: 'AAPL', source: 'Yahoo', headline: 'Apple launches new iPhone model', datetime: '1725459956', summary: 'Apple announced its latest iPhone model, featuring new camera improvements.' },
     { related: 'MSFT', source: 'SeekingAlpha', headline: 'Microsoft acquires AI startup', datetime: '1725459956', summary: 'Microsoft has acquired an AI startup to enhance its cloud offerings.' },
@@ -19,11 +14,17 @@ const predefinedNews = [
 ]
 
 export default defineEventHandler(async () => {
-    const now = Date.now()
-
-    // production 환경이 아닐 때 미리 정의된 뉴스 데이터를 리턴
     if (process.env.NODE_ENV !== 'production') {
         return predefinedNews
+    }
+
+    let stockCache: object[] = []
+    try {
+        stockCache = await kv.get(DATA_KEY) as object[]
+    } catch (e) { }
+
+    if (stockCache?.length > 0) {
+        return stockCache
     }
 
     const symbols = [
@@ -50,15 +51,6 @@ export default defineEventHandler(async () => {
     let to = dayjs().format('YYYY-MM-DD')
 
     const requests = symbols.map(async (symbol) => {
-        const cacheKey = symbol.name
-        const cached = cache.get(cacheKey)
-
-        // 캐시가 유효하고 시장이 닫혀 있으면 캐시된 데이터 사용
-        if ((cached && !isMarketOpen) || (cached && now - cacheTimestamp < CACHE_DURATION)) {
-            let ranIdx = Math.floor(Math.random() * cached.data.length)
-            return cached.data.length > 0 ? cached.data[ranIdx] : {}
-        }
-
         // 캐시가 유효하지 않다면 데이터를 다시 가져옴
         const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol['name']}&from=${from}&to=${to}`
 
@@ -71,9 +63,6 @@ export default defineEventHandler(async () => {
                 }
             });
 
-            // 새로운 데이터를 캐시에 저장
-            cache.set(cacheKey, { data: response })
-
             let ranIdx = Math.floor(Math.random() * response.length)
             return response[ranIdx]
         } catch (e) {
@@ -84,7 +73,7 @@ export default defineEventHandler(async () => {
     let result = await Promise.all(requests)
     result = result.filter(item => (item)) // 빈 객체 제거
     result = result.sort(() => Math.random() - 0.5)
-    cacheTimestamp = now
 
+    await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_TTL })
     return result;
 })

@@ -32,13 +32,15 @@ body {
 }
 
 body,
-html {
-    touch-action: pan-y;
+html,
+.container,
+.content {
+    touch-action: pan-y !important;
     /* 확대 및 축소 제스처 비활성화 */
-    -ms-touch-action: pan-y;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    -ms-touch-action: pan-y !important;
+    -webkit-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
 }
 
 h1,

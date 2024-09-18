@@ -99,7 +99,7 @@ onMounted(async () => {
     overflow-y: scroll;
     height: 690px;
     margin: 0 10px 0 0;
-    line-height: 20px;
+    line-height: 22px;
 
     -webkit-overflow-scrolling: touch;
 

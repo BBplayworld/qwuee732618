@@ -1,13 +1,10 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import dayjs from 'dayjs'
-import { useMarketOpen } from '~/composables/useMarketOpen'
+import { kv } from '@vercel/kv'
 
-// 전역 변수로 캐싱 데이터를 저장
-let cachedData: any[] | null = null
-let cacheTimestamp: number | null = null
-const CACHE_DURATION = 1000 * 300 // 5분
-const { isMarketOpen } = useMarketOpen()
+const DATA_KEY = 'economic-indicators'
+const DATA_TTL = 600
 
 // 미리 정의된 데이터 (production 환경이 아닐 때 사용)
 const predefinedData = [
@@ -27,23 +24,19 @@ const predefinedData = [
 ]
 
 export default defineEventHandler(async () => {
-    const now = Date.now()
-
-    // production 환경이 아닐 때 미리 정의된 데이터를 리턴
     if (process.env.NODE_ENV !== 'production') {
         return predefinedData
     }
 
-    if (cachedData && !isMarketOpen) {
-        return cachedData
+    let stockCache: object[] = []
+    try {
+        stockCache = await kv.get(DATA_KEY) as object[]
+    } catch (e) { }
+
+    if (stockCache?.length > 0) {
+        return stockCache
     }
 
-    // 캐시가 유효한지 확인
-    if (cachedData && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
-        return cachedData
-    }
-
-    // 캐시가 유효하지 않다면 데이터를 다시 가져옴
     const indicators = [
         { code: 'GDP', name: 'Gross Domestic Product (GDP)' }, // 미국 GDP
         { code: 'UNRATE', name: 'Unemployment Rate' }, // 실업률
@@ -115,10 +108,6 @@ export default defineEventHandler(async () => {
     })
 
     const result = await Promise.all(requests)
-
-    // 새로운 데이터를 캐시에 저장
-    cachedData = result
-    cacheTimestamp = now
-
+    await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_TTL })
     return result
 })
