@@ -3,7 +3,7 @@ import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 import { kv } from '@vercel/kv'
 
-const INITIALIZED_KEY = 'stocks_init'
+const INITIALIZED_KEY = 'stocks-init'
 const DATA_KEY = 'stocks'
 const DATA_TTL = 300
 const DATA_CLOSED_TTL = 86400
