@@ -1,9 +1,8 @@
 import { defineEventHandler } from 'h3'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 
-const { isMarketOpen } = useMarketOpen()
-
 export default defineEventHandler(() => {
+    const { isMarketOpen } = useMarketOpen()
     return {
         isMarketOpen
     }

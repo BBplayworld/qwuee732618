@@ -7,7 +7,6 @@ const INITIALIZED_KEY = 'stocks-init'
 const DATA_KEY = 'stocks'
 const DATA_TTL = 300
 const DATA_CLOSED_TTL = 86400
-const { isMarketOpen } = useMarketOpen()
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
@@ -38,16 +37,12 @@ const initializeCache = async () => {
     await kv.set(DATA_KEY, JSON.stringify(initialData))
 }
 
-export default defineEventHandler(async (event) => {
-    // 캐시를 방지하기 위한 Cache-Control 헤더 설정
-    setHeaders(event, {
-        'Cache-Control': 'no-store, max-age=0, must-revalidate',
-    })
-
+export default defineEventHandler(async () => {
     if (process.env.NODE_ENV !== 'production') {
         return predefinedData
     }
 
+    const { isMarketOpen } = useMarketOpen()
     const cacheInitialized = await kv.get(INITIALIZED_KEY)
 
     if (isMarketOpen && !cacheInitialized) {
