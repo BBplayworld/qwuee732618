@@ -38,7 +38,12 @@ const initializeCache = async () => {
     await kv.set(DATA_KEY, JSON.stringify(initialData))
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    // 캐시를 방지하기 위한 Cache-Control 헤더 설정
+    setHeaders(event, {
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+    })
+
     if (process.env.NODE_ENV !== 'production') {
         return predefinedData
     }
