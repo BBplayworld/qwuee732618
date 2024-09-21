@@ -69,13 +69,13 @@ export default defineEventHandler(async () => {
 
     const symbols = [
         { name: 'QQQ', marketCap: 2900, high52: 503.52 },
-        { name: 'VOO', marketCap: 2900, high52: 519.4 },
+        { name: 'VOO', marketCap: 2900, high52: 526.6 },
         { name: 'AAPL', marketCap: 3200, high52: 237.23 },
         { name: 'NVDA', marketCap: 3000, high52: 140.76 },
         { name: 'MSFT', marketCap: 2800, high52: 468.35 },
         { name: 'GOOG', marketCap: 2000, high52: 193.31 },
         { name: 'AMZN', marketCap: 1858, high52: 201.2 },
-        { name: 'META', marketCap: 1335, high52: 544.23 },
+        { name: 'META', marketCap: 1335, high52: 564.5 },
         { name: 'AVGO', marketCap: 774, high52: 185.16 },
         { name: 'TSLA', marketCap: 703, high52: 278.98 },
         { name: 'COST', marketCap: 350, high52: 918.93 },
