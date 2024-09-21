@@ -5,7 +5,7 @@ import { kv } from '@vercel/kv'
 
 const INITIALIZED_KEY = 'stocks-init'
 const DATA_KEY = 'stocks'
-const DATA_TTL = 300
+const DATA_TTL = 120
 const DATA_CLOSED_TTL = 86400
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
@@ -46,13 +46,11 @@ export default defineEventHandler(async () => {
     const cacheInitialized = await kv.get(INITIALIZED_KEY)
 
     if (isMarketOpen && !cacheInitialized) {
-        console.log('initializeCache()')
         await initializeCache()
         await kv.set(INITIALIZED_KEY, 'true')
     }
 
     if (!isMarketOpen && cacheInitialized) {
-        console.log('initialize()')
         await kv.set(INITIALIZED_KEY, 'false')
     }
 
@@ -60,8 +58,6 @@ export default defineEventHandler(async () => {
     try {
         stockCache = await kv.get(DATA_KEY) as object[]
     } catch (e) { }
-
-    console.log('[api/stocks]', isMarketOpen, cacheInitialized, stockCache?.length)
 
     if (stockCache?.length > 0) {
         return stockCache

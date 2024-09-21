@@ -19,7 +19,7 @@ const treemapContainer = ref(null)
 const items = ref([{
     "name": "MARKET",
     "marketCap": 1000,
-    "c": 100,
+    "c": 0,
     "dp": 0,
     "high52": 100,
     "percentageFrom52WeekHigh": "0"
@@ -35,20 +35,20 @@ const fetch = async () => {
     }
 
     items.value = data.value
-    createTreemap()
+    createTreemap({ isFetch: true })
 }
 
 onMounted(() => {
-    createTreemap()
+    createTreemap({ isFetch: true })
     fetch()
 
-    const interval = setInterval(() => {
-        fetch()
-    }, 60000) // 1분
+    const interval = setInterval(fetch, 120000) // 2분
+    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 5000) // 5초
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
         clearInterval(interval)
+        clearInterval(intervalTreemap)
     })
 })
 
@@ -104,9 +104,12 @@ let func = {
     },
 }
 
-function createTreemap() {
-    let width = treemapContainer.value.getBoundingClientRect().width;  // 트리맵의 전체 너비
-    let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660; // 트리맵의 전체 높이
+function createTreemap({ isFetch = false }) {
+    let width = treemapContainer.value.getBoundingClientRect().width  // 트리맵의 전체 너비
+    let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660 // 트리맵의 전체 높이
+
+    if (window.innerWidth < 1700 && window.innerWidth >= 767) width = window.innerWidth * 0.915
+    if (window.innerWidth < 767) width = window.innerWidth - 30
 
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
@@ -140,12 +143,14 @@ function createTreemap() {
         .attr('stroke', '#222');
 
     // D3 transition을 사용한 애니메이션
-    rects.transition()
-        .duration(1500) // 애니메이션 지속 시간 (2초)
-        .attr('fill', 'rgba(203, 203, 32, 1)') // 일시적 색상 변화
-        .transition()
-        .duration(1500) // 애니메이션 지속 시간 (2초)
-        .attr('fill', d => func.getColor(d.data['dp'])) // 원래 색상으로 복원
+    if (isFetch) {
+        rects.transition()
+            .duration(1500)
+            .attr('fill', 'rgba(203, 203, 32, 1)')
+            .transition()
+            .duration(1500)
+            .attr('fill', d => func.getColor(d.data['dp'])) // 원래 색상으로 복원
+    }
 
     node.append('foreignObject')
         .attr('x', 0)
