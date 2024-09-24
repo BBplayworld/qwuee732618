@@ -22,13 +22,17 @@ onMounted(() => {
 </script>
 
 <style>
+html,
+body {
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #111;
     color: #fff;
     overscroll-behavior: contain;
-    overflow-x: hidden;
 }
 
 body,
