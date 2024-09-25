@@ -26,7 +26,7 @@ const fetch = async () => {
     })
 
     if (!data.value) {
-        return setTimeout(fetch, 500)
+        return setTimeout(fetch, 100)
     }
 
     items.value = data.value
@@ -37,7 +37,7 @@ onMounted(() => {
     fetch()
 
     const interval = setInterval(fetch, 120000) // 2분
-    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 5000) // 5초
+    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
@@ -102,7 +102,7 @@ function createTreemap({ isFetch = false }) {
     let width = treemapContainer.value.getBoundingClientRect().width  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660 // 트리맵의 전체 높이
 
-    if (window.innerWidth < 1700 && window.innerWidth >= 767) width = window.innerWidth * 0.915
+    if (window.innerWidth < 1700 && window.innerWidth >= 767) width = window.innerWidth * 0.91
     if (window.innerWidth < 767) width = window.innerWidth - 30
 
     if (height > 660) height = 660
