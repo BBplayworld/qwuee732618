@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div v-else>
-                <p>Loading...</p>
+                <InitCompanyNews />
             </div>
         </div>
         <div class="scrollbar" v-show="showScrollbar"></div>

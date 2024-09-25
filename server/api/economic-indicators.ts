@@ -8,19 +8,19 @@ const DATA_TTL = 600
 
 // 미리 정의된 데이터 (production 환경이 아닐 때 사용)
 const predefinedData = [
-    { name: 'Gross Domestic Product (GDP)', date: '2023-09-30', value: '21.43B' },
-    { name: 'Unemployment Rate', date: '2023-09-30', value: '4.5%' },
-    { name: 'CPI: All Items in U.S. City Average', date: '2023-09-30', value: '271.55 (1982-1984=100)' },
-    { name: 'Effective Federal Funds Rate', date: '2023-09-30', value: '0.25%' },
-    { name: 'Industrial Production Index', date: '2023-09-30', value: '110.5 (2017=100)' },
-    { name: 'Nonfarm Payrolls', date: '2023-09-30', value: '149.2M' },
-    { name: '10-Year Treasury Constant Maturity Rate', date: '2023-09-30', value: '1.45%' },
-    { name: 'M2 Money Stock', date: '2023-09-30', value: '18.2B' },
-    { name: 'Retail Sales', date: '2023-09-30', value: '572.6M' },
-    { name: "Moody's Baa Corporate Bond Yield Relative to 10-Year Treasury Yield", date: '2023-09-30', value: '1.05%' },
-    { name: 'Housing Starts', date: '2023-09-30', value: '1.57 Thousands of Units' },
-    { name: 'Average Hourly Earnings of All Employees', date: '2023-09-30', value: '29.8 Dollars per Hour' },
-    { name: 'Real Gross Domestic Product', date: '2023-09-30', value: '21.43B' },
+    { name: 'Gross Domestic Product (GDP)', date: '2024-09-30', value: '21.85B' },
+    { name: 'Unemployment Rate', date: '2024-09-30', value: '4.3%' },
+    { name: 'CPI: All Items in U.S. City Average', date: '2024-09-30', value: '275.10 (1982-1984=100)' },
+    { name: 'Effective Federal Funds Rate', date: '2024-09-30', value: '0.50%' },
+    { name: 'Industrial Production Index', date: '2024-09-30', value: '112.3 (2017=100)' },
+    { name: 'Nonfarm Payrolls', date: '2024-09-30', value: '150.5M' },
+    { name: '10-Year Treasury Constant Maturity Rate', date: '2024-09-30', value: '1.60%' },
+    { name: 'M2 Money Stock', date: '2024-09-30', value: '18.5B' },
+    { name: 'Retail Sales', date: '2024-09-30', value: '590.1M' },
+    { name: "Moody's Baa Corporate Bond Yield Relative to 10-Year Treasury Yield", date: '2024-09-30', value: '1.10%' },
+    { name: 'Housing Starts', date: '2024-09-30', value: '1.60 Thousands of Units' },
+    { name: 'Average Hourly Earnings of All Employees', date: '2024-09-30', value: '30.2 Dollars per Hour' },
+    { name: 'Real Gross Domestic Product', date: '2024-09-30', value: '21.85B' }
 ]
 
 export default defineEventHandler(async () => {

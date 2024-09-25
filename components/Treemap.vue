@@ -4,7 +4,9 @@
             <h1>Market Treemap</h1>
             <Copyright />
         </div>
-        <div ref="treemapContainer" class="content"></div>
+        <div ref="treemapContainer" class="content">
+            <InitTreemap />
+        </div>
         <!-- Finhub 데이터 출처 표기 추가 -->
         <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
     </div>
@@ -16,14 +18,7 @@ import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 
 const treemapContainer = ref(null)
-const items = ref([{
-    "name": "MARKET",
-    "marketCap": 1000,
-    "c": 0,
-    "dp": 0,
-    "high52": 100,
-    "percentageFrom52WeekHigh": "0"
-}])
+const items = ref([])
 
 const fetch = async () => {
     const { data } = await useFetch('/api/stocks', {
@@ -39,7 +34,6 @@ const fetch = async () => {
 }
 
 onMounted(() => {
-    createTreemap({ isFetch: true })
     fetch()
 
     const interval = setInterval(fetch, 120000) // 2분

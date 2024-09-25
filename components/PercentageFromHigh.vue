@@ -24,7 +24,9 @@
                     </tbody>
                 </table>
             </div>
-            <div v-else>Loading...</div>
+            <div v-else>
+                <InitPercentageFromHigh />
+            </div>
         </div>
         <div class="scrollbar" v-show="showScrollbar"></div>
     </div>

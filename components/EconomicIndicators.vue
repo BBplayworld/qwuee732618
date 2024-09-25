@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div v-else>
-                <p>Loading...</p>
+                <InitEconomicIndicators />
             </div>
         </div>
         <div class="scrollbar" v-show="showScrollbar"></div>
@@ -94,8 +94,6 @@ onMounted(async () => {
     height: 690px;
     margin: 0 20px 0 0;
     line-height: 22px;
-
-    -webkit-overflow-scrolling: touch;
 
     /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
     &::-webkit-scrollbar {

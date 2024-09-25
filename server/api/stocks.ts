@@ -13,7 +13,7 @@ let tokenKey = tokenIter.next().value
 
 // 개발 데이터
 const predefinedData = [
-    { name: 'QQQ', marketCap: 2900, c: 370.15, dp: 0.52, high52: 400.00, percentageFrom52WeekHigh: 1 },
+    { name: 'QQQ', marketCap: 2900, c: 482.44, dp: -0.19, high52: 503.52, percentageFrom52WeekHigh: -4.2 },
     { name: 'VOO', marketCap: 2900, c: 420.35, dp: -0.12, high52: 450.00, percentageFrom52WeekHigh: 1 },
     { name: 'AAPL', marketCap: 3200, c: 145.65, dp: 0.25, high52: 180.00, percentageFrom52WeekHigh: -18.2 },
     { name: 'NVDA', marketCap: 3000, c: 290.55, dp: 1.23, high52: 330.00, percentageFrom52WeekHigh: -16 },
@@ -29,7 +29,7 @@ const predefinedData = [
     { name: 'AZN', marketCap: 268, c: 290.10, dp: 0.34, high52: 320.00, percentageFrom52WeekHigh: -0.2 },
     { name: 'AMD', marketCap: 250, c: 110.75, dp: -0.25, high52: 130.00, percentageFrom52WeekHigh: -0.2 },
     { name: 'ADBE', marketCap: 247, c: 570.00, dp: 0.67, high52: 600.00, percentageFrom52WeekHigh: -13 },
-    { name: 'QCOM', marketCap: 200, c: 180.45, dp: 0.45, high52: 220.00, percentageFrom52WeekHigh: -0.2 },
+    { name: 'QCOM', marketCap: 200, c: 180.45, dp: 0.45, high52: 220.00, percentageFrom52WeekHigh: -0.2 }
 ]
 
 const initializeCache = async () => {
@@ -65,7 +65,7 @@ export default defineEventHandler(async () => {
 
     const symbols = [
         { name: 'QQQ', marketCap: 2900, high52: 503.52 },
-        { name: 'VOO', marketCap: 2900, high52: 526.6 },
+        { name: 'VOO', marketCap: 2900, high52: 526.84 },
         { name: 'AAPL', marketCap: 3200, high52: 237.23 },
         { name: 'NVDA', marketCap: 3000, high52: 140.76 },
         { name: 'MSFT', marketCap: 2800, high52: 468.35 },
@@ -76,7 +76,7 @@ export default defineEventHandler(async () => {
         { name: 'TSLA', marketCap: 703, high52: 278.98 },
         { name: 'COST', marketCap: 350, high52: 918.93 },
         { name: 'ASML', marketCap: 356, high52: 1110.09 },
-        { name: 'NFLX', marketCap: 294, high52: 711.33 },
+        { name: 'NFLX', marketCap: 294, high52: 722.44 },
         { name: 'AZN', marketCap: 268, high52: 87.68 },
         { name: 'AMD', marketCap: 250, high52: 227.3 },
         { name: 'ADBE', marketCap: 247, high52: 638.25 },
