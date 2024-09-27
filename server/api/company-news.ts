@@ -190,13 +190,17 @@ export default defineEventHandler(async () => {
         return predefinedNews
     }
 
-    let stockCache: object[] = []
+    let stockCache: Array<Array<any>> = []
     try {
-        stockCache = await kv.get(DATA_KEY) as object[]
+        stockCache = await kv.get(DATA_KEY) as Array<Array<any>>
     } catch (e) { }
 
     if (stockCache?.length > 0) {
-        return stockCache
+        stockCache = stockCache.filter(item => (item.length > 0))
+        return stockCache.map((result) => {
+            let ranIdx = Math.floor(Math.random() * result.length)
+            return result[ranIdx]
+        });
     }
 
     const symbols = [
@@ -217,13 +221,12 @@ export default defineEventHandler(async () => {
         { name: 'AMD', marketCap: 250 },
         { name: 'ADBE', marketCap: 247 },
         { name: 'QCOM', marketCap: 193 },
-    ] // 필요한 주식 심볼들
+    ]
 
     let from = dayjs().add(-1, 'day').format('YYYY-MM-DD')
     let to = dayjs().format('YYYY-MM-DD')
 
     const requests = symbols.map(async (symbol) => {
-        // 캐시가 유효하지 않다면 데이터를 다시 가져옴
         const url = `https://finnhub.io/api/v1/company-news?symbol=${symbol['name']}&from=${from}&to=${to}`
 
         try {
@@ -235,17 +238,18 @@ export default defineEventHandler(async () => {
                 }
             });
 
-            let ranIdx = Math.floor(Math.random() * response.length)
-            return response[ranIdx]
+            return response
         } catch (e) {
             return {}
         }
     })
 
-    let result = await Promise.all(requests)
-    result = result.filter(item => (item)) // 빈 객체 제거
-    result = result.sort(() => Math.random() - 0.5)
+    let results = await Promise.all(requests)
+    results = results.filter(item => (item.length > 0))
 
-    await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_TTL })
-    return result;
+    await kv.set(DATA_KEY, JSON.stringify(results), { ex: DATA_TTL })
+    return results.map((result) => {
+        let ranIdx = Math.floor(Math.random() * result.length)
+        return result[ranIdx]
+    });
 })

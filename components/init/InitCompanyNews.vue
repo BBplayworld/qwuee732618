@@ -2,169 +2,21 @@
     <div>
         <div>
             <div class="box">
-                <div class="name font-opensans">NVDA <span class="headline">[SeekingAlpha] 10 Hypergrowth Blue-Chip
-                        Bargain Buys With This Market At Record
-                        Highs</span></div>
+                <div class="name font-opensans">QQQ <span class="headline">[SeekingAlpha] A Checkup On The Screws
+                        Holding The Economy Together</span>
+                </div>
                 <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
                     <div class="thumbnail"><img
-                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/1367482914/image_1367482914.jpg?io=getty-c-w1536"
+                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/896029122/image_896029122.jpg?io=getty-c-w1536"
                             alt="news thumbnail"></div>
-                    <div class="value font-roboto">Certain growth-like blue-chip stocks can deliver
-                        strong returns and dividends. See how these stocks can provide retirement income for the long
-                        term. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=ab7828b9d736e0bafdee44de7b8fbeeef937e25a863e653702785e0d8f11ffeb"
+                    <div class="value font-roboto">Key metrics show robust economic conditions,
+                        despite some loose indicators. See more about how GDP growth and employment trends support
+                        market stability. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=ec053203facee792ab089648fce035dbd53ee154ca8b0cf85ccdd9803046d7ff"
                                 target="_blank">more</a></div>
                     </div>
                 </div>
-                <div class="date font-roboto">2024-09-27 16:00</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">AAPL <span class="headline">[SeekingAlpha] Voya Large Cap Growth
-                        Strategy Q2 2024 Commentary</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/481466958/image_481466958.jpg?io=getty-c-w1536"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">For the quarter, the Strategy underperformed its
-                        benchmark on a NAV basis due to unfavorable stock selection. Click here for the full commentary.
-                        <div class="url"><a
-                                href="https://finnhub.io/api/news?id=e5c38244a2b8eb21347bab0720ce8e0c6f229d073b9391085f390923b67bd0ac"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 21:15</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">AVGO <span class="headline">[Seeking Alpha] Coherent showcases 1.6T
-                        running on Nvidia 5nm DSP:
-                        Barclays</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
-                    <div class="value font-roboto">Looking for stock market analysis and research
-                        with proves results? Zacks.com offers in-depth financial research with over 30years of proven
-                        results. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=b925ead16d7f8c422b3741b3b7a3aae2ccf5ac9fbfc87dbc615ce8d995ac0ca5"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 17:50</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">AMZN <span class="headline">[Yahoo] Palantir Stock vs. Amazon Stock:
-                        Wall Street Says Buy One and Sell the
-                        Other</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img src="https://g.foolcdn.com/editorial/images/791822/bull-and-bear-3.jpg"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">Wall Street analysts are generally bullish on
-                        Amazon and bearish on Palantir. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=659b7c565aae68b922a4cb7959870c785d79fe58febbcdf0bb660f44a5cebf27"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 18:12</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">ADBE <span class="headline">[Finnhub] ADBE Bronstein, Gewirtz and
-                        Grossman, LLC Announces an Investigation
-                        into Adobe Inc. and Encourages Investors to Contact the Firm!</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
-                    <div class="value font-roboto">NEW YORK, Sept. 26, 2024 /PRNewswire/ -- Attorney
-                        Advertising -- Bronstein, Gewirtz &amp; Grossman, LLC is investigating potential claims on
-                        behalf of purchasers of Adobe Inc. . Investors who purchased... <div class="url"><a
-                                href="https://finnhub.io/api/news?id=d0dd2b8efe5e0ee6cc8f2849b780baf2f7802d2b0bcae6d44d61765943fc7522"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 09:01</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">ASML <span class="headline">[Yahoo] ASML Stock Gains 42.4% in a Year:
-                        Can its Technology Drive
-                        Momentum?</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://media.zenfs.com/en/zacks.com/76b77267780db8a8e104d16effc1eb76"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">ASML Holding benefits from its growing investments
-                        in advanced technologies amid macroeconomic headwinds and stiff competition. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=853c3f1272ab496eed547beecabe1ef531bbb65c1f78c0172cd094e123079256"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-27 01:06</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">AMD <span class="headline">[SeekingAlpha] AMD: A Pullback Is Imminent
-                        (Technical Analysis)</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://media.gettyimages.com/id/AA045492/photo/brown-bear-roaring-side-view.jpg?b=1&amp;s=612x612&amp;w=0&amp;k=20&amp;c=Is1Ib2xLAf5JAMHdS7PtI-adIO4KtN6XH2oXLa7fQ58="
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">AMD declined significantly from its peak set early
-                        this year. Check out AMD stock's short-term and intermediate-term analyses and why it is rated
-                        as Strong Sell. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=3a5e1ee27062af38d9d7816c644904e115831e573d40dc2c68a03ef071483853"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 12:34</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">COST <span class="headline">[Yahoo] Inside Brian Cornell's plan to get
-                        Target back on track</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://s.yimg.com/ny/api/res/1.2/1YpujWNkVUJPtH5AzaR5Jg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD02NzU-/https://s.yimg.com/os/creatr-uploaded-images/2024-09/94ce1250-7abf-11ef-9f77-71364300a604"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">Brian Cornell became the first external CEO hire
-                        in the history of Target (TGT) when he took the top job in 2014. Ten years in, Cornell has
-                        reinvented the company in many ways, experiencing the highs and lows of competing against other
-                        major retail giants like Walmart (WMT), Amazon (AMZN), and Costco (COST). To get an inside look
-                        at the veteran CEO’s journey and his plans for the future, Yahoo Finance Executive Editor Brian
-                        Sozzi sat down with Cornell at a Target store in Jersey City, NJ. The two also met at a park
-                        that played a major role in Cornell’s upbringing in Queens, NY to explore what shaped him into
-                        the leader he is today. “If you grow up the way I did, you always feel like the underdog,” says
-                        Cornell. This mindset helped Cornell rise the retail ranks. He has served in executive roles at
-                        major companies like Safeway and Sam’s Club before running Target. Cornell took over when the
-                        retailer was struggling and coming off of a data breach. The CEO’s first big move was to exit
-                        Canada, after the company’s $5.4 billion venture north of the border failed to take off. In 2017
-                        Cornell announced the $550 million acquisition of delivery company Shipt and a $7 billion
-                        investment in Target stores, at a time when the industry appeared to be shifting away from
-                        brick-and-mortar. These decisions paid off during the pandemic, when Target’s revenue shot up
-                        past $100 billion for the first time in 2021. Recently, Target has missed the mark compared to
-                        competitors, with comparable sales falling for four straight quarters through the first quarter
-                        of 2024. Target’s declining numbers were due to a number of factors, including retail theft, a
-                        backlash to Pride merchandise in 2023, and excess inventory resulting in price cuts, with the
-                        main driver being a slowdown in discretionary spending by consumers. Nearly 50% of Target’s
-                        product portfolio is made up of non-essentials—much higher than many competitors. To drive
-                        growth into the future, Cornell and Target are mixing strategies old and new. The company plans
-                        to invest in 300 stores over the next decade, continuing a trend under Cornell. In April of 2024
-                        Target announced a paid membership program, Target Circle 360, to compete with Amazon Prime and
-                        Walmart+. The most recent numbers showed positive signs for the retailer, with sales up 2.7%
-                        year-over-year in the second quarter of 2024. Target is set to report third quarter earnings on
-                        November 20, where the company expects to see more growth, albeit at a slower rate. For more of
-                        our Lead This Way series, click here, and tune in to Yahoo Finance Live for more expert insight
-                        and the latest market action, Monday through Friday. Editor's note: This article was written by
-                        Luke Brooks. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=70ca8b960dc840b668d6eb531b326b45a64f3772756ba303dc12eb0e986abb23"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 18:55</div>
+                <div class="date font-roboto">2024-09-27 00:46</div>
             </div>
         </div>
         <div>
@@ -187,100 +39,75 @@
         </div>
         <div>
             <div class="box">
-                <div class="name font-opensans">QQQ <span class="headline">[SeekingAlpha] A Checkup On The Screws
-                        Holding The Economy Together</span>
-                </div>
+                <div class="name font-opensans">AAPL <span class="headline">[SeekingAlpha] Voya Large Cap Growth
+                        Strategy Q2 2024 Commentary</span></div>
                 <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
                     <div class="thumbnail"><img
-                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/896029122/image_896029122.jpg?io=getty-c-w1536"
+                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/481466958/image_481466958.jpg?io=getty-c-w1536"
                             alt="news thumbnail"></div>
-                    <div class="value font-roboto">Key metrics show robust economic conditions,
-                        despite some loose indicators. See more about how GDP growth and employment trends support
-                        market stability. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=ec053203facee792ab089648fce035dbd53ee154ca8b0cf85ccdd9803046d7ff"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-27 00:46</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">QCOM <span class="headline">[Yahoo] Qualcomm, Broadcom, Marvell Stocks
-                        Rise. The AI Run Gets Boost After
-                        Micron’s Strong Outlook.</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
-                    <div class="value font-roboto">Chip stocks were rising early Thursday after the
-                        outlook from memory chip maker Micron Technology had investors excited. The exchange-traded fund
-                        was up 3%. Micron makes up about 3.1% of the ETF’s overall portfolio. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=92e0f26d3c8fbfec36361e9a7761c897e888a83a903cc6cbf751fd2e2c5c2c60"
-                                target="_blank">more</a></div>
-                    </div>
-                </div>
-                <div class="date font-roboto">2024-09-26 20:05</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">TSLA <span class="headline">[Yahoo] 2025 Lucid Air Sapphire: Eat My
-                        Dust, Tesla</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://s.yimg.com/ny/api/res/1.2/RQj6LAKPCsyKUOdF30RfDw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD02MDA-/https://media.zenfs.com/en/wsj.com/33e7e886a2143f048d48b040af9e4aa0"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">Lucid has nosed out the Tesla Model S Plaid for
-                        the quickest production sedan on the planet—and Dan Neil calls it a ‘modern design masterpiece.’
+                    <div class="value font-roboto">For the quarter, the Strategy underperformed its
+                        benchmark on a NAV basis due to unfavorable stock selection. Click here for the full commentary.
                         <div class="url"><a
-                                href="https://finnhub.io/api/news?id=b400544a961824f3e5141bdec325dfad7e8e7d624beef4ebac1ba32f1ea9abe4"
+                                href="https://finnhub.io/api/news?id=e5c38244a2b8eb21347bab0720ce8e0c6f229d073b9391085f390923b67bd0ac"
                                 target="_blank">more</a></div>
                     </div>
                 </div>
-                <div class="date font-roboto">2024-09-27 06:00</div>
+                <div class="date font-roboto">2024-09-26 21:15</div>
             </div>
         </div>
         <div>
             <div class="box">
-                <div class="name font-opensans">MSFT <span class="headline">[Finnhub] OpenAI Discusses 7% Stake for
-                        Altman in For-Profit Shift</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
-                    <div class="value font-roboto">-- OpenAI is discussing giving Chief Executive
-                        Officer Sam Altman a 7% equity stake in the company and restructuring to become a for-profit
-                        business, people familiar with the matter said, a major... <div class="url">
-                            <a href="https://finnhub.io/api/news?id=7cda1fbe28f33bf7d494b2b5d36739d3a7384e24dc18d2e9a796104f2e893917"
-                                target="_blank">more</a>
-                        </div>
-                    </div>
+                <div class="name font-opensans">NVDA <span class="headline">[Yahoo] Chip stocks rise on Micron Q4
+                        earnings beat, lifted Q1 guidance</span>
                 </div>
-                <div class="date font-roboto">2024-09-27 02:16</div>
-            </div>
-        </div>
-        <div>
-            <div class="box">
-                <div class="name font-opensans">AZN <span class="headline">[Yahoo]
-                        AstraZeneca’s Tagrisso gains FDA approval for stage III NSCLC</span></div>
                 <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
                     <div class="thumbnail"><img
-                            src="https://www.pharmaceutical-technology.com/wp-content/uploads/sites/24/2024/09/Astrazeneca-US.jpg"
+                            src="https://s.yimg.com/ny/api/res/1.2/kBPcDAGMoaGhVWE9WTVMSA--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD02NzQ-/https://s.yimg.com/os/creatr-uploaded-images/2024-09/d33b9a50-7c3e-11ef-9bfb-b367edfd8a20"
                             alt="news thumbnail"></div>
-                    <div class="value font-roboto">Tagrisso, which targets exon 19 deletions or exon
-                        21 (L858R) mutations, received the approval following a priority review. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=ade29c0f086905120fb83337f9333092273995866ba33c07a84cf9f7dc03350a"
+                    <div class="value font-roboto">Chip stocks like Nvidia (NVDA), Advanced Micro
+                        Devices (AMD), and Intel (INTC) are rising in sympathy with Micron (MU) after it issued strong
+                        first quarter guidance. Market Domination Hosts Julie Hyman and Josh Lipton report more on the
+                        sector's movement and dig into Micron's latest earnings report. For more expert insight and the
+                        latest market action, click here to watch this full episode of Market Domination. This post was
+                        written by Melanie Riehl <div class="url"><a
+                                href="https://finnhub.io/api/news?id=c26d090f4f29daf2437b468a379fc760c5be59d3e0c280661edf5c01362cc575"
                                 target="_blank">more</a></div>
                     </div>
                 </div>
-                <div class="date font-roboto">2024-09-27 17:32</div>
+                <div class="date font-roboto">2024-09-27 04:42</div>
             </div>
         </div>
         <div>
             <div class="box">
-                <div class="name font-opensans">GOOG <span class="headline">[Thefly.com] Google's NotebookLM adds audio
-                        and YouTube support, create study
-                        guides</span></div>
+                <div class="name font-opensans">MSFT <span class="headline">[Yahoo] Microsoft's Nuclear Deal Signals A
+                        Trend Change; S&amp;P 500 Utility
+                        Stocks Rally</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
+                    <div class="value font-roboto">Analyst chatter following last week's news
+                        that&nbsp;S&amp;P 500 component Constellation Energy and Microsoft had inked a two-decade long
+                        contract to provide nuclear power for the tech giant's data centers has fueled a utility stock
+                        rally this week. Along with Constellation Energy, fellow S&amp;P 500 nuclear power utilities
+                        play Vistra had jumped 10.4% on the week as of Wednesday's close. Meanwhile, S&amp;P 500 stock
+                        NRG Energy surged almost 3% during Thursday's early market action&nbsp;after it raised 2024
+                        guidance with management claiming the company can "drive growth and capitalize on the emerging
+                        opportunities in our markets." <div class="url"><a
+                                href="https://finnhub.io/api/news?id=9124ba8594a9d653d7638c89a2dc8c43bfde6c8db61072fc91394b4056c186a0"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 22:58</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">GOOG <span class="headline">[Thefly.com] Google's Character.AI deal was
+                        mostly to rehire Noam Shazeer, WSJ
+                        reports</span></div>
                 <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
                     <div class="value font-roboto">Looking for stock market analysis and research
                         with proves results? Zacks.com offers in-depth financial research with over 30years of proven
                         results. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=492f034298171ec93c37b921df275abe8beb1bb759e34f368dd2f59d4fe49687"
+                                href="https://finnhub.io/api/news?id=f800d07cb1e6011f576e08b2309265b2cd9f48afc5eeeab016c0755a9d39ff94"
                                 target="_blank">more</a></div>
                     </div>
                 </div>
@@ -289,21 +116,180 @@
         </div>
         <div>
             <div class="box">
-                <div class="name font-opensans">META <span class="headline">[SeekingAlpha] Meta: The Bull Charge Is Only
-                        Starting&nbsp; (Technical
-                        Analysis)</span></div>
-                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
-                    <div class="thumbnail"><img
-                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/2154163889/image_2154163889.jpg?io=getty-c-w1536"
-                            alt="news thumbnail"></div>
-                    <div class="value font-roboto">Investors who followed my Meta $127 buy call from
-                        January 2023 will be doing very nicely indeed seeing a near 350% increase. Explore more details
-                        here. <div class="url"><a
-                                href="https://finnhub.io/api/news?id=db0903af336316a952eb11d14b8ac07833d2756e46571db9cd707d75d834c457"
+                <div class="name font-opensans">AMZN <span class="headline">[Finnhub] Amazon's AI partnership with
+                        Anthropic gets UK competition watchdog
+                        nod</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
+                    <div class="value font-roboto">UK competition regulator said on Friday Amazon's
+                        artificial intelligence partnership with startup Anthropic will not be referred for a deeper
+                        probe as it did not raise competition concerns. ... <div class="url"><a
+                                href="https://finnhub.io/api/news?id=791242c56b640189e2eb89998164911adda7b391440f0fe02121920bab328e7a"
                                 target="_blank">more</a></div>
                     </div>
                 </div>
-                <div class="date font-roboto">2024-09-26 18:01</div>
+                <div class="date font-roboto">2024-09-27 16:13</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">META <span class="headline">[Yahoo] Meta stock hits all-time high as
+                        Wall Street bets on AI vision</span>
+                </div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://s.yimg.com/ny/api/res/1.2/t7XX1KojTz5sVN4GlAs5pA--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD04MDA-/https://s.yimg.com/os/creatr-uploaded-images/2024-09/c28bcbf0-7c0f-11ef-87fd-e105fe32ea3e"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">Meta stock hit an all-time high as investors bet
+                        on its AI vision. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=405aa3748c88b6a14efb6f49030f50d23df8bcbbd4ed62f624e0f5b4e46361f4"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 23:29</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">AVGO <span class="headline">[Seeking Alpha] Micron's guidance surprises
+                        Wall Street as the AI train
+                        continues to roll on</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
+                    <div class="value font-roboto">Looking for stock market analysis and research
+                        with proves results? Zacks.com offers in-depth financial research with over 30years of proven
+                        results. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=331d30a4f600c7313be669fa1adb9e7c878e5f908fac22d692a9c56a39a356cc"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 15:45</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">TSLA <span class="headline">[SeekingAlpha] Wall Street Lunch: Chip Chip
+                        Hooray</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/1150565928/image_1150565928.jpg?io=getty-c-w1536"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">Strong guidance has shares of MU rallying sharply.
+                        Southwest raises guidance as it unveils new strategy. PayPal to let business customers hold
+                        crypto. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=7793b3788d2e485403a9aebaafb1039b0171adbaea019d36609bbabc90a7a0d8"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 22:54</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">COST <span class="headline">[Yahoo] Costco: Fiscal Q4 Earnings
+                        Snapshot</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://s.yimg.com/cv/apiv2/social/images/yahoo_default_logo-1200x1200.png"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">ISSAQUAH, Wash. AP) — Costco Wholesale Corp. COST
+                        on Thursday reported fiscal fourth-quarter profit of $2.35 billion. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=9ed7d87e54649c33e3004c5daa663cd421f683d98c8ce3619a4d809d21f63882"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-27 05:21</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">ASML <span class="headline">[SeekingAlpha] 10 Hypergrowth Blue-Chip
+                        Bargain Buys With This Market At Record
+                        Highs</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/1367482914/image_1367482914.jpg?io=getty-c-w1536"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">Certain growth-like blue-chip stocks can deliver
+                        strong returns and dividends. See how these stocks can provide retirement income for the long
+                        term. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=ab7828b9d736e0bafdee44de7b8fbeeef937e25a863e653702785e0d8f11ffeb"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-27 16:00</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">AZN <span class="headline">[Yahoo]
+                        Top Stock Reports for Toyota, AstraZeneca &amp; Chubb</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://media.zenfs.com/en/zacks.com/9ceba5368d4d7482eaf86502a3e497fc"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">Today's Research Daily features new research
+                        reports on 16 major stocks, including Toyota Motor Corp. (TM), AstraZeneca PLC (AZN) and Chubb
+                        Ltd. (CB), as well as two micro-cap stocks Air T, Inc. (AIRT) and Preformed Line Products Co.
+                        (PLPC). <div class="url"><a
+                                href="https://finnhub.io/api/news?id=92365a162b1ac3e35b815eb0985ff5b18f518af2a40a44490ebd0865ea14281e"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-27 07:05</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">AMD <span class="headline">[Yahoo]
+                        Stocks Trade Higher; Micron Jumps</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 --><!--v-if-->
+                    <div class="value font-roboto">Stocks rose Thursday, thanks in part to miners
+                        like Freeport-McMoRan and industrial firms including 3M and Caterpillar. “At a time of real
+                        growth fears, positive company estimates on future earnings are welcome news and can easily
+                        boost equity prices further,” said Jan von Gerich, chief analyst at Nordea. Economic data was
+                        also in focus, with several strong readings. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=96a781bb1adad8a0336cd1163e336ae3b5547ea2c87b480e5ab1ade4419d5df1"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-27 05:22</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">ADBE <span class="headline">[Yahoo] Online holiday sales in the US to
+                        hit record $240.8B: Adobe
+                        Analytics</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://www.retaildive.com/imgproxy/OLNomfHfMnUIeTL-tHnErOT9eZzAN4jlty2k9l3ijAc/g:ce/rs:fit:770:435/bG9jYWw6Ly8vZGl2ZWltYWdlL0dldHR5SW1hZ2VzLTEzNDA1ODkyODguanBn.webp"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">The number of purchases done on mobile devices is
+                        expected to grow more than 10% compared to last year and will make up 53.2% of all online
+                        shopping. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=54c94bf6b24c89da9cffd10a92d1c4761d0f8ad2523f8c3d9a81998b4362d8d3"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 20:40</div>
+            </div>
+        </div>
+        <div>
+            <div class="box">
+                <div class="name font-opensans">QCOM <span class="headline">[SeekingAlpha] Pioneer Global Sustainable
+                        Equity Fund Q2 2024 Performance And
+                        Market Commentary</span></div>
+                <div class="news-content"><!-- 추가된 부분: 이미지 썸네일 -->
+                    <div class="thumbnail"><img
+                            src="https://static.seekingalpha.com/cdn/s3/uploads/getty_images/1954840203/image_1954840203.jpg?io=getty-c-w1536"
+                            alt="news thumbnail"></div>
+                    <div class="value font-roboto">During Q2 2024, Pioneer Global Sustainable Equity
+                        Fund Class Y shares returned -1.12%, vs. 2.63% return of the benchmark. Click here for the full
+                        commentary. <div class="url"><a
+                                href="https://finnhub.io/api/news?id=9cc78e00a7d4271ce74c83d6c8d3951a7bb4858888db2c1bfef440529bd072de"
+                                target="_blank">more</a></div>
+                    </div>
+                </div>
+                <div class="date font-roboto">2024-09-26 11:55</div>
             </div>
         </div>
     </div>

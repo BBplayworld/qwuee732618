@@ -56,12 +56,11 @@ const fetch = async () => {
     })
 
     if (!data.value) {
-        return setTimeout(fetch, 1000)
+        return setTimeout(fetch, 100)
     }
 
     items.value = data.value
 
-    // Stop the animation after it's done
     setTimeout(() => {
         animateH1.value = false
     }, 3000)  // Duration of the animation in ms    
@@ -70,9 +69,7 @@ const fetch = async () => {
 onMounted(async () => {
     fetch() // 페이지가 로드될 때 최초 데이터 가져오기
 
-    const interval = setInterval(() => {
-        fetch()
-    }, 300000) // 300,000 = 5분
+    const interval = setInterval(fetch, 60000) // 60,000 = 1분
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
