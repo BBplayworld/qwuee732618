@@ -324,29 +324,6 @@
     height: 690px;
     margin: 0 10px 0 0;
     line-height: 22px;
-
-    -webkit-overflow-scrolling: touch;
-
-    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #111;
-        border-radius: 6px;
-        border: 3px solid #ddd;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #111;
-        border-radius: 6px;
-    }
-}
-
-.scrollbar {
-    right: 9px;
-    width: 7px;
 }
 
 /* Box */
@@ -429,10 +406,6 @@
     text-decoration: underline;
 }
 
-.scrollbar {
-    right: 19px;
-}
-
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
     .content {
@@ -451,11 +424,6 @@
         height: auto;
         max-height: 700px;
         margin: 0 10px 0 0;
-    }
-
-    .scrollbar {
-        top: 100px;
-        right: 12px;
     }
 }
 </style>

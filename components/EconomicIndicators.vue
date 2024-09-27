@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Economic <br />Indicators</h1>
-        <div class="content" @scroll="handleScroll">
+        <div class="content">
             <div v-if="items">
                 <div v-for="item in items" :key="item.name" class="box">
                     <div class="name font-opensans">{{ item.name }}</div>
@@ -13,7 +13,6 @@
                 <InitEconomicIndicators />
             </div>
         </div>
-        <div class="scrollbar" v-show="showScrollbar"></div>
     </div>
 </template>
 
@@ -23,11 +22,6 @@ import { useFetch } from '#app'
 
 const items = ref(null)
 const animateH1 = ref(false)
-const showScrollbar = ref(true)
-
-const handleScroll = () => {
-    showScrollbar.value = false
-}
 
 const fetch = async () => {
     animateH1.value = true
@@ -82,7 +76,7 @@ onMounted(async () => {
 }
 
 .container {
-    max-width: 330px;
+    max-width: 350px;
     display: block;
     justify-content: left;
     position: relative;
@@ -90,26 +84,8 @@ onMounted(async () => {
 }
 
 .content {
-    overflow-y: auto;
-    height: 690px;
     margin: 0 20px 0 0;
     line-height: 22px;
-
-    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #111;
-        border-radius: 6px;
-        border: 3px solid #ddd;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #111;
-        border-radius: 6px;
-    }
 }
 
 /* Box */
@@ -147,33 +123,16 @@ onMounted(async () => {
     font-weight: bold;
 }
 
-.scrollbar {
-    right: 30px;
-}
-
-/* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width:1279px) {
-    .content {
-        max-height: 800px;
-    }
-}
-
 /* 일반적인 모바일 기기 (아이폰, 갤럭시 등) 타겟팅 */
 @media all and (max-width: 767px) {
     .container {
-        max-width: 100%;
-        margin: 10px 5px 25px 5px;
+        margin-top: 30px;
         border-right: 0;
     }
 
     .content {
-        max-height: 700px;
-        margin: 20px 5px 0 0;
-    }
-
-    .scrollbar {
-        top: 100px;
-        right: 7px;
+        max-width: 100%;
+        margin: 20px 0 0 0;
     }
 }
 </style>

@@ -16,7 +16,11 @@ import { SpeedInsights } from '@vercel/speed-insights/vue'
 
 onMounted(() => {
     document.addEventListener('touchend', (e: Event) => {
-        e.preventDefault()
+        const target = e.target as HTMLElement
+        // 클릭한 대상이 링크가 아닐 경우에만 preventDefault() 호출
+        if (target.tagName !== 'A') {
+            e.preventDefault()
+        }
     })
 })
 </script>
@@ -73,26 +77,6 @@ h2 {
     box-sizing: border-box;
 }
 
-.description {
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-.scrollbar {
-    position: absolute;
-    top: 104px;
-    right: 10px;
-    width: 6px;
-    height: 250px;
-    /* Same height as .content */
-    z-index: 10;
-    /* Higher z-index to be on top */
-    pointer-events: none;
-    /* Prevent interaction with this div */
-    background: #ddd;
-    border-radius: 15px;
-}
-
 /* font */
 .font-opensans {
     font-family: 'Roboto', sans-serif;
@@ -100,13 +84,6 @@ h2 {
 
 .font-roboto {
     font-family: 'Open Sans', sans-serif;
-}
-
-/* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width: 1279px) {
-    .scrollbar {
-        height: 130px;
-    }
 }
 
 @media all and (max-width: 767px) {

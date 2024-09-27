@@ -39,16 +39,19 @@ onMounted(() => {
 
 <style scoped>
 .copyright {
-    font-size: 15px;
-    font-weight: bold;
+    font-size: 14.5px;
     color: #666;
-    padding-right: 32px;
+    padding-right: 35px;
+    font-weight: 600;
 }
 
 @media all and (max-width: 767px) {
     .copyright {
+        text-align: right;
+        margin-right: 20px;
         font-size: 12px;
-        padding: 30px 10px 0 0;
+        padding: 45px 5px 0 0;
+        line-height: 17px;
     }
 }
 </style>

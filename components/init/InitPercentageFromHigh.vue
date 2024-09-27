@@ -138,24 +138,6 @@ h2 {
     border-spacing: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-
-    -webkit-overflow-scrolling: touch;
-
-    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #111;
-        border-radius: 6px;
-        border: 3px solid #ddd;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #111;
-        border-radius: 6px;
-    }
 }
 
 table {
@@ -203,11 +185,6 @@ td:last-child {
     /* 퍼센트 변동값 오른쪽 정렬 */
 }
 
-.scrollbar {
-    top: 110px;
-    right: 20px;
-}
-
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
 
@@ -231,11 +208,6 @@ td:last-child {
     th,
     td {
         font-size: 12px;
-    }
-
-    .scrollbar {
-        top: 100px;
-        right: 13px;
     }
 }
 </style>

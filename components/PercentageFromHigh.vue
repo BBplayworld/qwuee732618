@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1>Percentage from<br />52-week High</h1>
-        <div class="content" @scroll="handleScroll">
+        <div class="content">
             <div v-if="items.length > 1">
                 <table>
                     <thead>
@@ -28,22 +28,16 @@
                 <InitPercentageFromHigh />
             </div>
         </div>
-        <div class="scrollbar" v-show="showScrollbar"></div>
     </div>
 </template>
 
 <script setup>
-const showScrollbar = ref(true)
 const props = defineProps({
     items: {
         type: Array,
         default: () => []
     }
 })
-
-const handleScroll = () => {
-    showScrollbar.value = false
-}
 
 const getColor = (percentage) => {
     if (percentage > 10) {
@@ -82,32 +76,12 @@ h2 {
 }
 
 .content {
-    overflow-y: auto;
     overflow-x: hidden;
-    height: 680px;
     margin: 0 10px 0 0;
     border-collapse: separate;
     border-spacing: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-
-    -webkit-overflow-scrolling: touch;
-
-    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #111;
-        border-radius: 6px;
-        border: 3px solid #ddd;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #111;
-        border-radius: 6px;
-    }
 }
 
 table {
@@ -155,11 +129,6 @@ td:last-child {
     /* 퍼센트 변동값 오른쪽 정렬 */
 }
 
-.scrollbar {
-    top: 110px;
-    right: 20px;
-}
-
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
 @media all and (max-width:1279px) {
 
@@ -175,19 +144,18 @@ td:last-child {
 }
 
 @media all and (max-width: 767px) {
+    .container {
+        margin-top: 30px;
+    }
+
     .content {
-        margin: 20px 10px 0 0;
+        margin: 20px 20px 10px 0;
         border-right: 0;
     }
 
     th,
     td {
         font-size: 12px;
-    }
-
-    .scrollbar {
-        top: 100px;
-        right: 13px;
     }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 :class="{ 'color-animation': animateH1 }">Company <br />News</h1>
-        <div class="content" @scroll="handleScroll">
+        <div class="content">
             <div v-if="items">
                 <div v-for="item in items" :key="item.name">
                     <div v-if="Object.keys(item).length > 0" class="box">
@@ -16,7 +16,7 @@
                                 <img :src="item['image']" alt="news thumbnail" />
                             </div>
                             <div class="value font-roboto">
-                                {{ item['summary'] }}
+                                {{ truncateSummary(item['summary']) }}
                                 <div v-if="item['url']" class="url">
                                     <a :href="item['url']" target="_blank">more</a>
                                 </div>
@@ -32,7 +32,6 @@
                 <InitCompanyNews />
             </div>
         </div>
-        <div class="scrollbar" v-show="showScrollbar"></div>
     </div>
 </template>
 
@@ -43,10 +42,10 @@ import dayjs from 'dayjs'
 
 const items = ref(null)
 const animateH1 = ref(false)
-const showScrollbar = ref(true)
 
-const handleScroll = () => {
-    showScrollbar.value = false
+const truncateSummary = (summary) => {
+    const maxLength = 200 // 원하는 최대 길이 설정
+    return summary.length > maxLength ? summary.substring(0, maxLength) + '...' : summary
 }
 
 const fetch = async () => {
@@ -76,6 +75,7 @@ onMounted(async () => {
         clearInterval(interval)
     })
 })
+
 </script>
 
 <style scoped>
@@ -104,33 +104,8 @@ onMounted(async () => {
 }
 
 .content {
-    overflow-y: scroll;
-    height: 690px;
     margin: 0 10px 0 0;
     line-height: 22px;
-
-    -webkit-overflow-scrolling: touch;
-
-    /* WebKit 기반 브라우저 (Chrome, Safari, Whale)에서 스크롤바 스타일링 */
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #111;
-        border-radius: 6px;
-        border: 3px solid #ddd;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #111;
-        border-radius: 6px;
-    }
-}
-
-.scrollbar {
-    right: 9px;
-    width: 7px;
 }
 
 /* Box */
@@ -213,33 +188,15 @@ onMounted(async () => {
     text-decoration: underline;
 }
 
-.scrollbar {
-    right: 19px;
-}
-
-/* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width:1279px) {
-    .content {
-        max-height: 800px;
-    }
-}
-
 /* 일반적인 모바일 기기 (아이폰, 갤럭시 등) 타겟팅 */
 @media all and (max-width: 767px) {
     .container {
-        max-width: 100%;
-        margin: 10px 0 120px 0;
+        margin-top: 30px;
+        margin-bottom: 30px;
     }
 
     .content {
-        height: auto;
-        max-height: 700px;
         margin: 0 10px 0 0;
-    }
-
-    .scrollbar {
-        top: 100px;
-        right: 12px;
     }
 }
 </style>

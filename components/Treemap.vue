@@ -4,12 +4,16 @@
             <h1>Realtime Market Treemap</h1>
             <Copyright />
         </div>
-        <h5 class="description">This application provides a real-time view of the market treemap, offering insight
-            into market trends and performance</h5>
         <div ref="treemapContainer" class="content">
             <InitTreemap />
         </div>
-        <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
+        <div class="bottom">
+            <h5 class="description"><span style="font-size: 16px; color: #0073e6;">ℹ️</span> This application provides a
+                real-time view of the market treemap, offering
+                insight
+                into market trends and performance</h5>
+            <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
+        </div>
     </div>
     <PercentageFromHigh :items="items" />
 </template>
@@ -103,8 +107,8 @@ function createTreemap({ isFetch = false }) {
     let width = treemapContainer.value.getBoundingClientRect().width  // 트리맵의 전체 너비
     let height = window.innerWidth < 1279 ? window.innerHeight - 320 : 660 // 트리맵의 전체 높이
 
-    if (window.innerWidth < 1700 && window.innerWidth >= 767) width = window.innerWidth * 0.91
-    if (window.innerWidth < 767) width = window.innerWidth - 30
+    if (window.innerWidth < 1700 && window.innerWidth >= 767) width = window.innerWidth * 0.89
+    if (window.innerWidth < 767) width = window.innerWidth - 50
 
     if (height > 660) height = 660
     if (window.innerWidth < 1279 && height >= 660) height = 470
@@ -192,7 +196,13 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+}
+
+.bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
 }
 
 .content {
@@ -225,11 +235,9 @@ h2 {
 }
 
 .data-source {
+    margin: 0px 35px 0 0;
     font-size: 12px;
     color: #666;
-    text-align: right;
-    margin: 10px 0 0 0;
-    padding-right: 30px;
 }
 
 .data-source a {
@@ -241,10 +249,38 @@ h2 {
     text-decoration: underline;
 }
 
+@media (min-width: 768px) and (max-width: 1024px) {
+    .bottom {
+        margin: 0 30px 10px 0;
+    }
+
+    .bottom h5 {
+        font-size: 12px;
+    }
+
+    .bottom .data-source {
+        margin: 5px 0 0 0;
+        text-align: right;
+    }
+}
+
 @media all and (max-width: 767px) {
     .container-treemap {
         padding: 3px;
         margin: 0;
+    }
+
+    .bottom {
+        margin: 20px 25px 20px 0;
+    }
+
+    .bottom h5 {
+        font-size: 12px;
+    }
+
+    .bottom .data-source {
+        margin: 0;
+        text-align: right;
     }
 }
 </style>
