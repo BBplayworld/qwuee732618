@@ -10,7 +10,18 @@
                                     item['headline']
                                 }}</span>
                         </div>
-                        <div class="value font-roboto">{{ item['summary'] }}</div>
+                        <div class="news-content">
+                            <!-- 추가된 부분: 이미지 썸네일 -->
+                            <div v-if="item['image']" class="thumbnail">
+                                <img :src="item['image']" alt="news thumbnail" />
+                            </div>
+                            <div class="value font-roboto">
+                                {{ item['summary'] }}
+                                <div v-if="item['url']" class="url">
+                                    <a :href="item['url']" target="_blank">more</a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="date font-roboto">
                             {{ dayjs.unix(item['datetime']).format('YYYY-MM-DD HH:mm') }}
                         </div>
@@ -152,7 +163,7 @@ onMounted(async () => {
     font-size: 15px;
     color: white;
     /* 중간 강조 색상 */
-    margin: 5px 0 15px 0;
+    margin: 0 0 15px 0;
     font-weight: bold;
     text-align: left;
 }
@@ -164,6 +175,45 @@ onMounted(async () => {
     padding: 10px 0;
     border-radius: 0 0 5px 5px;
     font-weight: bold;
+}
+
+.news-content {
+    margin: 10px 0 10px 0;
+    display: flex;
+    align-items: flex-start;
+    /* 이미지와 텍스트 상단을 맞춤 */
+}
+
+.thumbnail {
+    margin-right: 20px;
+    /* 이미지와 텍스트 사이 간격 */
+}
+
+.thumbnail img {
+    width: 150px;
+    /* 이미지 크기 조정 */
+    height: auto;
+    border-radius: 10px;
+}
+
+.value {
+    flex-grow: 1;
+    /* 텍스트가 가능한 넓게 차지하도록 설정 */
+}
+
+.url {
+    margin: 5px 0 5px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+.url a {
+    color: #0073e6;
+    text-decoration: none;
+}
+
+.url a:hover {
+    text-decoration: underline;
 }
 
 .scrollbar {

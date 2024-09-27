@@ -1,6 +1,6 @@
 <template>
-    <div class="copyright"><b>{{ dayjs().format('YYYY-MM-DD HH:mm') }} Market
-            {{ items && items['isMarketOpen'] ? 'Open' : 'Closed' }}</b>
+    <div class="copyright">{{ dayjs().format('YYYY-MM-DD HH:mm') }} Market
+        {{ items && items['isMarketOpen'] ? 'open' : 'closed' }}
         © BBstoqq
     </div>
 </template>
@@ -39,9 +39,10 @@ onMounted(() => {
 
 <style scoped>
 .copyright {
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: bold;
     color: #666;
-    padding-right: 30px;
+    padding-right: 32px;
 }
 
 @media all and (max-width: 767px) {

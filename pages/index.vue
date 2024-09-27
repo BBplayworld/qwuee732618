@@ -73,6 +73,11 @@ h2 {
     box-sizing: border-box;
 }
 
+.description {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
 .scrollbar {
     position: absolute;
     top: 104px;

@@ -1,13 +1,14 @@
 <template>
     <div class="container-treemap">
         <div class="header">
-            <h1>Market Treemap</h1>
+            <h1>Realtime Market Treemap</h1>
             <Copyright />
         </div>
+        <h5 class="description">This application provides a real-time view of the market treemap, offering insight
+            into market trends and performance</h5>
         <div ref="treemapContainer" class="content">
             <InitTreemap />
         </div>
-        <!-- Finhub 데이터 출처 표기 추가 -->
         <div class="data-source">Data provided by <a href="https://finnhub.io" target="_blank">Finnhub</a></div>
     </div>
     <PercentageFromHigh :items="items" />
@@ -36,7 +37,7 @@ const fetch = async () => {
 onMounted(() => {
     fetch()
 
-    const interval = setInterval(fetch, 120000) // 2분
+    const interval = setInterval(fetch, 30000) // 30초
     const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
 
     // 컴포넌트가 언마운트될 때 interval 정리
@@ -134,7 +135,8 @@ function createTreemap({ isFetch = false }) {
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .attr('fill', d => func.getColor(d.data['dp']))
-        .attr('stroke', '#222');
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2);
 
     // D3 transition을 사용한 애니메이션
     if (isFetch) {
@@ -188,8 +190,9 @@ h2 {
 
 .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .content {
