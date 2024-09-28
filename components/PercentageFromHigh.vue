@@ -130,7 +130,7 @@ td:last-child {
 }
 
 /* 중간 크기 화면 (태블릿)에서의 스타일링 */
-@media all and (max-width:1279px) {
+@media (min-width: 768px) and (max-width: 1279px) {
 
     th,
     td {
@@ -150,6 +150,7 @@ td:last-child {
 @media all and (max-width: 767px) {
     .container {
         margin-top: 30px;
+        border-right: 0;
     }
 
     .content {

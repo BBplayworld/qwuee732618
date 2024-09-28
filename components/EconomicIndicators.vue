@@ -131,8 +131,7 @@ onMounted(async () => {
     }
 
     .content {
-        max-width: 100%;
-        margin: 20px 0 0 0;
+        margin: 20px 20px 10px 0;
     }
 }
 </style>
