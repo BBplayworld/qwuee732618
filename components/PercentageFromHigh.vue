@@ -141,6 +141,10 @@ td:last-child {
     th {
         text-align: center;
     }
+
+    .content {
+        border-right: 0;
+    }
 }
 
 @media all and (max-width: 767px) {

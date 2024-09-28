@@ -8,7 +8,7 @@
             <InitTreemap />
         </div>
         <div class="bottom">
-            <h5 class="description"><span style="font-size: 16px; color: #0073e6;">ℹ️</span> This application provides a
+            <h5 class="description"><span style="color: #0073e6;">ℹ️</span> This application provides a
                 real-time view of the market treemap, offering
                 insight
                 into market trends and performance</h5>
@@ -249,7 +249,7 @@ h2 {
     text-decoration: underline;
 }
 
-@media (min-width: 768px) and (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1279px) {
     .bottom {
         margin: 0 30px 10px 0;
     }
@@ -271,11 +271,13 @@ h2 {
     }
 
     .bottom {
-        margin: 20px 25px 20px 0;
+        margin: 30px 25px 20px 0;
     }
 
-    .bottom h5 {
+    .bottom .description {
         font-size: 12px;
+        line-height: 15px;
+        max-width: 50%;
     }
 
     .bottom .data-source {
