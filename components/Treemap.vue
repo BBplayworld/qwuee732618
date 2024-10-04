@@ -178,18 +178,6 @@ function createTreemap({ isFetch = false }) {
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
                 .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
-
-            if (isFetch) {
-                // CSS 트랜지션을 사용한 애니메이션
-                setTimeout(() => {
-                    nodeChange.style('transition', 'opacity 0.9s ease-in-out')
-                        .style('opacity', '0.3')
-                }, 0)
-
-                setTimeout(() => {
-                    nodeChange.style('opacity', '1')
-                }, 900)
-            }
         })
 }
 
