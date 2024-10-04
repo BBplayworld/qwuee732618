@@ -21,6 +21,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
+import { useMarketOpen } from '~/composables/useMarketOpen'
 
 const treemapContainer = ref(null)
 const items = ref([])
@@ -36,17 +37,22 @@ const fetch = async () => {
 
     items.value = data.value
     createTreemap({ isFetch: true })
+
+    const { isPeekTime } = useMarketOpen()
+    if (isPeekTime) {
+        setTimeout(fetch, 5000)
+    } else {
+        setTimeout(fetch, 10000)
+    }
 }
 
 onMounted(() => {
     fetch()
 
-    const interval = setInterval(fetch, 30000) // 30초
     const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
 
     // 컴포넌트가 언마운트될 때 interval 정리
     onUnmounted(() => {
-        clearInterval(interval)
         clearInterval(intervalTreemap)
     })
 })
@@ -116,41 +122,31 @@ function createTreemap({ isFetch = false }) {
 
     const root = d3.hierarchy({ children: items.value })
         .sum(d => d.marketCap) // marketCap을 기준으로 크기를 결정
-        .sort((a, b) => b.value - a.value);
+        .sort((a, b) => b.value - a.value)
 
     d3.treemap()
         .size([width, height])
         .padding(1)
-        (root);
+        (root)
 
     const svg = d3.select(treemapContainer.value)
         .html('')
         .append('svg')
         .attr('width', width)
-        .attr('height', height);
+        .attr('height', height)
 
     const node = svg.selectAll('g')
         .data(root.leaves())
         .enter()
         .append('g')
-        .attr('transform', d => `translate(${d.x0},${d.y0})`);
+        .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
-    const rects = node.append('rect')
+    node.append('rect')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .attr('fill', d => func.getColor(d.data['dp']))
         .attr('stroke', 'white')
-        .attr('stroke-width', 2);
-
-    // D3 transition을 사용한 애니메이션
-    if (isFetch) {
-        rects.transition()
-            .duration(1500)
-            .attr('fill', 'rgba(203, 203, 32, 1)')
-            .transition()
-            .duration(1500)
-            .attr('fill', d => func.getColor(d.data['dp'])) // 원래 색상으로 복원
-    }
+        .attr('stroke-width', 2)
 
     node.append('foreignObject')
         .attr('x', 0)
@@ -166,13 +162,34 @@ function createTreemap({ isFetch = false }) {
         .style('height', '100%')
         .style('text-align', 'center')
         .html(d => `
-            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word;">
+            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word; margin-bottom:3px">
                 <strong>${d.data.name}</strong>
             </div>
             <div class="node-change font-roboto" style="font-size:${func.calcChange(d).size}px;line-height:1.1em">
-                ${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)
+                ${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)</span>
             </div>
-        `);
+        `)
+
+    // 갱신 시 애니메이션
+    if (isFetch) {
+        node.select('.node-change')
+            .transition()  // 트랜지션 시작
+            .duration(700) // 500ms 동안 실행
+            .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
+            .style('transform', 'translateY(-5px)') // 위쪽으로 10px 이동
+            .style('opacity', 0) // 점차 사라짐
+            .on('end', function (d) {
+                d3.select(this)
+                    .text(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)  // 새 데이터로 업데이트
+                    .style('transform', 'translateY(10px)') // 아래쪽에서 등장
+                    .style('opacity', 0) // 투명 상태
+                    .transition()  // 다시 트랜지션 시작
+                    .duration(700) // 500ms 동안 실행
+                    .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
+                    .style('transform', 'translateY(0px)') // 제자리로 돌아옴
+                    .style('opacity', 1) // 다시 보여짐
+            })
+    }
 }
 
 </script>

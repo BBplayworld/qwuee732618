@@ -5,7 +5,8 @@ import { kv } from '@vercel/kv'
 
 const INITIALIZED_KEY = 'stocks-init'
 const DATA_KEY = 'stocks'
-const DATA_TTL = 30
+const DATA_TTL = 10
+const DATA_TTL_PEEK = 5
 const DATA_CLOSED_TTL = 86400
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
@@ -42,7 +43,7 @@ export default defineEventHandler(async () => {
         return predefinedData
     }
 
-    const { isMarketOpen } = useMarketOpen()
+    const { isMarketOpen, isPeekTime } = useMarketOpen()
     const cacheInitialized = await kv.get(INITIALIZED_KEY)
 
     if (isMarketOpen && !cacheInitialized) {
@@ -71,7 +72,7 @@ export default defineEventHandler(async () => {
         { name: 'MSFT', marketCap: 2800, high52: 468.35 },
         { name: 'GOOG', marketCap: 2000, high52: 193.31 },
         { name: 'AMZN', marketCap: 1858, high52: 201.2 },
-        { name: 'META', marketCap: 1335, high52: 577.4 },
+        { name: 'META', marketCap: 1335, high52: 583.36 },
         { name: 'AVGO', marketCap: 774, high52: 185.16 },
         { name: 'TSLA', marketCap: 703, high52: 278.98 },
         { name: 'COST', marketCap: 350, high52: 918.93 },
@@ -142,6 +143,6 @@ export default defineEventHandler(async () => {
         return result
     }
 
-    await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_TTL })
+    await kv.set(DATA_KEY, JSON.stringify(result), { ex: (isPeekTime ? DATA_TTL_PEEK : DATA_TTL) })
     return result
 })

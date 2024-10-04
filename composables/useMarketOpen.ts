@@ -33,6 +33,7 @@ export function useMarketOpen() {
     const dayOfWeek = now.day()
 
     const marketOpenTime = dayjs().tz(marketTimezone).hour(9).minute(30).second(0)
+    const marketPeekTime = dayjs().tz(marketTimezone).hour(11).minute(0).second(0)
     const marketCloseTime = dayjs().tz(marketTimezone).hour(16).minute(0).second(0)
 
     // 토요일(6) 또는 일요일(0)인 경우 시장이 닫혀 있음
@@ -44,8 +45,11 @@ export function useMarketOpen() {
     // 시장이 열려 있는지 여부를 결정
     const isMarketOpen = !isWeekend && !isHoliday && now.isBetween(marketOpenTime, marketCloseTime, null, '[)')
 
+    const isPeekTime = now.isBetween(marketOpenTime, marketPeekTime, null, '[)')
+
     return {
         currentTime: now.format('YYYY-MM-DD HH:mm:ss'),
         isMarketOpen,
+        isPeekTime
     };
 }
