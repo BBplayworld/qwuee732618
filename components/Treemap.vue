@@ -38,9 +38,6 @@ const fetch = async () => {
     items.value = data.value
     createTreemap({ isFetch: true })
 
-    // TODO. test
-    return setTimeout(fetch, 2000)
-
     const { isPeekTime, isMarketOpen } = useMarketOpen()
 
     if (!isMarketOpen) {
@@ -48,10 +45,10 @@ const fetch = async () => {
     }
 
     if (isPeekTime) {
-        setTimeout(fetch, 5000)
+        setTimeout(fetch, 10000)
     }
 
-    setTimeout(fetch, 10000)
+    setTimeout(fetch, 15000)
 }
 
 onMounted(() => {
@@ -178,8 +175,8 @@ function createTreemap({ isFetch = false }) {
                 .style('line-height', '1.1em')
                 .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
-            const initialX = nodeChange.attr('x')
-            const initialY = nodeChange.attr('y')
+            const initialX = nodeChange.node().getBoundingClientRect().left
+            const initialY = nodeChange.node().getBoundingClientRect().top
 
             nodeChange.transition() // 애니메이션 시작
                 .attr('x', initialX).attr('y', initialY)

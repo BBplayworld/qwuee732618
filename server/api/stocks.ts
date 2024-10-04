@@ -3,86 +3,60 @@ import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 import { kv } from '@vercel/kv'
 
-const INITIALIZED_KEY = 'stocks-init'
 const DATA_KEY = 'stocks'
 const DATA_TTL = 10
 const DATA_TTL_PEEK = 5
-const DATA_CLOSED_TTL = 86400
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
 
-// 개발 데이터
-const predefinedData = [
-    { name: 'QQQ', marketCap: 2900, c: 482.44, dp: -0.19, high52: 503.52, percentageFrom52WeekHigh: -4.2 },
-    { name: 'VOO', marketCap: 2900, c: 420.35, dp: -0.12, high52: 450.00, percentageFrom52WeekHigh: 1 },
-    { name: 'AAPL', marketCap: 3200, c: 145.65, dp: 0.25, high52: 180.00, percentageFrom52WeekHigh: -18.2 },
-    { name: 'NVDA', marketCap: 3000, c: 290.55, dp: 1.23, high52: 330.00, percentageFrom52WeekHigh: -16 },
-    { name: 'MSFT', marketCap: 2800, c: 310.00, dp: 0.78, high52: 350.00, percentageFrom52WeekHigh: 1 },
-    { name: 'GOOG', marketCap: 2000, c: 2800.55, dp: -0.45, high52: 3000.00, percentageFrom52WeekHigh: 1 },
-    { name: 'AMZN', marketCap: 1858, c: 3500.45, dp: 0.23, high52: 3800.00, percentageFrom52WeekHigh: 1 },
-    { name: 'META', marketCap: 1335, c: 150.35, dp: 0.56, high52: 190.00, percentageFrom52WeekHigh: -0.2 },
-    { name: 'AVGO', marketCap: 774, c: 180.90, dp: -0.34, high52: 200.00, percentageFrom52WeekHigh: 1 },
-    { name: 'TSLA', marketCap: 703, c: 200.25, dp: 1.03, high52: 250.00, percentageFrom52WeekHigh: 1 },
-    { name: 'COST', marketCap: 350, c: 250.85, dp: -0.15, high52: 270.00, percentageFrom52WeekHigh: -0.2 },
-    { name: 'ASML', marketCap: 356, c: 280.30, dp: 1.12, high52: 320.00, percentageFrom52WeekHigh: 1 },
-    { name: 'NFLX', marketCap: 294, c: 450.50, dp: 0.89, high52: 500.00, percentageFrom52WeekHigh: 1 },
-    { name: 'AZN', marketCap: 268, c: 290.10, dp: 0.34, high52: 320.00, percentageFrom52WeekHigh: -0.2 },
-    { name: 'AMD', marketCap: 250, c: 110.75, dp: -0.25, high52: 130.00, percentageFrom52WeekHigh: -0.2 },
-    { name: 'ADBE', marketCap: 247, c: 570.00, dp: 0.67, high52: 600.00, percentageFrom52WeekHigh: -13 },
-    { name: 'QCOM', marketCap: 200, c: 180.45, dp: 0.45, high52: 220.00, percentageFrom52WeekHigh: -0.2 }
+const symbols = [
+    { name: 'QQQ', marketCap: 2900, high52: 503.52, c: 487.82, dp: 1.3, percentageFrom52WeekHigh: -3.12 },
+    { name: 'VOO', marketCap: 2900, high52: 526.84, c: 523.21, dp: 0.26, percentageFrom52WeekHigh: -0.69 },
+    { name: 'AAPL', marketCap: 3200, high52: 237.23, c: 227.7, dp: 0.9, percentageFrom52WeekHigh: -4.02 },
+    { name: 'NVDA', marketCap: 3000, high52: 140.76, c: 124.74, dp: 1.54, percentageFrom52WeekHigh: -11.38 },
+    { name: 'MSFT', marketCap: 2800, high52: 468.35, c: 419.91, dp: 0.81, percentageFrom52WeekHigh: -10.34 },
+    { name: 'GOOG', marketCap: 2000, high52: 193.31, c: 167.75, dp: 0.32, percentageFrom52WeekHigh: -13.22 },
+    { name: 'AMZN', marketCap: 1858, high52: 201.2, c: 185.87, dp: 2.15, percentageFrom52WeekHigh: -7.62 },
+    { name: 'META', marketCap: 1335, high52: 583.36, c: 582.77, dp: 0, percentageFrom52WeekHigh: -0.10 },
+    { name: 'AVGO', marketCap: 774, high52: 185.16, c: 174.2, dp: 1.34, percentageFrom52WeekHigh: -5.92 },
+    { name: 'TSLA', marketCap: 703, high52: 278.98, c: 245.45, dp: 1.99, percentageFrom52WeekHigh: -12.02 },
+    { name: 'COST', marketCap: 350, high52: 918.93, c: 877.5, dp: 0.21, percentageFrom52WeekHigh: -4.51 },
+    { name: 'ASML', marketCap: 356, high52: 1110.09, c: 839.57, dp: 0.86, percentageFrom52WeekHigh: -24.37 },
+    { name: 'NFLX', marketCap: 294, high52: 722.44, c: 713.15, dp: 0.9, percentageFrom52WeekHigh: -1.29 },
+    { name: 'AZN', marketCap: 268, high52: 87.68, c: 77.31, dp: -0.8, percentageFrom52WeekHigh: -11.83 },
+    { name: 'AMD', marketCap: 250, high52: 227.3, c: 166.56, dp: 2.28, percentageFrom52WeekHigh: -26.72 },
+    { name: 'ADBE', marketCap: 247, high52: 638.25, c: 509.33, dp: 1.1, percentageFrom52WeekHigh: -20.20 },
+    { name: 'QCOM', marketCap: 200, high52: 230.63, c: 172.67, dp: 2.22, percentageFrom52WeekHigh: -25.13 },
 ]
-
-const initializeCache = async () => {
-    const initialData: never[] = []
-    await kv.set(DATA_KEY, JSON.stringify(initialData))
-}
+let localCache: object[] = []
 
 export default defineEventHandler(async () => {
     if (process.env.NODE_ENV !== 'production') {
-        return predefinedData
+        return symbols
     }
 
     const { isMarketOpen, isPeekTime } = useMarketOpen()
-    const cacheInitialized = await kv.get(INITIALIZED_KEY)
 
-    if (isMarketOpen && !cacheInitialized) {
-        await initializeCache()
-        await kv.set(INITIALIZED_KEY, 'true')
+    if (localCache.length > 0) {
+        return localCache
     }
 
-    if (!isMarketOpen && cacheInitialized) {
-        await kv.set(INITIALIZED_KEY, 'false')
+    if (!isMarketOpen) {
+        return symbols
     }
 
     let stockCache: object[] = []
     try {
         stockCache = await kv.get(DATA_KEY) as object[]
-    } catch (e) { }
+        localCache = stockCache
+    } catch (e) {
+        return symbols
+    }
 
     if (stockCache?.length > 0) {
         return stockCache
     }
-
-    const symbols = [
-        { name: 'QQQ', marketCap: 2900, high52: 503.52 },
-        { name: 'VOO', marketCap: 2900, high52: 526.84 },
-        { name: 'AAPL', marketCap: 3200, high52: 237.23 },
-        { name: 'NVDA', marketCap: 3000, high52: 140.76 },
-        { name: 'MSFT', marketCap: 2800, high52: 468.35 },
-        { name: 'GOOG', marketCap: 2000, high52: 193.31 },
-        { name: 'AMZN', marketCap: 1858, high52: 201.2 },
-        { name: 'META', marketCap: 1335, high52: 583.36 },
-        { name: 'AVGO', marketCap: 774, high52: 185.16 },
-        { name: 'TSLA', marketCap: 703, high52: 278.98 },
-        { name: 'COST', marketCap: 350, high52: 918.93 },
-        { name: 'ASML', marketCap: 356, high52: 1110.09 },
-        { name: 'NFLX', marketCap: 294, high52: 722.44 },
-        { name: 'AZN', marketCap: 268, high52: 87.68 },
-        { name: 'AMD', marketCap: 250, high52: 227.3 },
-        { name: 'ADBE', marketCap: 247, high52: 638.25 },
-        { name: 'QCOM', marketCap: 200, high52: 230.63 },
-    ];
 
     const call = async (symbol: any) => {
         const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
@@ -137,12 +111,7 @@ export default defineEventHandler(async () => {
         }
     }
 
-    // 새로운 데이터를 캐시에 저장
-    if (!isMarketOpen) {
-        await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_CLOSED_TTL })
-        return result
-    }
-
+    localCache = result
     await kv.set(DATA_KEY, JSON.stringify(result), { ex: (isPeekTime ? DATA_TTL_PEEK : DATA_TTL) })
     return result
 })
