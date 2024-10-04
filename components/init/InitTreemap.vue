@@ -6,7 +6,8 @@
             <foreignObject x="0" y="0" width="107.93406593406594" height="187.7657350117346">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>AAPL</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -21,7 +22,8 @@
             <foreignObject x="0" y="0" width="100.81318681318682" height="187.7657350117346">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>NVDA</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -36,7 +38,8 @@
             <foreignObject x="0" y="0" width="97.25274725274724" height="187.7657350117346">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>QQQ</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -51,7 +54,8 @@
             <foreignObject x="0" y="0" width="168.03557725845832" height="108.95835954103501">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>VOO</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -66,7 +70,8 @@
             <foreignObject x="0" y="0" width="168.03557725845832" height="104.99427817755105">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>MSFT</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -81,7 +86,8 @@
             <foreignObject x="0" y="0" width="168.03557725845832" height="73.28162726967935">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>GOOG</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -96,7 +102,8 @@
             <foreignObject x="0" y="0" width="81.26398291693846" height="140.88967718274773">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>AMZN</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -111,7 +118,8 @@
             <foreignObject x="0" y="0" width="56.70043982460322" height="140.88967718274773">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:20px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:20px; word-break: break-word; margin-bottom:3px">
                         <strong>META</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:17px;line-height:1.1em">
@@ -126,7 +134,8 @@
             <foreignObject x="0" y="0" width="57.32376606762318" height="78.32470350014933">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:17px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:17px; word-break: break-word; margin-bottom:3px">
                         <strong>AVGO</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:13px;line-height:1.1em">
@@ -141,7 +150,8 @@
             <foreignObject x="0" y="0" width="51.514996828861854" height="78.32470350014933">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:17px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:17px; word-break: break-word; margin-bottom:3px">
                         <strong>TSLA</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:13px;line-height:1.1em">
@@ -156,7 +166,8 @@
             <foreignObject x="0" y="0" width="23.125659845056646" height="78.32470350014933">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>ASML</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -171,7 +182,8 @@
             <foreignObject x="0" y="0" width="54.0230504944393" height="34.228197992048024">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>COST</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -186,7 +198,8 @@
             <foreignObject x="0" y="0" width="54.0230504944393" height="27.791686313320326">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>NFLX</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -201,7 +214,8 @@
             <foreignObject x="0" y="0" width="42.27941018030987" height="32.296001918607544">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>AZN</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -216,7 +230,8 @@
             <foreignObject x="0" y="0" width="42.27941018030987" height="29.723882386760806">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>AMD</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -231,7 +246,8 @@
             <foreignObject x="0" y="0" width="35.66196206679251" height="34.901367837642">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>ADBE</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">
@@ -246,7 +262,8 @@
             <foreignObject x="0" y="0" width="35.66196206679251" height="27.11851646772635">
                 <div class="node-container"
                     style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
-                    <div class="node-name font-opensans" style="font-size:8px; word-break: break-word;">
+                    <div class="node-name font-opensans"
+                        style="font-size:8px; word-break: break-word; margin-bottom:3px">
                         <strong>QCOM</strong>
                     </div>
                     <div class="node-change font-roboto" style="font-size:8px;line-height:1.1em">

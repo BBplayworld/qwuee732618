@@ -38,12 +38,17 @@ const fetch = async () => {
     items.value = data.value
     createTreemap({ isFetch: true })
 
-    const { isPeekTime } = useMarketOpen()
+    const { isPeekTime, isMarketOpen } = useMarketOpen()
+
+    if (!isMarketOpen) {
+        return setTimeout(fetch, 20000)
+    }
+
     if (isPeekTime) {
         setTimeout(fetch, 5000)
-    } else {
-        setTimeout(fetch, 10000)
     }
+
+    setTimeout(fetch, 10000)
 }
 
 onMounted(() => {
@@ -162,7 +167,7 @@ function createTreemap({ isFetch = false }) {
         .style('height', '100%')
         .style('text-align', 'center')
         .html(d => `
-            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word; margin-bottom:3px">
+            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word; margin-bottom:2px">
                 <strong>${d.data.name}</strong>
             </div>
             <div class="node-change font-roboto" style="font-size:${func.calcChange(d).size}px;line-height:1.1em">
@@ -174,21 +179,21 @@ function createTreemap({ isFetch = false }) {
     if (isFetch) {
         node.select('.node-change')
             .transition()  // 트랜지션 시작
-            .duration(700) // 500ms 동안 실행
+            .duration(700) // 700ms 동안 실행
             .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-            .style('transform', 'translateY(-5px)') // 위쪽으로 10px 이동
             .style('opacity', 0) // 점차 사라짐
             .on('end', function (d) {
                 d3.select(this)
                     .text(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)  // 새 데이터로 업데이트
-                    .style('transform', 'translateY(10px)') // 아래쪽에서 등장
                     .style('opacity', 0) // 투명 상태
+                    .attr('transform', 'translate(0, 10)') // 아래쪽에서 등장
                     .transition()  // 다시 트랜지션 시작
-                    .duration(700) // 500ms 동안 실행
+                    .duration(700) // 700ms 동안 실행
                     .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-                    .style('transform', 'translateY(0px)') // 제자리로 돌아옴
+                    .attr('transform', 'translate(0, 0)') // 제자리로 돌아옴
                     .style('opacity', 1) // 다시 보여짐
             })
+
     }
 }
 
