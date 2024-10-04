@@ -147,8 +147,6 @@ function createTreemap({ isFetch = false }) {
         .attr('stroke-width', 2)
 
     node.append('foreignObject')
-        .attr('x', 0)
-        .attr('y', 0)
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .append('xhtml:div')
@@ -159,14 +157,32 @@ function createTreemap({ isFetch = false }) {
         .style('align-items', 'center')
         .style('height', '100%')
         .style('text-align', 'center')
-        .html(d => `
-            <div class="node-name font-opensans" style="font-size:${func.calcName(d).size}px; word-break: break-word; margin-bottom:2px">
-                <strong>${d.data.name}</strong>
-            </div>
-            <div class="node-change font-roboto" style="font-size:${func.calcChange(d).size}px;line-height:1.1em">
-                ${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)</span>
-            </div>
-        `)
+        .each(function (d) {
+            // node-name 추가
+            d3.select(this)
+                .append('xhtml:div')
+                .attr('class', 'node-name font-opensans')
+                .style('font-size', `${func.calcName(d).size}px`)
+                .style('word-break', 'break-word')
+                .style('margin-bottom', '2px')
+                .html(`<strong>${d.data.name}</strong>`)
+
+            // node-change 추가
+            const nodeChange = d3.select(this)
+                .append('xhtml:div')
+                .attr('class', 'node-change font-roboto')
+                .style('font-size', `${func.calcChange(d).size}px`)
+                .style('line-height', '1.1em')
+                .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
+
+            // node-change 요소에 애니메이션 적용
+            nodeChange.transition() // 애니메이션 시작
+                .duration(900)
+                .style('opacity', 0.3)
+                .transition() // 두 번째 트랜지션 시작
+                .duration(900)
+                .style('opacity', 1)
+        })
 }
 
 </script>
