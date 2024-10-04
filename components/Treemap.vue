@@ -53,13 +53,6 @@ const fetch = async () => {
 
 onMounted(() => {
     fetch()
-
-    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
-
-    // 컴포넌트가 언마운트될 때 interval 정리
-    onUnmounted(() => {
-        clearInterval(intervalTreemap)
-    })
 })
 
 let func = {
@@ -178,20 +171,25 @@ function createTreemap({ isFetch = false }) {
     // 갱신 시 애니메이션
     if (isFetch) {
         node.select('.node-change')
-            .transition()  // 트랜지션 시작
-            .duration(700) // 700ms 동안 실행
-            .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-            .style('opacity', 0) // 점차 사라짐
-            .on('end', function (d) {
-                d3.select(this)
-                    .text(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)  // 새 데이터로 업데이트
-                    .style('opacity', 0) // 투명 상태
-                    .attr('transform', 'translate(0, 10)') // 아래쪽에서 등장
-                    .transition()  // 다시 트랜지션 시작
-                    .duration(700) // 700ms 동안 실행
+            .each(function (d) {
+                const element = d3.select(this)
+
+                element
+                    .transition()  // 트랜지션 시작
+                    .duration(300) // 500ms 동안 실행
                     .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-                    .attr('transform', 'translate(0, 0)') // 제자리로 돌아옴
-                    .style('opacity', 1) // 다시 보여짐
+                    .style('transform', `translateY(-20px)`)
+                    .style('opacity', 0) // 점차 사라짐
+                    .on('end', function () {
+                        element
+                            .text(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)  // 새 데이터로 업데이트
+                            .style('opacity', 0) // 다시 보여짐
+                            .transition()  // 다시 트랜지션 시작
+                            .duration(300) // 500ms 동안 실행
+                            .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
+                            .style('transform', `translateY(0px)`) // 제자리로 돌아옴
+                            .style('opacity', 1) // 다시 보여짐
+                    })
             })
 
     }
