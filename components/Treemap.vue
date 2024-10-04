@@ -38,6 +38,9 @@ const fetch = async () => {
     items.value = data.value
     createTreemap({ isFetch: true })
 
+    // TODO. test
+    return setTimeout(fetch, 2000)
+
     const { isPeekTime, isMarketOpen } = useMarketOpen()
 
     if (!isMarketOpen) {
@@ -176,12 +179,14 @@ function createTreemap({ isFetch = false }) {
                 .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
             // node-change 요소에 애니메이션 적용
+            /*
             nodeChange.transition() // 애니메이션 시작
                 .duration(900)
                 .style('opacity', 0.3)
                 .transition() // 두 번째 트랜지션 시작
                 .duration(900)
                 .style('opacity', 1)
+                */
         })
 }
 
