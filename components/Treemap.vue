@@ -142,14 +142,14 @@ function createTreemap({ isFetch = false }) {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
-    node.append('rect')
+    const rect = node.append('rect')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .attr('fill', d => func.getColor(d.data['dp']))
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
 
-    node.append('foreignObject')
+    const foreignObject = node.append('foreignObject')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .append('xhtml:div')
@@ -178,15 +178,19 @@ function createTreemap({ isFetch = false }) {
                 .style('line-height', '1.1em')
                 .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
-            // node-change 요소에 애니메이션 적용
-            /*
+            const initialX = nodeChange.node().getBoundingClientRect().left
+            const initialY = nodeChange.node().getBoundingClientRect().top
+
             nodeChange.transition() // 애니메이션 시작
+                .attr('x', initialX).attr('y', initialY)
                 .duration(900)
                 .style('opacity', 0.3)
-                .transition() // 두 번째 트랜지션 시작
-                .duration(900)
-                .style('opacity', 1)
-                */
+                .on('end', () => {  // 첫 번째 트랜지션이 끝난 후
+                    nodeChange
+                        .transition()
+                        .duration(900)
+                        .style('opacity', 1)
+                })
         })
 }
 
