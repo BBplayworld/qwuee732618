@@ -171,27 +171,17 @@ function createTreemap({ isFetch = false }) {
     // 갱신 시 애니메이션
     if (isFetch) {
         node.select('.node-change')
-            .each(function (d) {
-                const element = d3.select(this)
-
-                element
-                    .transition()  // 트랜지션 시작
-                    .duration(300) // 500ms 동안 실행
+            .transition()  // 트랜지션 시작
+            .duration(500) // 500ms 동안 실행
+            .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
+            .style('opacity', 0) // 점차 사라짐
+            .on('end', function (d) {
+                d3.select(this)
+                    .transition()  // 다시 트랜지션 시작
+                    .duration(500) // 500ms 동안 실행
                     .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-                    .style('transform', `translateY(-20px)`)
-                    .style('opacity', 0) // 점차 사라짐
-                    .on('end', function () {
-                        element
-                            .text(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)  // 새 데이터로 업데이트
-                            .style('opacity', 0) // 다시 보여짐
-                            .transition()  // 다시 트랜지션 시작
-                            .duration(300) // 500ms 동안 실행
-                            .ease(d3.easeCubicOut) // 부드러운 애니메이션 적용
-                            .style('transform', `translateY(0px)`) // 제자리로 돌아옴
-                            .style('opacity', 1) // 다시 보여짐
-                    })
+                    .style('opacity', 1) // 다시 보여짐
             })
-
     }
 }
 
