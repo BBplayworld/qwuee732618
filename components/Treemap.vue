@@ -39,7 +39,6 @@ const fetch = async () => {
     createTreemap({ isFetch: true })
 
     const { isPeekTime, isMarketOpen } = useMarketOpen()
-
     if (!isMarketOpen) {
         return setTimeout(fetch, 20000)
     }
@@ -53,6 +52,11 @@ const fetch = async () => {
 
 onMounted(() => {
     fetch()
+
+    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
+    onUnmounted(() => {
+        clearInterval(intervalTreemap)
+    })
 })
 
 let func = {
@@ -175,19 +179,17 @@ function createTreemap({ isFetch = false }) {
                 .style('line-height', '1.1em')
                 .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
-            const initialX = nodeChange.node().getBoundingClientRect().left
-            const initialY = nodeChange.node().getBoundingClientRect().top
+            if (isFetch) {
+                // CSS 트랜지션을 사용한 애니메이션
+                setTimeout(() => {
+                    nodeChange.style('transition', 'opacity 0.9s ease-in-out')
+                        .style('opacity', '0.3')
+                }, 0)
 
-            nodeChange.transition() // 애니메이션 시작
-                .attr('x', initialX).attr('y', initialY)
-                .duration(900)
-                .style('opacity', 0.3)
-                .on('end', () => {  // 첫 번째 트랜지션이 끝난 후
-                    nodeChange
-                        .transition()
-                        .duration(900)
-                        .style('opacity', 1)
-                })
+                setTimeout(() => {
+                    nodeChange.style('opacity', '1')
+                }, 900)
+            }
         })
 }
 
@@ -247,6 +249,7 @@ h2 {
 
 .node-change {
     font-size: 10px;
+    transition: opacity 0.9s ease-in-out;
     /* 기본 폰트 크기, 상황에 따라 조정 가능 */
 }
 
