@@ -19,12 +19,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import * as d3 from 'd3'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 
 const treemapContainer = ref(null)
 const items = ref([])
+const showNodeChanges = ref(false)
 
 const fetch = async () => {
     const { data } = await useFetch('/api/stocks', {
@@ -164,10 +165,10 @@ function createTreemap({ isFetch = false }) {
         .each(function (d) {
             const container = d3.select(this);
 
-            // 기존 내용을 모두 제거
+            // Clear existing content
             container.selectAll('*').remove();
 
-            // node-name 추가
+            // Add node-name
             container.append('xhtml:div')
                 .attr('class', 'node-name font-opensans')
                 .style('font-size', `${func.calcName(d).size}px`)
@@ -175,22 +176,31 @@ function createTreemap({ isFetch = false }) {
                 .style('margin-bottom', '2px')
                 .html(`<strong>${d.data.name}</strong>`);
 
-            // node-change 추가
+            // Add node-change
             const nodeChange = container.append('xhtml:div')
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
-                .style('line-height', '1.1em');
+                .style('line-height', '1.1em')
+                .style('opacity', 0);  // Start with opacity 0
 
-            const updateContent = () => `<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`;
+            const updateContent = () => `
+                <span class="price">${d.data['c']}</span>
+                <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>
+            `;
 
-            if (isFetch) {
-                nodeChange.classed('fade-in', true)
-                    .html(updateContent);
-            } else {
-                nodeChange.classed('fade-in', false)
-                    .html(updateContent);
-            }
-        })
+            nodeChange.html(updateContent);
+
+            // Apply fade-in effect
+            nodeChange.transition()
+                .duration(1500)
+                .style('opacity', 1);
+        });
+
+    // Toggle showNodeChanges to trigger the transition
+    showNodeChanges.value = false;
+    nextTick(() => {
+        showNodeChanges.value = true;
+    });
 }
 
 </script>
@@ -249,7 +259,7 @@ h2 {
 
 .node-change {
     font-size: 10px;
-    transition: opacity 0.9s ease-in-out;
+    transition: opacity 1.5s ease-in-out;
     /* 기본 폰트 크기, 상황에 따라 조정 가능 */
 }
 
@@ -266,26 +276,6 @@ h2 {
 
 .data-source a:hover {
     text-decoration: underline;
-}
-
-.node-change {
-    opacity: 1;
-    transition: opacity 1.5s ease-in-out;
-}
-
-.node-change.fade-in {
-    opacity: 0;
-    animation: fadeIn 1.5s ease-in-out forwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
