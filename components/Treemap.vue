@@ -54,7 +54,7 @@ const fetch = async () => {
 onMounted(() => {
     fetch()
 
-    // const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
+    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
     onUnmounted(() => {
         clearInterval(intervalTreemap)
     })
@@ -163,10 +163,10 @@ function createTreemap({ isFetch = false }) {
         .style('height', '100%')
         .style('text-align', 'center')
         .each(function (d) {
-            const container = d3.select(this);
+            const container = d3.select(this)
 
             // Clear existing content
-            container.selectAll('*').remove();
+            container.selectAll('*').remove()
 
             // Add node-name
             container.append('xhtml:div')
@@ -174,34 +174,28 @@ function createTreemap({ isFetch = false }) {
                 .style('font-size', `${func.calcName(d).size}px`)
                 .style('word-break', 'break-word')
                 .style('margin-bottom', '2px')
-                .html(`<strong>${d.data.name}</strong>`);
+                .html(`<strong>${d.data.name}</strong>`)
 
             // Add node-change
             const nodeChange = container.append('xhtml:div')
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
-                .style('opacity', 0)
-                .style('transform', 'translate(100%, 100%)') // 시작 위치를 오른쪽 아래로 설정
+                .style('opacity', 0)  // 초기 상태를 투명하게 설정
                 .html(`
                     <span class="price">${d.data['c']}</span>
                     <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>
-                `);
+                `)
 
-            // Apply fade-in and move effect
+            // Apply fade-in effect using d3 transition
             setTimeout(() => {
-                nodeChange.transition()
+                nodeChange
+                    .attr('transform', d => `translate(${d.x0},${d.y0})`)
+                    .transition()
                     .duration(1500)
                     .style('opacity', 1)
-                    .style('transform', 'translate(0, 0)'); // 원래 위치로 이동
-            }, 50); // 약간의 지연을 주어 초기 위치가 제대로 설정되도록 함
-        });
-
-    // Toggle showNodeChanges to trigger the transition
-    showNodeChanges.value = false;
-    nextTick(() => {
-        showNodeChanges.value = true;
-    });
+            }, 50)
+        })
 }
 
 </script>
@@ -256,12 +250,6 @@ h2 {
     font-weight: bold;
     white-space: pre-wrap;
     /* 텍스트 줄바꿈을 유지 */
-}
-
-.node-change {
-    font-size: 10px;
-    transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
-    /* 기본 폰트 크기, 상황에 따라 조정 가능 */
 }
 
 .data-source {
