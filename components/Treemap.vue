@@ -143,14 +143,14 @@ function createTreemap({ isFetch = false }) {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
-    const rect = node.append('rect')
+    node.append('rect')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .attr('fill', d => func.getColor(d.data['dp']))
         .attr('stroke', 'white')
         .attr('stroke-width', 2)
 
-    const foreignObject = node.append('foreignObject')
+    node.append('foreignObject')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .append('xhtml:div')
@@ -177,7 +177,15 @@ function createTreemap({ isFetch = false }) {
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
-                .html(`${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
+                .html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
+
+            if (isFetch) {
+                nodeChange.selectAll('.price, .percentage')
+                    .style('opacity', 0)
+                    .transition()
+                    .duration(1500)
+                    .style('opacity', 1)
+            }
         })
 }
 

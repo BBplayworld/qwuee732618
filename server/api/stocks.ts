@@ -46,16 +46,18 @@ export default defineEventHandler(async () => {
         return symbols
     }
 
-    let stockCache: object[] = []
-    try {
-        stockCache = await kv.get(DATA_KEY) as object[]
-        localCache = stockCache
-    } catch (e) {
-        return symbols
-    }
+    if (process.env.IS_KV) {
+        let stockCache: object[] = []
+        try {
+            stockCache = await kv.get(DATA_KEY) as object[]
+            localCache = stockCache
+        } catch (e) {
+            return symbols
+        }
 
-    if (stockCache?.length > 0) {
-        return stockCache
+        if (stockCache?.length > 0) {
+            return stockCache
+        }
     }
 
     const call = async (symbol: any) => {
@@ -112,6 +114,10 @@ export default defineEventHandler(async () => {
     }
 
     localCache = result
-    await kv.set(DATA_KEY, JSON.stringify(result), { ex: (isPeekTime ? DATA_TTL_PEEK : DATA_TTL) })
+
+    if (process.env.IS_KV) {
+        await kv.set(DATA_KEY, JSON.stringify(result), { ex: (isPeekTime ? DATA_TTL_PEEK : DATA_TTL) })
+    }
+
     return result
 })
