@@ -144,17 +144,21 @@ function createTreemap({ isFetch = false }) {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
-    node.append('rect')
-        .attr('width', d => d.x1 - 5 - d.x0)
-        .attr('height', d => d.y1 - 5 - d.y0)
-        .attr('fill', d => func.getColor(d.data['dp']))
-        .attr('stroke', 'white')
-        .attr('stroke-width', 2)
+    // D3 transition을 사용한 애니메이션
+    rects.transition()
+        .duration(1500) // 애니메이션 지속 시간 (1.5초)
+        .attr('fill', 'rgba(203, 203, 32, 1)') // 일시적 색상 변화
+        .transition()
+        .duration(1500) // 애니메이션 지속 시간 (1.5초)
+        .attr('fill', d => func.getColor(d.data['dp'])) // 원래 색상으로 복원
 
-    node.append('foreignObject')
+    const foreignObjects = node.append('foreignObject')
+        .attr('x', 0)
+        .attr('y', 0)
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
-        .append('xhtml:div')
+
+    const containers = foreignObjects.append('xhtml:div')
         .attr('class', 'node-container')
         .style('display', 'flex')
         .style('flex-direction', 'column')
@@ -162,40 +166,25 @@ function createTreemap({ isFetch = false }) {
         .style('align-items', 'center')
         .style('height', '100%')
         .style('text-align', 'center')
-        .each(function (d) {
-            const container = d3.select(this)
 
-            // Clear existing content
-            container.selectAll('*').remove()
+    containers.append('div')
+        .attr('class', 'node-name font-opensans')
+        .style('font-size', d => `${func.calcName(d).size}px`)
+        .style('word-break', 'break-word')
+        .html(d => `<strong>${d.data.name}</strong>`)
 
-            // Add node-name
-            container.append('xhtml:div')
-                .attr('class', 'node-name font-opensans')
-                .style('font-size', `${func.calcName(d).size}px`)
-                .style('word-break', 'break-word')
-                .style('margin-bottom', '2px')
-                .html(`<strong>${d.data.name}</strong>`)
+    const nodeChanges = containers.append('div')
+        .attr('class', 'node-change font-roboto')
+        .style('font-size', d => `${func.calcChange(d).size}px`)
+        .style('line-height', '1.1em')
+        .style('opacity', 0)
+        .html(d => `${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
-            // Add node-change
-            const nodeChange = container.append('xhtml:div')
-                .attr('class', 'node-change font-roboto')
-                .style('font-size', `${func.calcChange(d).size}px`)
-                .style('line-height', '1.1em')
-                .style('opacity', 0)  // 초기 상태를 투명하게 설정
-                .html(`
-                    <span class="price">${d.data['c']}</span>
-                    <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>
-                `)
-
-            // Apply fade-in effect using d3 transition
-            setTimeout(() => {
-                nodeChange
-                    .attr('transform', d => `translate(${d.x0},${d.y0})`)
-                    .transition()
-                    .duration(1500)
-                    .style('opacity', 1)
-            }, 50)
-        })
+    // node-change에 대한 애니메이션 적용
+    nodeChanges.transition()
+        .delay(1000) // rect 애니메이션이 끝난 후 시작
+        .duration(1000)
+        .style('opacity', 1)
 }
 
 </script>
