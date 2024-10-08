@@ -162,32 +162,35 @@ function createTreemap({ isFetch = false }) {
         .style('height', '100%')
         .style('text-align', 'center')
         .each(function (d) {
+            const container = d3.select(this);
+
+            // 기존 내용을 모두 제거
+            container.selectAll('*').remove();
+
             // node-name 추가
-            d3.select(this)
-                .append('xhtml:div')
+            container.append('xhtml:div')
                 .attr('class', 'node-name font-opensans')
                 .style('font-size', `${func.calcName(d).size}px`)
                 .style('word-break', 'break-word')
                 .style('margin-bottom', '2px')
-                .html(`<strong>${d.data.name}</strong>`)
+                .html(`<strong>${d.data.name}</strong>`);
 
             // node-change 추가
-            const nodeChange = d3.select(this)
-                .append('xhtml:div')
+            const nodeChange = container.append('xhtml:div')
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
-                .style('line-height', '1.1em')
+                .style('line-height', '1.1em');
 
-            const updateContent = () => `<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`
+            const updateContent = () => `<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`;
 
             if (isFetch) {
                 nodeChange.style('opacity', 0)
                     .html(updateContent)
                     .transition()
                     .duration(1500)
-                    .style('opacity', 1)
+                    .style('opacity', 1);
             } else {
-                nodeChange.html(updateContent)
+                nodeChange.html(updateContent);
             }
         })
 }
