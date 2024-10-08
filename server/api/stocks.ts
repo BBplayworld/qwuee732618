@@ -46,9 +46,6 @@ export default defineEventHandler(async () => {
         return symbols
     }
 
-    // TODO. TEST
-    return symbols
-
     if (process.env.IS_KV) {
         let stockCache: object[] = []
         try {
