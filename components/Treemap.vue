@@ -177,14 +177,15 @@ function createTreemap({ isFetch = false }) {
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
-                .html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
 
             if (isFetch) {
-                nodeChange.selectAll('.price, .percentage')
-                    .style('opacity', 0)
+                nodeChange.style('opacity', 0)
+                    .html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
                     .transition()
                     .duration(1500)
                     .style('opacity', 1)
+            } else {
+                nodeChange.html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
             }
         })
 }
