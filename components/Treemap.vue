@@ -144,6 +144,13 @@ function createTreemap({ isFetch = false }) {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
+    const rects = node.append('rect')
+        .attr('width', d => d.x1 - 5 - d.x0)
+        .attr('height', d => d.y1 - 5 - d.y0)
+        .attr('fill', d => func.getColor(d.data['dp']))
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+
     // D3 transition을 사용한 애니메이션
     rects.transition()
         .duration(1500) // 애니메이션 지속 시간 (1.5초)
