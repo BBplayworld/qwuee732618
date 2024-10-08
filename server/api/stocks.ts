@@ -4,8 +4,8 @@ import { useMarketOpen } from '~/composables/useMarketOpen'
 import { kv } from '@vercel/kv'
 
 const DATA_KEY = 'stocks'
-const DATA_TTL = 10
-const DATA_TTL_PEEK = 5
+const DATA_TTL = 30
+const DATA_TTL_PEEK = 15
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
@@ -45,6 +45,9 @@ export default defineEventHandler(async () => {
     if (!isMarketOpen) {
         return symbols
     }
+
+    // TODO. TEST
+    return symbols
 
     if (process.env.IS_KV) {
         let stockCache: object[] = []

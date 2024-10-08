@@ -41,14 +41,14 @@ const fetch = async () => {
 
     const { isPeekTime, isMarketOpen } = useMarketOpen()
     if (!isMarketOpen) {
-        return setTimeout(fetch, 20000)
+        return setTimeout(fetch, 30000)
     }
 
     if (isPeekTime) {
-        setTimeout(fetch, 10000)
+        setTimeout(fetch, 15000)
     }
 
-    setTimeout(fetch, 15000)
+    setTimeout(fetch, 30000)
 }
 
 onMounted(() => {
