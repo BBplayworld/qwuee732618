@@ -181,19 +181,20 @@ function createTreemap({ isFetch = false }) {
                 .attr('class', 'node-change font-roboto')
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
-                .style('opacity', 0);  // Start with opacity 0
+                .style('opacity', 0)
+                .style('transform', 'translate(100%, 100%)') // 시작 위치를 오른쪽 아래로 설정
+                .html(`
+                    <span class="price">${d.data['c']}</span>
+                    <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>
+                `);
 
-            const updateContent = () => `
-                <span class="price">${d.data['c']}</span>
-                <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>
-            `;
-
-            nodeChange.html(updateContent);
-
-            // Apply fade-in effect
-            nodeChange.transition()
-                .duration(1500)
-                .style('opacity', 1);
+            // Apply fade-in and move effect
+            setTimeout(() => {
+                nodeChange.transition()
+                    .duration(1500)
+                    .style('opacity', 1)
+                    .style('transform', 'translate(0, 0)'); // 원래 위치로 이동
+            }, 50); // 약간의 지연을 주어 초기 위치가 제대로 설정되도록 함
         });
 
     // Toggle showNodeChanges to trigger the transition
@@ -259,7 +260,7 @@ h2 {
 
 .node-change {
     font-size: 10px;
-    transition: opacity 1.5s ease-in-out;
+    transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
     /* 기본 폰트 크기, 상황에 따라 조정 가능 */
 }
 
