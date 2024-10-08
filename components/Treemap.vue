@@ -53,7 +53,7 @@ const fetch = async () => {
 onMounted(() => {
     fetch()
 
-    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
+    // const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
     onUnmounted(() => {
         clearInterval(intervalTreemap)
     })
@@ -178,14 +178,16 @@ function createTreemap({ isFetch = false }) {
                 .style('font-size', `${func.calcChange(d).size}px`)
                 .style('line-height', '1.1em')
 
+            const updateContent = () => `<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`
+
             if (isFetch) {
                 nodeChange.style('opacity', 0)
-                    .html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
+                    .html(updateContent)
                     .transition()
                     .duration(1500)
                     .style('opacity', 1)
             } else {
-                nodeChange.html(`<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`)
+                nodeChange.html(updateContent)
             }
         })
 }
