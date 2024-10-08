@@ -184,13 +184,11 @@ function createTreemap({ isFetch = false }) {
             const updateContent = () => `<span class="price">${d.data['c']}</span> <span class="percentage">(${Math.round(d.data['dp'] * 100) / 100}%)</span>`;
 
             if (isFetch) {
-                nodeChange.style('opacity', 0)
-                    .html(updateContent)
-                    .transition()
-                    .duration(1500)
-                    .style('opacity', 1);
+                nodeChange.classed('fade-in', true)
+                    .html(updateContent);
             } else {
-                nodeChange.html(updateContent);
+                nodeChange.classed('fade-in', false)
+                    .html(updateContent);
             }
         })
 }
@@ -268,6 +266,26 @@ h2 {
 
 .data-source a:hover {
     text-decoration: underline;
+}
+
+.node-change {
+    opacity: 1;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.node-change.fade-in {
+    opacity: 0;
+    animation: fadeIn 1.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
