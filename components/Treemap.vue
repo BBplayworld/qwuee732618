@@ -19,13 +19,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as d3 from 'd3'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 
 const treemapContainer = ref(null)
 const items = ref([])
-const showNodeChanges = ref(false)
 
 const fetch = async () => {
     const { data } = await useFetch('/api/stocks', {
@@ -144,7 +143,7 @@ function createTreemap({ isFetch = false }) {
         .append('g')
         .attr('transform', d => `translate(${d.x0},${d.y0})`)
 
-    const rects = node.append('rect')
+    node.append('rect')
         .attr('width', d => d.x1 - 5 - d.x0)
         .attr('height', d => d.y1 - 5 - d.y0)
         .attr('fill', d => func.getColor(d.data['dp']))
@@ -178,14 +177,24 @@ function createTreemap({ isFetch = false }) {
         .style('line-height', '1.1em')
         .html(d => `${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`)
 
-
     if (isFetch) {
-        nodeChange.transition()
-            .duration(1000)
-            .style('opacity', 0)
-            .transition()
-            .duration(1000)
-            .style('opacity', 1)
+        nodeChange.each(function (d) {
+            const node = d3.select(this)
+            const targetValue = d.data['c']
+            let currentValue = targetValue - 10
+
+            const updateValue = () => {
+                if (currentValue < targetValue) {
+                    currentValue += 0.2
+                    node.html(`${currentValue.toFixed(2)} (${Math.round(d.data['dp'] * 100) / 100}%)`)
+                } else {
+                    clearInterval(intervalId)
+                    node.html(`${targetValue} (${Math.round(d.data['dp'] * 100) / 100}%)`)
+                }
+            }
+
+            const intervalId = setInterval(updateValue, 20)
+        })
     }
 }
 
