@@ -181,7 +181,7 @@ function createTreemap({ isFetch = false }) {
         nodeChange.each(function (d) {
             const node = d3.select(this)
             const targetValue = d.data['c']
-            let currentValue = targetValue - 3
+            let currentValue = targetValue - 5
 
             const updateValue = () => {
                 if (currentValue < targetValue) {
