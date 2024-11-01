@@ -44,7 +44,7 @@ const fetch = async () => {
     }
 
     if (isPeekTime) {
-        setTimeout(fetch, 15000)
+        return setTimeout(fetch, 25000)
     }
 
     setTimeout(fetch, 30000)
@@ -52,11 +52,6 @@ const fetch = async () => {
 
 onMounted(() => {
     fetch()
-
-    const intervalTreemap = setInterval(() => createTreemap({ isFetch: false }), 3000) // 3초
-    onUnmounted(() => {
-        clearInterval(intervalTreemap)
-    })
 })
 
 let func = {

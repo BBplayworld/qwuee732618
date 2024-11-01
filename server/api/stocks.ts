@@ -5,7 +5,7 @@ import { kv } from '@vercel/kv'
 
 const DATA_KEY = 'stocks'
 const DATA_TTL = 30
-const DATA_TTL_PEEK = 15
+const DATA_TTL_PEEK = 25
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
 const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
