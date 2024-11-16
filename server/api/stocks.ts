@@ -11,19 +11,19 @@ const tokenIter = tokenArr[Symbol.iterator]()
 let tokenKey = tokenIter.next().value
 
 const symbols = [
-    { name: 'QQQ', marketCap: 2900, high52: 503.52, c: 487.82, dp: 1.3, percentageFrom52WeekHigh: -3.12 },
-    { name: 'VOO', marketCap: 2900, high52: 538.76, c: 523.21, dp: 0.26, percentageFrom52WeekHigh: -0.69 },
-    { name: 'AAPL', marketCap: 3200, high52: 237.23, c: 227.7, dp: 0.9, percentageFrom52WeekHigh: -4.02 },
-    { name: 'NVDA', marketCap: 3000, high52: 140.76, c: 124.74, dp: 1.54, percentageFrom52WeekHigh: -11.38 },
+    { name: 'QQQ', marketCap: 2900, high52: 515.58, c: 487.82, dp: 1.3, percentageFrom52WeekHigh: -3.12 },
+    { name: 'VOO', marketCap: 2900, high52: 551.73, c: 523.21, dp: 0.26, percentageFrom52WeekHigh: -0.69 },
+    { name: 'AAPL', marketCap: 3200, high52: 237.49, c: 227.7, dp: 0.9, percentageFrom52WeekHigh: -4.02 },
+    { name: 'NVDA', marketCap: 3000, high52: 149.77, c: 124.74, dp: 1.54, percentageFrom52WeekHigh: -11.38 },
     { name: 'MSFT', marketCap: 2800, high52: 468.35, c: 419.91, dp: 0.81, percentageFrom52WeekHigh: -10.34 },
     { name: 'GOOG', marketCap: 2000, high52: 193.31, c: 167.75, dp: 0.32, percentageFrom52WeekHigh: -13.22 },
-    { name: 'AMZN', marketCap: 1858, high52: 201.2, c: 185.87, dp: 2.15, percentageFrom52WeekHigh: -7.62 },
+    { name: 'AMZN', marketCap: 1858, high52: 215.9, c: 185.87, dp: 2.15, percentageFrom52WeekHigh: -7.62 },
     { name: 'META', marketCap: 1335, high52: 602.95, c: 582.77, dp: 0, percentageFrom52WeekHigh: -0.10 },
     { name: 'AVGO', marketCap: 774, high52: 185.16, c: 174.2, dp: 1.34, percentageFrom52WeekHigh: -5.92 },
-    { name: 'TSLA', marketCap: 703, high52: 278.98, c: 245.45, dp: 1.99, percentageFrom52WeekHigh: -12.02 },
-    { name: 'COST', marketCap: 350, high52: 918.93, c: 877.5, dp: 0.21, percentageFrom52WeekHigh: -4.51 },
+    { name: 'TSLA', marketCap: 703, high52: 358.64, c: 245.45, dp: 1.99, percentageFrom52WeekHigh: -12.02 },
+    { name: 'COST', marketCap: 350, high52: 962, c: 877.5, dp: 0.21, percentageFrom52WeekHigh: -4.51 },
     { name: 'ASML', marketCap: 356, high52: 1110.09, c: 839.57, dp: 0.86, percentageFrom52WeekHigh: -24.37 },
-    { name: 'NFLX', marketCap: 294, high52: 773, c: 713.15, dp: 0.9, percentageFrom52WeekHigh: -1.29 },
+    { name: 'NFLX', marketCap: 294, high52: 841, c: 713.15, dp: 0.9, percentageFrom52WeekHigh: -1.29 },
     { name: 'AZN', marketCap: 268, high52: 87.68, c: 77.31, dp: -0.8, percentageFrom52WeekHigh: -11.83 },
     { name: 'AMD', marketCap: 250, high52: 227.3, c: 166.56, dp: 2.28, percentageFrom52WeekHigh: -26.72 },
     { name: 'ADBE', marketCap: 247, high52: 638.25, c: 509.33, dp: 1.1, percentageFrom52WeekHigh: -20.20 },
@@ -78,7 +78,8 @@ export default defineEventHandler(async () => {
 
     if (!isMarketOpen) {
         const requests = symbols.map(symbol => call(symbol))
-        return await Promise.all(requests)
+        localCache = await Promise.all(requests)
+        return localCache
     }
 
     if (process.env.IS_KV) {
