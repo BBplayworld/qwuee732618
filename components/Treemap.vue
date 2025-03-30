@@ -86,7 +86,7 @@ let func = {
         }
     },
     calcName(d) {
-        let size = d.value / 35
+        let size = d.value / 30
 
         if (window.innerWidth < 767) size = 14
 
@@ -95,7 +95,7 @@ let func = {
         }
     },
     calcChange(d) {
-        let size = d.value / 50
+        let size = d.value / 35
 
         if (window.innerWidth < 767) size = 14
 
