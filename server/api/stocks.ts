@@ -78,6 +78,7 @@ export default defineEventHandler(async () => {
         high52: symbol.high52,
         percentageFrom52WeekHigh: percentage.toFixed(2), // 52주 최고가 대비 퍼센트 계산,
         sector: symbol.sector,
+        displayName: symbol.displayName,
       }
 
       return data
