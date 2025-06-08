@@ -4,7 +4,17 @@ import { useMarketOpen } from '~/composables/useMarketOpen'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 
-const CACHE_FILE_PATH = join(process.cwd(), 'data', 'stocks-cache.json')
+// 환경에 따른 캐시 파일 경로 설정
+const getCacheFilePath = (): string => {
+  // Vercel 환경에서는 /tmp 디렉토리만 사용 가능
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return '/tmp/stocks-cache.json'
+  }
+  // 로컬 환경에서는 프로젝트 내 tmp 디렉토리 사용
+  return join(process.cwd(), 'tmp', 'stocks-cache.json')
+}
+
+const CACHE_FILE_PATH = getCacheFilePath()
 const CACHE_TTL_MARKET_OPEN = 90 * 1000 // 마켓 오픈 시: 90초
 const CACHE_TTL_MARKET_CLOSED = 12 * 60 * 60 * 1000 // 마켓 닫힘 시: 12시간
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY].filter((token): token is string => Boolean(token)) // undefined 값 제거
@@ -111,9 +121,10 @@ async function readFileCache(): Promise<StockData[] | null> {
 // 파일 캐시 저장
 async function writeFileCache(data: StockData[]): Promise<void> {
   try {
-    // data 디렉토리가 없으면 생성
-    const dataDir = join(process.cwd(), 'data')
-    await fs.mkdir(dataDir, { recursive: true })
+    // 캐시 디렉토리 생성 (필요시)
+    const cacheDir = CACHE_FILE_PATH.includes('/tmp/') ? '/tmp' : join(process.cwd(), 'tmp')
+
+    await fs.mkdir(cacheDir, { recursive: true })
 
     const cacheData: CacheData = {
       data,
@@ -121,6 +132,7 @@ async function writeFileCache(data: StockData[]): Promise<void> {
     }
 
     await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(cacheData, null, 2))
+    console.log(`[INFO] Cache file saved to: ${CACHE_FILE_PATH}`)
   } catch (error) {
     console.warn('[WARN] Failed to write cache file:', error)
   }
