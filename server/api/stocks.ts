@@ -198,14 +198,14 @@ export default defineEventHandler(async () => {
 
   // 1. 메모리 캐시 확인 (가장 빠름)
   if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
-    console.log('[INFO] Memory cache hit')
+    console.log('[INFO] Stocks Memory cache hit')
     return memoryCache
   }
 
   // 2. 파일 캐시 확인 (두 번째로 빠름)
   const fileCache = await readFileCache()
   if (fileCache) {
-    console.log('[INFO] File cache hit')
+    console.log('[INFO] Stocks File cache hit')
 
     memoryCache = fileCache
     lastFetchTime = now

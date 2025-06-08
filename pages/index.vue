@@ -65,7 +65,6 @@ h2 {
 }
 
 .container {
-    max-width: 1600px;
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;

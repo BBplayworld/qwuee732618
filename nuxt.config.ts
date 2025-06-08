@@ -6,24 +6,24 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'en',
       },
-      title: 'BBstoqq: Delayed Real-Time Market Treemap',
+      title: 'BBstoqq: US Stocks Treemap',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' },
 
-        { name: 'description', content: 'With BBstoqq’s delayed real-time market treemap, you can quickly visualize and interpret overall market movements.' },
-        { name: 'keywords', content: 'market treemap, delayed real-time data, stock market, market trends, stock heatmap, financial visualization' },
+        { name: 'description', content: 'Explore BBstoqq’s US Stocks Treemap — a delayed real-time visualization of market performance and sector trends.' },
+        { name: 'keywords', content: 'US stock treemap, stock heatmap, US market visualization, delayed real-time data, financial treemap, sector performance' },
         { name: 'robots', content: 'index, follow' },
 
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://www.bbstoqq.com/' },
-        { property: 'og:title', content: 'BBstoqq: Delayed Real-Time Market Treemap' },
-        { property: 'og:description', content: 'With BBstoqq’s delayed real-time market treemap, you can quickly visualize and interpret overall market movements.' },
+        { property: 'og:title', content: 'BBstoqq: US Stocks Treemap' },
+        { property: 'og:description', content: 'Explore BBstoqq’s US Stocks Treemap — a delayed real-time visualization of market performance and sector trends.' },
 
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:url', content: 'https://www.bbstoqq.com/' },
-        { name: 'twitter:title', content: 'BBstoqq: Delayed Real-Time Market Treemap' },
-        { name: 'twitter:description', content: 'With BBstoqq’s delayed real-time market treemap, you can quickly visualize and interpret overall market movements.' },
+        { name: 'twitter:title', content: 'BBstoqq: US Stocks Treemap' },
+        { name: 'twitter:description', content: 'Explore BBstoqq’s US Stocks Treemap — a delayed real-time visualization of market performance and sector trends.' },
       ],
       link: [
         { rel: 'canonical', href: 'https://www.bbstoqq.com/' },
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
             name: 'BBstoqq',
             url: 'https://www.bbstoqq.com/',
             logo: 'https://www.bbstoqq.com/favicon.ico',
-            description: 'With BBstoqq’s delayed real-time market treemap, you can quickly visualize and interpret overall market movements.',
+            description: 'Explore BBstoqq’s US Stocks Treemap — a delayed real-time visualization of market performance and sector trends.',
             publisher: {
               '@type': 'Organization',
               name: 'BBstoqq',
