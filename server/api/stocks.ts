@@ -1,13 +1,15 @@
 import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
-import { kv } from '@vercel/kv'
+import { promises as fs } from 'fs'
+import { join } from 'path'
 
-const DATA_KEY = 'stocks'
-const DATA_TTL = 90
-const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY]
-const tokenIter = tokenArr[Symbol.iterator]()
-let tokenKey = tokenIter.next().value
+const CACHE_FILE_PATH = join(process.cwd(), 'data', 'stocks-cache.json')
+const CACHE_TTL_MARKET_OPEN = 90 * 1000 // 마켓 오픈 시: 90초
+const CACHE_TTL_MARKET_CLOSED = 12 * 60 * 60 * 1000 // 마켓 닫힘 시: 12시간
+const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY].filter((token): token is string => Boolean(token)) // undefined 값 제거
+
+let currentTokenIndex = 0
 
 const symbols = [
   { name: 'QQQ', marketCap: 3415, high52: 540.81, c: 529.92, dp: 0.95, percentageFrom52WeekHigh: -2.02, sector: 'ETF', displayName: { en: 'QQQ Trust', ko: 'QQQ 트러스트', zh: 'QQQ信托' } },
@@ -50,99 +52,197 @@ const symbols = [
   { name: 'GLD', marketCap: 1003, high52: 317.63, c: 305.18, dp: -4.15, percentageFrom52WeekHigh: -3.93, sector: 'ETF', displayName: { en: 'Gold SPDR', ko: '금 ETF', zh: '黄金ETF' } },
 ]
 
-let localCache: object[] = []
+interface StockData {
+  name: string
+  marketCap: number
+  c: number
+  dp: number
+  high52: number
+  percentageFrom52WeekHigh: number
+  sector: string
+  displayName: { en: string; ko: string; zh: string }
+}
 
-export default defineEventHandler(async () => {
-  if (process.env.NODE_ENV !== 'production') {
-    return symbols
+interface CacheData {
+  data: StockData[]
+  timestamp: number
+}
+
+// 메모리 캐시
+let memoryCache: StockData[] = []
+let lastFetchTime = 0
+
+// 현재 마켓 상태에 따른 캐시 TTL 반환
+function getCacheTTL(): number {
+  const { isMarketOpen } = useMarketOpen()
+  return isMarketOpen ? CACHE_TTL_MARKET_OPEN : CACHE_TTL_MARKET_CLOSED
+}
+
+// 현재 토큰 가져오기
+function getCurrentToken(): string {
+  if (tokenArr.length === 0) {
+    throw new Error('No API tokens available')
   }
+  return tokenArr[currentTokenIndex % tokenArr.length]
+}
 
-  const call = async (symbol: any) => {
-    const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
+// 다음 토큰으로 순환
+function rotateToken(): void {
+  currentTokenIndex = (currentTokenIndex + 1) % tokenArr.length
+}
 
-    try {
-      const response = await $fetch(url, {
-        headers: {
-          'X-Finnhub-Token': tokenKey,
-          'Content-Type': 'application/json',
-        },
-      })
+// 파일 캐시 읽기
+async function readFileCache(): Promise<StockData[] | null> {
+  try {
+    const data = await fs.readFile(CACHE_FILE_PATH, 'utf-8')
+    const cacheData: CacheData = JSON.parse(data)
 
-      const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-
-      const data = {
-        name: symbol.name,
-        marketCap: symbol.marketCap,
-        c: response.c,
-        dp: response.dp,
-        high52: symbol.high52,
-        percentageFrom52WeekHigh: percentage.toFixed(2), // 52주 최고가 대비 퍼센트 계산,
-        sector: symbol.sector,
-        displayName: symbol.displayName,
-      }
-
-      return data
-    } catch (error) {
-      console.log('[ERR-stocks]', error)
-
-      if (error.response?.status === 429 || error.response?.status === 401) {
-        throw new Error('Rate limit exceeded') // 429 오류 발생 시 예외 처리
-      } else {
-        throw error // 다른 오류 발생 시 처리
-      }
+    // 캐시가 유효한지 확인 (마켓 상태에 따른 TTL)
+    if (Date.now() - cacheData.timestamp < getCacheTTL()) {
+      return cacheData.data
     }
+    return null
+  } catch (error) {
+    // 파일이 없거나 읽을 수 없는 경우
+    return null
   }
+}
 
-  const { isMarketOpen, isPeekTime } = useMarketOpen()
+// 파일 캐시 저장
+async function writeFileCache(data: StockData[]): Promise<void> {
+  try {
+    // data 디렉토리가 없으면 생성
+    const dataDir = join(process.cwd(), 'data')
+    await fs.mkdir(dataDir, { recursive: true })
 
-  if (localCache.length > 0) {
-    return localCache
-  }
-
-  if (!isMarketOpen) {
-    const requests = symbols.map((symbol) => call(symbol))
-    localCache = await Promise.all(requests)
-    return localCache
-  }
-
-  if (process.env.IS_KV) {
-    let stockCache: object[] = []
-    try {
-      stockCache = (await kv.get(DATA_KEY)) as object[]
-      localCache = stockCache
-    } catch (e) {
-      return symbols
+    const cacheData: CacheData = {
+      data,
+      timestamp: Date.now(),
     }
 
-    if (stockCache?.length > 0) {
-      return stockCache
-    }
+    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(cacheData, null, 2))
+  } catch (error) {
+    console.warn('[WARN] Failed to write cache file:', error)
   }
+}
 
-  let result: any[] | null = []
+// 외부 API 호출
+async function fetchStockData(symbol: any): Promise<StockData> {
+  const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
+
+  const response = await $fetch(url, {
+    headers: {
+      'X-Finnhub-Token': getCurrentToken(),
+      'Content-Type': 'application/json',
+    },
+  })
+
+  const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
+
+  return {
+    name: symbol.name,
+    marketCap: symbol.marketCap,
+    c: response.c,
+    dp: response.dp,
+    high52: symbol.high52,
+    percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+    sector: symbol.sector,
+    displayName: symbol.displayName,
+  }
+}
+
+// 모든 주식 데이터 가져오기 (토큰 순환 포함)
+async function fetchAllStockData(): Promise<StockData[]> {
   let attempts = 0
 
   while (attempts < tokenArr.length) {
     try {
-      const requests = symbols.map((symbol) => call(symbol))
-      result = await Promise.all(requests)
-      break // 성공 시 루프 종료
-    } catch (error) {
-      if (error.message === 'Rate limit exceeded') {
-        tokenKey = tokenIter.next().value || tokenArr[0] // 토큰 변경 및 재시도
+      const requests = symbols.map((symbol) => fetchStockData(symbol))
+      const result = await Promise.all(requests)
+      return result
+    } catch (error: any) {
+      console.log(`[INFO] API call failed with token ${currentTokenIndex + 1}:`, error?.message)
+
+      // 429 (Rate Limit) 또는 401 (Unauthorized) 에러인 경우 토큰 순환
+      if (error?.response?.status === 429 || error?.response?.status === 401) {
+        rotateToken()
         attempts++
-      } else {
-        console.log('[ERR-stocks-retry]', error)
-        break
+
+        if (attempts < tokenArr.length) {
+          console.log(`[INFO] Rotating to token ${currentTokenIndex + 1}, attempt ${attempts + 1}`)
+          continue
+        }
       }
+
+      throw new Error(`Failed to fetch stock data after ${attempts + 1} attempts`)
     }
   }
 
-  localCache = result
+  throw new Error('All API tokens exhausted')
+}
 
-  if (process.env.IS_KV) {
-    await kv.set(DATA_KEY, JSON.stringify(result), { ex: DATA_TTL })
+export default defineEventHandler(async () => {
+  const now = Date.now()
+
+  // 1. 메모리 캐시 확인 (가장 빠름)
+  if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
+    console.log('[INFO] Memory cache hit')
+    return memoryCache
   }
 
-  return result
+  // 2. 파일 캐시 확인 (두 번째로 빠름)
+  const fileCache = await readFileCache()
+  if (fileCache) {
+    console.log('[INFO] File cache hit')
+
+    memoryCache = fileCache
+    lastFetchTime = now
+    return fileCache
+  }
+
+  // 3. 외부 API 호출이 필요한 경우
+  const { isMarketOpen } = useMarketOpen()
+  const marketOpen = isMarketOpen
+
+  // 마켓이 닫혀있을 때는 1회만 API 호출 후 12시간 캐시 사용
+  if (!marketOpen) {
+    try {
+      console.log('[INFO] Market closed - Fetching fresh stock data from API (once)')
+      const freshData = await fetchAllStockData()
+
+      // 캐시 업데이트
+      memoryCache = freshData
+      lastFetchTime = now
+
+      // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
+      writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update file cache:', err))
+
+      return freshData
+    } catch (error: any) {
+      console.error('[ERROR] Failed to fetch stock data:', error?.message)
+
+      // API 호출이 실패한 경우, 기존 symbols 데이터라도 반환
+      return symbols
+    }
+  }
+
+  // 마켓이 열려있을 때는 90초마다 API 호출
+  try {
+    console.log('[INFO] Market open - Fetching fresh stock data from API')
+    const freshData = await fetchAllStockData()
+
+    // 캐시 업데이트
+    memoryCache = freshData
+    lastFetchTime = now
+
+    // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
+    writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update file cache:', err))
+
+    return freshData
+  } catch (error: any) {
+    console.error('[ERROR] Failed to fetch stock data:', error?.message)
+
+    // API 호출이 실패한 경우, 기존 symbols 데이터라도 반환
+    return symbols
+  }
 })

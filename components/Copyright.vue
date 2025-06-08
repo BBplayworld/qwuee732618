@@ -50,10 +50,9 @@ onMounted(() => {
     .copyright {
         text-align: left;
         padding-left: 0;
-        margin-left: 0;
+        margin: 0 0 20px 0;
         width: 100%;
         box-sizing: border-box;
-        margin-bottom: 10px;
         font-size: 12px;
         color: #aaa;
         padding-right: 0;
