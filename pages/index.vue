@@ -1,11 +1,8 @@
 <template>
     <SpeedInsights />
-    <Sidebar />
     <div class="container-wrapper">
         <div class="container">
             <Treemap />
-            <EconomicIndicators />
-            <CompanyNews />
         </div>
     </div>
 </template>
@@ -39,7 +36,7 @@ body {
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif;
     background-color: #111;
     color: #fff;
     overscroll-behavior: contain;
@@ -96,10 +93,6 @@ h2 {
     .container {
         padding: 3px;
         margin: 0;
-    }
-
-    .scrollbar {
-        height: 160px;
     }
 }
 </style>
