@@ -404,6 +404,42 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
 
 // 모바일/패드용 SVG text 요소 생성 함수
 function createMobileTextElements(node) {
+    // 텍스트 줄바꿈 헬퍼 함수
+    function wrapText(text, maxWidth, fontSize) {
+        const words = text.split(' ')
+        const lines = []
+        let currentLine = ''
+
+        // 간단한 문자 너비 추정 (실제 측정이 어려우므로 근사치 사용)
+        const charWidth = fontSize * 0.6
+        const maxCharsPerLine = Math.floor(maxWidth / charWidth)
+
+        for (const word of words) {
+            const testLine = currentLine ? `${currentLine} ${word}` : word
+            if (testLine.length <= maxCharsPerLine) {
+                currentLine = testLine
+            } else {
+                if (currentLine) {
+                    lines.push(currentLine)
+                    currentLine = word
+                } else {
+                    // 단어가 너무 길면 강제로 잘라서 줄바꿈
+                    while (word.length > maxCharsPerLine) {
+                        lines.push(word.substring(0, maxCharsPerLine))
+                        word = word.substring(maxCharsPerLine)
+                    }
+                    currentLine = word
+                }
+            }
+        }
+
+        if (currentLine) {
+            lines.push(currentLine)
+        }
+
+        return lines.length > 0 ? lines : [text]
+    }
+
     // 회사명 텍스트
     node.each(function (d) {
         const g = d3.select(this)
@@ -422,60 +458,99 @@ function createMobileTextElements(node) {
         const changeSize = func.calcChange(d).size
         const textColor = getTextColor(d.data['dp'])
 
+        // 텍스트 영역 여백 (패딩)
+        const textPadding = 8
+        const availableWidth = boxWidth - (textPadding * 2)
+
+        let currentY = centerY - nameSize - 10
+
         // 게스트 주식 배지 (있는 경우)
         if (isGuest && originalSector) {
             g.append('text')
                 .attr('x', centerX)
-                .attr('y', centerY - nameSize - 5)
+                .attr('y', currentY)
                 .attr('text-anchor', 'middle')
                 .attr('dominant-baseline', 'middle')
                 .attr('fill', CONFIG.colors.text.accent)
                 .attr('font-size', nameSize * 0.6)
                 .attr('font-weight', 'bold')
                 .text(`[${originalSector}]`)
+
+            currentY += nameSize * 0.8
         }
 
-        // 회사명
+        // 회사명 (원래 이름)
         const nameText = displayName !== originalName && originalName
             ? originalName
             : (originalName || displayName)
 
-        g.append('text')
+        const nameLines = wrapText(nameText, availableWidth, nameSize)
+        const nameTextGroup = g.append('text')
             .attr('x', centerX)
-            .attr('y', centerY - 5)
+            .attr('y', currentY)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .attr('fill', textColor)
             .attr('font-size', nameSize)
             .attr('font-weight', 'bold')
-            .text(nameText)
 
-        // 부가 설명 (displayName이 다른 경우)
-        if (displayName !== originalName && originalName) {
-            g.append('text')
+        // 여러 줄 처리
+        nameLines.forEach((line, index) => {
+            nameTextGroup.append('tspan')
                 .attr('x', centerX)
-                .attr('y', centerY + nameSize * 0.4)
+                .attr('dy', index === 0 ? 0 : nameSize * 1.2)
+                .text(line)
+        })
+
+        currentY += nameSize * 1.2 * nameLines.length
+
+        // 부가 설명 (displayName이 다른 경우) + margin-top 3px 추가
+        if (displayName !== originalName && originalName) {
+            currentY += 3 // 3px margin-top 추가
+
+            const displayLines = wrapText(displayName, availableWidth, nameSize * 0.8)
+            const displayTextGroup = g.append('text')
+                .attr('x', centerX)
+                .attr('y', currentY)
                 .attr('text-anchor', 'middle')
                 .attr('dominant-baseline', 'middle')
                 .attr('fill', textColor)
                 .attr('font-size', nameSize * 0.8)
                 .attr('opacity', 0.8)
-                .text(displayName)
+
+            // 여러 줄 처리
+            displayLines.forEach((line, index) => {
+                displayTextGroup.append('tspan')
+                    .attr('x', centerX)
+                    .attr('dy', index === 0 ? 0 : nameSize * 0.8 * 1.2)
+                    .text(line)
+            })
+
+            currentY += nameSize * 0.8 * 1.2 * displayLines.length
         }
 
         // 변화율 텍스트
+        currentY += 8 // 간격 추가
         const icon = d.data['dp'] > 0 ? '▲' : d.data['dp'] < 0 ? '▼' : ''
         const changeText = `${icon}${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`
 
-        g.append('text')
+        const changeLines = wrapText(changeText, availableWidth, changeSize)
+        const changeTextGroup = g.append('text')
             .attr('x', centerX)
-            .attr('y', centerY + nameSize + 5)
+            .attr('y', currentY)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .attr('fill', textColor)
             .attr('font-size', changeSize)
             .attr('font-weight', 'bold')
-            .text(changeText)
+
+        // 여러 줄 처리
+        changeLines.forEach((line, index) => {
+            changeTextGroup.append('tspan')
+                .attr('x', centerX)
+                .attr('dy', index === 0 ? 0 : changeSize * 1.2)
+                .text(line)
+        })
     })
 }
 
