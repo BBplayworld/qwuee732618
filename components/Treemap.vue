@@ -388,13 +388,106 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
         .attr('rx', CONFIG.colors.ui.borderRadius)
         .attr('ry', CONFIG.colors.ui.borderRadius)
 
+    // 모바일/패드 환경 감지
+    const isMobileOrTablet = isMobile() || (window.innerWidth <= 1024 && 'ontouchstart' in window)
+
+    if (isMobileOrTablet) {
+        // 모바일/패드 환경: SVG text 요소 사용
+        createMobileTextElements(node)
+    } else {
+        // 데스크톱 환경: foreignObject 사용
+        createDesktopTextElements(node, isFetch)
+    }
+
+    return node
+}
+
+// 모바일/패드용 SVG text 요소 생성 함수
+function createMobileTextElements(node) {
+    // 회사명 텍스트
+    node.each(function (d) {
+        const g = d3.select(this)
+        const boxWidth = d.x1 - d.x0
+        const boxHeight = d.y1 - d.y0
+        const centerX = boxWidth / 2
+        const centerY = boxHeight / 2
+
+        const displayName = getDisplayName(d.data)
+        const originalName = d.data.name
+        const isGuest = d.data.isGuest
+        const originalSector = d.data.originalSector
+
+        // 텍스트 크기 계산
+        const nameSize = func.calcName(d).size
+        const changeSize = func.calcChange(d).size
+        const textColor = getTextColor(d.data['dp'])
+
+        // 게스트 주식 배지 (있는 경우)
+        if (isGuest && originalSector) {
+            g.append('text')
+                .attr('x', centerX)
+                .attr('y', centerY - nameSize - 5)
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'middle')
+                .attr('fill', CONFIG.colors.text.accent)
+                .attr('font-size', nameSize * 0.6)
+                .attr('font-weight', 'bold')
+                .text(`[${originalSector}]`)
+        }
+
+        // 회사명
+        const nameText = displayName !== originalName && originalName
+            ? originalName
+            : (originalName || displayName)
+
+        g.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY - 5)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', textColor)
+            .attr('font-size', nameSize)
+            .attr('font-weight', 'bold')
+            .text(nameText)
+
+        // 부가 설명 (displayName이 다른 경우)
+        if (displayName !== originalName && originalName) {
+            g.append('text')
+                .attr('x', centerX)
+                .attr('y', centerY + nameSize * 0.4)
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'middle')
+                .attr('fill', textColor)
+                .attr('font-size', nameSize * 0.8)
+                .attr('opacity', 0.8)
+                .text(displayName)
+        }
+
+        // 변화율 텍스트
+        const icon = d.data['dp'] > 0 ? '▲' : d.data['dp'] < 0 ? '▼' : ''
+        const changeText = `${icon}${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`
+
+        g.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY + nameSize + 5)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', textColor)
+            .attr('font-size', changeSize)
+            .attr('font-weight', 'bold')
+            .text(changeText)
+    })
+}
+
+// 데스크톱용 foreignObject 요소 생성 함수
+function createDesktopTextElements(node, isFetch) {
     // 텍스트 컨테이너 생성
     const foreignObject = node
         .append('foreignObject')
-        .attr('x', (d) => 0)
-        .attr('y', (d) => 5)
-        .attr('width', (d) => Math.max(0, d.x1 - d.x0))
-        .attr('height', (d) => Math.max(0, d.y1 - d.y0 - 5))
+        .attr('x', 0)
+        .attr('y', 5)
+        .attr('width', (d) => d.x1 - d.x0)
+        .attr('height', (d) => d.y1 - d.y0 - 5)
         .append('xhtml:div')
         .attr('class', 'node-container')
         .style('display', 'flex')
@@ -405,8 +498,6 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
         .style('text-align', 'center')
         .style('word-wrap', 'break-word')
         .style('overflow-wrap', 'break-word')
-        .style('position', 'relative')  // 위치 기준점 추가
-        .style('transform', 'translateZ(0)')  // 하드웨어 가속 활성화
 
     // 회사명 표시 마진 (CONFIG화)
     const getNameMargin = () => {
@@ -472,8 +563,6 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
             }, CONFIG.animationSpeed)
         })
     }
-
-    return node
 }
 
 // 별도 영역에 경제 지표 SVG 생성 함수
@@ -984,20 +1073,12 @@ function createTreemap({ isFetch = false }) {
     min-width: 0;
     position: relative;
     overflow: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000;
 }
 
 .stocks-area svg {
     display: block;
     width: 100%;
     height: auto;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000;
 }
 
 /* 트리맵 내 텍스트 최적화 */
@@ -1013,9 +1094,6 @@ function createTreemap({ isFetch = false }) {
     word-break: break-all;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    position: relative;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 h1,
@@ -1188,6 +1266,25 @@ h2 {
         margin: 0;
         font-weight: bold;
         line-height: 1.2;
+    }
+}
+
+/* 모바일/패드 환경 최적화 */
+@media (max-width: 1024px),
+(pointer: coarse) {
+    .stocks-area svg {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-perspective: 1000;
+        perspective: 1000;
+    }
+
+    .stocks-area svg text {
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
     }
 }
 </style>
