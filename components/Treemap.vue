@@ -77,13 +77,20 @@ const CONFIG = {
 
         // 화면 크기 설정
         screen: {
-            widthMultiplier: 0.87,           // 1700px 이하 PC 전체 폭 배율
-            largeScreenMultiplier: 0.5,    // 1700px 이상 PC 전체 폭 배율
             breakpoint: 1700,               // PC 대형/중형 구분 기준점
-            tablet: {
-                min: 768,                   // 패드 최소 너비 (iPad mini)
-                max: 1112,                  // 패드 최대 너비 (iPad Pro 12.9" 가로모드)
-                widthMultiplier: 0.96       // 패드 전체 폭 배율 (추가)
+            devices: {
+                pc: {
+                    widthMultiplier: 0.86,  // 1700px 이하 PC 전체 폭 배율
+                    largeWidthMultiplier: 0.42  // 1700px 이상 PC 전체 폭 배율
+                },
+                tablet: {
+                    min: 768,               // 패드 최소 너비 (iPad mini)
+                    max: 1112,              // 패드 최대 너비 (iPad Pro 12.9" 가로모드)
+                    widthMultiplier: 0.96   // 패드 전체 폭 배율
+                },
+                mobile: {
+                    widthMultiplier: 0.98   // 모바일 전체 폭 배율
+                }
             }
         },
 
@@ -245,8 +252,8 @@ function isMobileOrTabletDevice() {
     }
 
     // 패드 사이즈 체크 (PC에서도 테스트 가능)
-    const isTabletSize = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-        window.innerWidth <= CONFIG.layout.screen.tablet.max
+    const isTabletSize = window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+        window.innerWidth <= CONFIG.layout.screen.devices.tablet.max
 
     if (isTabletSize) {
         return true
@@ -940,8 +947,8 @@ const func = {
 
         // 모바일/패드 환경에서 가로세로 비율에 따른 조정
         if (isMobileOrTabletDevice()) {
-            const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-                window.innerWidth <= CONFIG.layout.screen.tablet.max
+            const isTablet = window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+                window.innerWidth <= CONFIG.layout.screen.devices.tablet.max
 
             if (isTablet) {
                 // 패드 환경에서는 기본 크기를 더 작게 조정
@@ -967,8 +974,8 @@ const func = {
         let config
         if (isMobile()) {
             config = CONFIG.textSize.stock.name.mobile
-        } else if (window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-            window.innerWidth <= CONFIG.layout.screen.tablet.max) {
+        } else if (window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+            window.innerWidth <= CONFIG.layout.screen.devices.tablet.max) {
             config = CONFIG.textSize.stock.name.tablet
         } else {
             config = CONFIG.textSize.stock.name.pc
@@ -990,8 +997,8 @@ const func = {
 
         // 모바일/패드 환경에서 가로세로 비율에 따른 조정
         if (isMobileOrTabletDevice()) {
-            const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-                window.innerWidth <= CONFIG.layout.screen.tablet.max
+            const isTablet = window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+                window.innerWidth <= CONFIG.layout.screen.devices.tablet.max
 
             if (isTablet) {
                 // 패드 환경에서는 기본 크기를 더 작게 조정
@@ -1017,8 +1024,8 @@ const func = {
         let config
         if (isMobile()) {
             config = CONFIG.textSize.stock.change.mobile
-        } else if (window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-            window.innerWidth <= CONFIG.layout.screen.tablet.max) {
+        } else if (window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+            window.innerWidth <= CONFIG.layout.screen.devices.tablet.max) {
             config = CONFIG.textSize.stock.change.tablet
         } else {
             config = CONFIG.textSize.stock.change.pc
@@ -1046,26 +1053,26 @@ function createTreemap({ isFetch = false }) {
                 CONFIG.economicIndicators.layout.areaWidth.pc)) + CONFIG.economicIndicators.layout.gap : 0
 
     let width = treemapContainer.value.getBoundingClientRect().width
-    const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
-        window.innerWidth <= CONFIG.layout.screen.tablet.max
+    const isTablet = window.innerWidth >= CONFIG.layout.screen.devices.tablet.min &&
+        window.innerWidth <= CONFIG.layout.screen.devices.tablet.max
 
     if (isTablet) {
-        // 패드 환경: 전체 폭의 95% 사용
-        width = window.innerWidth * CONFIG.layout.screen.tablet.widthMultiplier - indicatorAreaWidth
+        // 패드 환경
+        width = window.innerWidth * CONFIG.layout.screen.devices.tablet.widthMultiplier - indicatorAreaWidth
     } else if (window.innerWidth < CONFIG.layout.screen.breakpoint && window.innerWidth >= MOBILE_BREAKPOINT) {
         // 중형 PC (1700px 이하)
-        width = (window.innerWidth * CONFIG.layout.screen.widthMultiplier) - indicatorAreaWidth
+        width = window.innerWidth * CONFIG.layout.screen.devices.pc.widthMultiplier - indicatorAreaWidth
     } else if (window.innerWidth >= CONFIG.layout.screen.breakpoint && !isMobile()) {
         // 대형 PC (1700px 이상)
-        const containerWidth = window.innerWidth * CONFIG.layout.screen.largeScreenMultiplier
-        width = containerWidth - indicatorAreaWidth
+        width = window.innerWidth * CONFIG.layout.screen.devices.pc.largeWidthMultiplier - indicatorAreaWidth
     } else if (!isMobile()) {
         // 기타 PC 환경
         width = width - indicatorAreaWidth
     }
 
     if (isMobile()) {
-        width = window.innerWidth - 10 // 모바일은 전체 너비 사용 (세로 배치)
+        // 모바일 환경
+        width = window.innerWidth * CONFIG.layout.screen.devices.mobile.widthMultiplier - 10
     }
 
     // 섹터별 그룹화
