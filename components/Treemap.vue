@@ -42,9 +42,9 @@ const CONFIG = {
     layout: {
         // 그리드 기본 설정
         grid: {
-            cols: { pc: 4, mobile: 2 },        // 컬럼 수
-            gap: { pc: 15, mobile: 20 },       // 간격
-            baseHeight: { pc: 210, mobile: 200 } // 기본 높이
+            cols: { pc: 4, mobile: 2, tablet: 3 },        // 컬럼 수 (패드용 추가)
+            gap: { pc: 15, mobile: 20, tablet: 10 },       // 간격 (패드용 추가)
+            baseHeight: { pc: 210, mobile: 200, tablet: 205 } // 기본 높이 (패드용 추가)
         },
 
         // 섹터 타입별 통합 설정
@@ -54,7 +54,7 @@ const CONFIG = {
                 minMarketCapRatio: 0.25,        // 마켓캡 25% 이상
                 minStockCount: 8,               // 주식 8개 이상
                 // 레이아웃
-                colSpan: { pc: 2, mobile: 2 },  // 2x1 크기
+                colSpan: { pc: 2, mobile: 2, tablet: 2 },  // 2x1 크기 (패드용 추가)
                 heightMultiplier: 2.6,          // (중요) 높이 배율
                 minHeight: 1.8                  // 최소 높이 보장
             },
@@ -63,13 +63,13 @@ const CONFIG = {
                 minMarketCapRatio: 0.1,         // 마켓캡 10% 이상
                 minStockCount: 4,               // 주식 4개 이상
                 // 레이아웃
-                colSpan: { pc: 1, mobile: 1 },  // 1x1 크기
+                colSpan: { pc: 1, mobile: 1, tablet: 1 },  // 1x1 크기 (패드용 추가)
                 heightMultiplier: 1.4,          // (중요) 높이 배율
                 minHeight: 1.1                  // 최소 높이 보장
             },
             small: {
                 // 나머지는 모두 소형 (분류 기준 없음)
-                colSpan: { pc: 1, mobile: 1 },  // 1x1 크기
+                colSpan: { pc: 1, mobile: 1, tablet: 1 },  // 1x1 크기 (패드용 추가)
                 heightMultiplier: 1.0,          // (중요) 높이 배율
                 minHeight: 1.0                  // 최소 높이 보장
             }
@@ -79,7 +79,12 @@ const CONFIG = {
         screen: {
             widthMultiplier: 0.87,           // 1700px 이하 PC 전체 폭 배율
             largeScreenMultiplier: 0.5,    // 1700px 이상 PC 전체 폭 배율
-            breakpoint: 1700                // PC 대형/중형 구분 기준점
+            breakpoint: 1700,               // PC 대형/중형 구분 기준점
+            tablet: {
+                min: 768,                   // 패드 최소 너비 (iPad mini)
+                max: 1112,                  // 패드 최대 너비 (iPad Pro 12.9" 가로모드)
+                widthMultiplier: 0.96       // 패드 전체 폭 배율 (추가)
+            }
         },
 
         // 주식 영역 SVG 설정
@@ -111,11 +116,13 @@ const CONFIG = {
         stock: {
             name: {
                 pc: { min: 16, max: 26 },
-                mobile: { min: 14, max: 17 }
+                mobile: { min: 14, max: 17 },
+                tablet: { min: 14, max: 20 }  // 패드용 설정 추가
             },
             change: {
                 pc: { min: 15, max: 32 },
-                mobile: { min: 12, max: 14 }
+                mobile: { min: 12, max: 14 },
+                tablet: { min: 12, max: 16 }  // 패드용 설정 추가
             }
         }
     },
@@ -234,7 +241,14 @@ function getBrowserLanguage() {
 function isMobileOrTabletDevice() {
     // 기본 모바일 브레이크포인트 체크
     if (isMobile()) {
-        console.log('Mobile detected by breakpoint')  // 디버깅 로그
+        return true
+    }
+
+    // 패드 사이즈 체크 (PC에서도 테스트 가능)
+    const isTabletSize = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+        window.innerWidth <= CONFIG.layout.screen.tablet.max
+
+    if (isTabletSize) {
         return true
     }
 
@@ -242,14 +256,14 @@ function isMobileOrTabletDevice() {
     const userAgent = navigator.userAgent.toLowerCase()
     const isTabletUA = /ipad|tablet|android(?!.*mobile)|kindle|silk|playbook|bb10/i.test(userAgent)
     if (isTabletUA) {
-        console.log('Tablet detected by UA')  // 디버깅 로그
+        return true
     }
 
     // iPad 특별 감지 (iOS 13+ iPad는 desktop user agent를 사용할 수 있음)
     const isIPad = /ipad/i.test(userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     if (isIPad) {
-        console.log('iPad detected')  // 디버깅 로그
+        return true
     }
 
     // 터치 기능 감지
@@ -257,18 +271,10 @@ function isMobileOrTabletDevice() {
         navigator.maxTouchPoints > 0 ||
         navigator.msMaxTouchPoints > 0
     if (hasTouchScreen) {
-        console.log('Touch screen detected')  // 디버깅 로그
+        return true
     }
 
-    // 화면 크기 기반 태블릿 감지 (터치가 가능한 경우)
-    const isTabletSize = window.innerWidth >= 768 && window.innerWidth <= 1366 && hasTouchScreen
-    if (isTabletSize) {
-        console.log('Tablet size detected')  // 디버깅 로그
-    }
-
-    const result = isTabletUA || isIPad || isTabletSize
-    console.log('Final mobile/tablet detection result:', result)  // 디버깅 로그
-    return result
+    return false
 }
 
 // 다국어 표시명 가져오기 함수
@@ -457,15 +463,19 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
 function createMobileTextElements(node) {
     // 텍스트 줄바꿈 헬퍼 함수
     function wrapText(text, maxWidth, fontSize) {
+        if (!text || typeof text !== 'string') return ['']
+
         const words = text.split(' ')
         const lines = []
         let currentLine = ''
 
         // 간단한 문자 너비 추정 (실제 측정이 어려우므로 근사치 사용)
         const charWidth = fontSize * 0.6
-        const maxCharsPerLine = Math.floor(maxWidth / charWidth)
+        const maxCharsPerLine = Math.max(1, Math.floor(maxWidth / charWidth))
 
         for (let word of words) {
+            if (!word) continue  // 빈 단어 건너뛰기
+
             const testLine = currentLine ? `${currentLine} ${word}` : word
             if (testLine.length <= maxCharsPerLine) {
                 currentLine = testLine
@@ -475,11 +485,12 @@ function createMobileTextElements(node) {
                     currentLine = word
                 } else {
                     // 단어가 너무 길면 강제로 잘라서 줄바꿈
-                    while (word.length > maxCharsPerLine) {
-                        lines.push(word.substring(0, maxCharsPerLine))
+                    while (word.length > 0) {
+                        const chunk = word.substring(0, maxCharsPerLine)
+                        lines.push(chunk)
                         word = word.substring(maxCharsPerLine)
                     }
-                    currentLine = word
+                    currentLine = ''
                 }
             }
         }
@@ -488,7 +499,7 @@ function createMobileTextElements(node) {
             lines.push(currentLine)
         }
 
-        return lines.length > 0 ? lines : [text]
+        return lines.length > 0 ? lines : ['']
     }
 
     // 회사명 텍스트
@@ -532,7 +543,7 @@ function createMobileTextElements(node) {
         const totalTextHeight = guestBadgeHeight + nameTextHeight + displayTextHeight + changeTextHeight
 
         // 정중앙부터 시작 (작은 박스의 경우 약간 아래로 조정)
-        const centerOffset = boxHeight < 100 ? Math.max(3, boxHeight * 0.08) : Math.max(3, boxHeight * 0.04)
+        const centerOffset = boxHeight < 100 ? Math.max(3, boxHeight * 0.105) : Math.max(3, boxHeight * 0.04)
         let currentY = centerY - (totalTextHeight / 2) + centerOffset
 
         // 게스트 주식 배지
@@ -825,8 +836,6 @@ function createEconomicIndicatorItem(svg, x, y, width, height, indicator, index)
     }
 }
 
-
-
 const fetchEconomicIndicators = async () => {
     try {
         const { data } = await useFetch('/api/economic-indicators', {
@@ -854,7 +863,13 @@ const fetch = async () => {
     // 경제 지표도 함께 가져오기
     await fetchEconomicIndicators()
 
-    createTreemap({ isFetch: true })
+    // 컨테이너가 준비되었는지 확인 후 트리맵 생성
+    if (treemapContainer.value) {
+        createTreemap({ isFetch: true })
+    } else {
+        // 컨테이너가 아직 준비되지 않았다면 약간의 지연 후 다시 시도
+        setTimeout(() => createTreemap({ isFetch: true }), 100)
+    }
 
     const { isMarketOpen } = useMarketOpen()
     if (!isMarketOpen) {
@@ -865,7 +880,8 @@ const fetch = async () => {
 }
 
 onMounted(() => {
-    fetch()
+    // 컴포넌트가 마운트된 후 약간의 지연을 두고 fetch 시작
+    setTimeout(fetch, 100)
 })
 
 // 스타일링 및 계산 함수들
@@ -915,40 +931,132 @@ const func = {
 
     calcName(d) {
         const boxArea = (d.x1 - d.x0) * (d.y1 - d.y0)
+        const boxWidth = d.x1 - d.x0
+        const boxHeight = d.y1 - d.y0
+        const aspectRatio = boxWidth / boxHeight
+
+        // 기본 크기 계산 (박스 면적 기반)
         let size = Math.sqrt(boxArea) / 13
 
-        const config = isMobile() ? CONFIG.textSize.stock.name.mobile : CONFIG.textSize.stock.name.pc
-        size = Math.min(config.max, Math.max(config.min, size))
+        // 모바일/패드 환경에서 가로세로 비율에 따른 조정
+        if (isMobileOrTabletDevice()) {
+            const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+                window.innerWidth <= CONFIG.layout.screen.tablet.max
 
+            if (isTablet) {
+                // 패드 환경에서는 기본 크기를 더 작게 조정
+                size *= 0.7
+
+                // 가로세로 비율에 따른 추가 조정
+                if (aspectRatio > 1.5) {
+                    size *= 0.9  // 가로가 더 길면 약간 더 작게
+                } else if (aspectRatio < 0.8) {
+                    size *= 0.8  // 세로가 더 길면 더 작게
+                }
+            } else {
+                // 모바일 환경에서는 기존 로직 유지
+                if (aspectRatio > 1.5) {
+                    size *= 1.2
+                } else if (aspectRatio < 0.8) {
+                    size *= 0.8
+                }
+            }
+        }
+
+        // 환경별 설정 적용 (기본 범위 제한용)
+        let config
+        if (isMobile()) {
+            config = CONFIG.textSize.stock.name.mobile
+        } else if (window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+            window.innerWidth <= CONFIG.layout.screen.tablet.max) {
+            config = CONFIG.textSize.stock.name.tablet
+        } else {
+            config = CONFIG.textSize.stock.name.pc
+        }
+
+        // 최종 크기 제한 (너무 크거나 작지 않도록)
+        size = Math.min(config.max, Math.max(config.min, size))
         return { size }
     },
 
     calcChange(d) {
         const boxArea = (d.x1 - d.x0) * (d.y1 - d.y0)
+        const boxWidth = d.x1 - d.x0
+        const boxHeight = d.y1 - d.y0
+        const aspectRatio = boxWidth / boxHeight
+
+        // 기본 크기 계산 (박스 면적 기반)
         let size = Math.sqrt(boxArea) / 30
 
-        const config = isMobile() ? CONFIG.textSize.stock.change.mobile : CONFIG.textSize.stock.change.pc
-        size = Math.min(config.max, Math.max(config.min, size))
+        // 모바일/패드 환경에서 가로세로 비율에 따른 조정
+        if (isMobileOrTabletDevice()) {
+            const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+                window.innerWidth <= CONFIG.layout.screen.tablet.max
 
+            if (isTablet) {
+                // 패드 환경에서는 기본 크기를 더 작게 조정
+                size *= 0.65
+
+                // 가로세로 비율에 따른 추가 조정
+                if (aspectRatio > 1.5) {
+                    size *= 0.85  // 가로가 더 길면 약간 더 작게
+                } else if (aspectRatio < 0.8) {
+                    size *= 0.75  // 세로가 더 길면 더 작게
+                }
+            } else {
+                // 모바일 환경에서는 기존 로직 유지
+                if (aspectRatio > 1.5) {
+                    size *= 1.15
+                } else if (aspectRatio < 0.8) {
+                    size *= 0.85
+                }
+            }
+        }
+
+        // 환경별 설정 적용 (기본 범위 제한용)
+        let config
+        if (isMobile()) {
+            config = CONFIG.textSize.stock.change.mobile
+        } else if (window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+            window.innerWidth <= CONFIG.layout.screen.tablet.max) {
+            config = CONFIG.textSize.stock.change.tablet
+        } else {
+            config = CONFIG.textSize.stock.change.pc
+        }
+
+        // 최종 크기 제한 (너무 크거나 작지 않도록)
+        size = Math.min(config.max, Math.max(config.min, size))
         return { size }
     }
 }
 
 function createTreemap({ isFetch = false }) {
+    // 컨테이너 존재 여부 체크
+    if (!treemapContainer.value) {
+        console.warn('Treemap container not ready')
+        return
+    }
+
     // 화면 크기에 따른 width 계산
     const indicatorAreaWidth = economicIndicators.value.length > 0 ?
         (isMobile() ?
             CONFIG.economicIndicators.layout.areaWidth.mobile :
             (window.innerWidth >= CONFIG.layout.screen.breakpoint ?
                 CONFIG.economicIndicators.layout.areaWidth.largePC :
-                CONFIG.economicIndicators.layout.areaWidth.pc)) + CONFIG.economicIndicators.layout.gap : 0 // 지표 영역 + gap
+                CONFIG.economicIndicators.layout.areaWidth.pc)) + CONFIG.economicIndicators.layout.gap : 0
 
     let width = treemapContainer.value.getBoundingClientRect().width
-    if (window.innerWidth < CONFIG.layout.screen.breakpoint && window.innerWidth >= MOBILE_BREAKPOINT) {
+    const isTablet = window.innerWidth >= CONFIG.layout.screen.tablet.min &&
+        window.innerWidth <= CONFIG.layout.screen.tablet.max
+
+    if (isTablet) {
+        // 패드 환경: 전체 폭의 95% 사용
+        width = window.innerWidth * CONFIG.layout.screen.tablet.widthMultiplier - indicatorAreaWidth
+    } else if (window.innerWidth < CONFIG.layout.screen.breakpoint && window.innerWidth >= MOBILE_BREAKPOINT) {
         // 중형 PC (1700px 이하)
         width = (window.innerWidth * CONFIG.layout.screen.widthMultiplier) - indicatorAreaWidth
     } else if (window.innerWidth >= CONFIG.layout.screen.breakpoint && !isMobile()) {
-        // 대형 PC (1700px 이상) - 85vw 컨테이너 내에서 경제지표 제외한 너비
+        // 대형 PC (1700px 이상)
         const containerWidth = window.innerWidth * CONFIG.layout.screen.largeScreenMultiplier
         width = containerWidth - indicatorAreaWidth
     } else if (!isMobile()) {
@@ -1013,11 +1121,11 @@ function createTreemap({ isFetch = false }) {
     })
 
     // 그리드 레이아웃 계산
-    const device = isMobile() ? 'mobile' : 'pc'
+    const device = isMobile() ? 'mobile' : (isTablet ? 'tablet' : 'pc')
     const gridConfig = {
         cols: CONFIG.layout.grid.cols[device],
         gap: CONFIG.layout.grid.gap[device],
-        baseWidth: width / CONFIG.layout.grid.cols[device] - CONFIG.layout.grid.gap[device] * (CONFIG.layout.grid.cols[device] - 1) / CONFIG.layout.grid.cols[device],
+        baseWidth: (width - (CONFIG.layout.grid.gap[device] * (CONFIG.layout.grid.cols[device] - 1))) / CONFIG.layout.grid.cols[device],
         baseHeight: CONFIG.layout.grid.baseHeight[device]
     }
 
