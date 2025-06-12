@@ -169,8 +169,8 @@ const CONFIG = {
 
         // 별도 영역 레이아웃 설정
         layout: {
-            containerWidth: { pc: 205, mobile: 220, largePC: 250 },  // SVG 내부 너비 (대형PC 확장)
-            areaWidth: { pc: 205, mobile: 220, largePC: 250 },       // 전체 div 영역 너비 (대형PC 확장)
+            containerWidth: { pc: 205, mobile: 205, largePC: 250 },  // SVG 내부 너비 (모바일 15px 감소: 220 → 205)
+            areaWidth: { pc: 205, mobile: 205, largePC: 250 },       // 전체 div 영역 너비 (모바일 15px 감소: 220 → 205)
             headerHeight: { pc: 40, mobile: 35 },
             indicatorHeight: { pc: 97, mobile: 80 },
             gap: 15                                                  // 주식 영역과의 간격
@@ -228,6 +228,47 @@ function getBrowserLanguage() {
 
     // 지원하는 언어인지 확인
     return supportedLanguages.includes(primaryLang) ? primaryLang : 'en'
+}
+
+// 모바일/태블릿 감지 함수 (iPad 포함)
+function isMobileOrTabletDevice() {
+    // 기본 모바일 브레이크포인트 체크
+    if (isMobile()) {
+        console.log('Mobile detected by breakpoint')  // 디버깅 로그
+        return true
+    }
+
+    // User Agent 기반 감지
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isTabletUA = /ipad|tablet|android(?!.*mobile)|kindle|silk|playbook|bb10/i.test(userAgent)
+    if (isTabletUA) {
+        console.log('Tablet detected by UA')  // 디버깅 로그
+    }
+
+    // iPad 특별 감지 (iOS 13+ iPad는 desktop user agent를 사용할 수 있음)
+    const isIPad = /ipad/i.test(userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    if (isIPad) {
+        console.log('iPad detected')  // 디버깅 로그
+    }
+
+    // 터치 기능 감지
+    const hasTouchScreen = 'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        navigator.msMaxTouchPoints > 0
+    if (hasTouchScreen) {
+        console.log('Touch screen detected')  // 디버깅 로그
+    }
+
+    // 화면 크기 기반 태블릿 감지 (터치가 가능한 경우)
+    const isTabletSize = window.innerWidth >= 768 && window.innerWidth <= 1366 && hasTouchScreen
+    if (isTabletSize) {
+        console.log('Tablet size detected')  // 디버깅 로그
+    }
+
+    const result = isTabletUA || isIPad || isTabletSize
+    console.log('Final mobile/tablet detection result:', result)  // 디버깅 로그
+    return result
 }
 
 // 다국어 표시명 가져오기 함수
@@ -361,6 +402,16 @@ function placeSectorInColumn(sectorData, columnIndex, columnStacks, gridConfig) 
 
 // 텍스트 색상 결정 함수
 function getTextColor(dp) {
+    const isMobile = isMobileOrTabletDevice()
+
+    // 모바일/패드 환경에서 강한 변화일 때만 검정색 적용
+    if (isMobile) {
+        if (dp > 1) return 'black'        // 강한 상승 시 검은색
+        if (dp < -1) return 'white'        // 강한 하락 시 연한 회색 
+        return 'white'           // 기본 - 흰색
+    }
+
+    // PC 환경은 기존 로직 유지
     if (dp > 3) return 'black'        // 강한 상승 시 검은색
     if (dp < -3) return '#ddd'        // 강한 하락 시 연한 회색 
     return 'white'                    // 기본 - 흰색
@@ -389,7 +440,7 @@ function createTreemapNodes(svg, root, className, transform, isFetch = false) {
         .attr('ry', CONFIG.colors.ui.borderRadius)
 
     // 모바일/패드 환경 감지
-    const isMobileOrTablet = isMobile() || (window.innerWidth <= 1024 && 'ontouchstart' in window)
+    const isMobileOrTablet = isMobileOrTabletDevice()
 
     if (isMobileOrTablet) {
         // 모바일/패드 환경: SVG text 요소 사용
@@ -414,7 +465,7 @@ function createMobileTextElements(node) {
         const charWidth = fontSize * 0.6
         const maxCharsPerLine = Math.floor(maxWidth / charWidth)
 
-        for (const word of words) {
+        for (let word of words) {
             const testLine = currentLine ? `${currentLine} ${word}` : word
             if (testLine.length <= maxCharsPerLine) {
                 currentLine = testLine
@@ -462,10 +513,30 @@ function createMobileTextElements(node) {
         const textPadding = 8
         const availableWidth = boxWidth - (textPadding * 2)
 
-        let currentY = centerY - nameSize - 10
+        // 텍스트 데이터 준비
+        const nameText = displayName !== originalName && originalName ? originalName : (originalName || displayName)
+        const icon = d.data['dp'] > 0 ? '▲' : d.data['dp'] < 0 ? '▼' : ''
+        const changeText = `${icon}${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`
 
-        // 게스트 주식 배지 (있는 경우)
-        if (isGuest && originalSector) {
+        // 각 텍스트의 줄 수 미리 계산
+        const nameLines = wrapText(nameText, availableWidth, nameSize)
+        const changeLines = wrapText(changeText, availableWidth, changeSize)
+        const hasDisplayNameDiff = displayName !== originalName && originalName
+        const hasGuestBadge = isGuest && originalSector
+
+        // 전체 텍스트 높이 계산하여 정중앙에 배치
+        const guestBadgeHeight = hasGuestBadge ? nameSize * 0.6 : 0
+        const nameTextHeight = nameSize * 1.2 * nameLines.length
+        const displayTextHeight = hasDisplayNameDiff ? nameSize * 0.8 * 1.2 * wrapText(displayName, availableWidth, nameSize * 0.8).length : 0
+        const changeTextHeight = changeSize * 1.2 * changeLines.length
+        const totalTextHeight = guestBadgeHeight + nameTextHeight + displayTextHeight + changeTextHeight
+
+        // 정중앙부터 시작 (작은 박스의 경우 약간 아래로 조정)
+        const centerOffset = boxHeight < 100 ? Math.max(3, boxHeight * 0.08) : Math.max(3, boxHeight * 0.04)
+        let currentY = centerY - (totalTextHeight / 2) + centerOffset
+
+        // 게스트 주식 배지
+        if (hasGuestBadge) {
             g.append('text')
                 .attr('x', centerX)
                 .attr('y', currentY)
@@ -475,16 +546,10 @@ function createMobileTextElements(node) {
                 .attr('font-size', nameSize * 0.6)
                 .attr('font-weight', 'bold')
                 .text(`[${originalSector}]`)
-
-            currentY += nameSize * 0.8
+            currentY += guestBadgeHeight + 2
         }
 
-        // 회사명 (원래 이름)
-        const nameText = displayName !== originalName && originalName
-            ? originalName
-            : (originalName || displayName)
-
-        const nameLines = wrapText(nameText, availableWidth, nameSize)
+        // 회사명
         const nameTextGroup = g.append('text')
             .attr('x', centerX)
             .attr('y', currentY)
@@ -494,20 +559,18 @@ function createMobileTextElements(node) {
             .attr('font-size', nameSize)
             .attr('font-weight', 'bold')
 
-        // 여러 줄 처리
         nameLines.forEach((line, index) => {
             nameTextGroup.append('tspan')
                 .attr('x', centerX)
                 .attr('dy', index === 0 ? 0 : nameSize * 1.2)
+                .attr('fill', textColor)
                 .text(line)
         })
+        currentY += nameTextHeight
 
-        currentY += nameSize * 1.2 * nameLines.length
-
-        // 부가 설명 (displayName이 다른 경우) + margin-top 3px 추가
-        if (displayName !== originalName && originalName) {
-            currentY += 3 // 3px margin-top 추가
-
+        // 부가 설명 (displayName이 다른 경우)
+        if (hasDisplayNameDiff) {
+            currentY += 2
             const displayLines = wrapText(displayName, availableWidth, nameSize * 0.8)
             const displayTextGroup = g.append('text')
                 .attr('x', centerX)
@@ -518,23 +581,18 @@ function createMobileTextElements(node) {
                 .attr('font-size', nameSize * 0.8)
                 .attr('opacity', 0.8)
 
-            // 여러 줄 처리
             displayLines.forEach((line, index) => {
                 displayTextGroup.append('tspan')
                     .attr('x', centerX)
                     .attr('dy', index === 0 ? 0 : nameSize * 0.8 * 1.2)
+                    .attr('fill', textColor)
                     .text(line)
             })
-
-            currentY += nameSize * 0.8 * 1.2 * displayLines.length
+            currentY += displayTextHeight
         }
 
         // 변화율 텍스트
-        currentY += 8 // 간격 추가
-        const icon = d.data['dp'] > 0 ? '▲' : d.data['dp'] < 0 ? '▼' : ''
-        const changeText = `${icon}${d.data['c']} (${Math.round(d.data['dp'] * 100) / 100}%)`
-
-        const changeLines = wrapText(changeText, availableWidth, changeSize)
+        currentY += 4
         const changeTextGroup = g.append('text')
             .attr('x', centerX)
             .attr('y', currentY)
@@ -544,11 +602,11 @@ function createMobileTextElements(node) {
             .attr('font-size', changeSize)
             .attr('font-weight', 'bold')
 
-        // 여러 줄 처리
         changeLines.forEach((line, index) => {
             changeTextGroup.append('tspan')
                 .attr('x', centerX)
-                .attr('dy', index === 0 ? 0 : changeSize * 1.2)
+                .attr('dy', index === 0 ? 0 : changeSize * 1.1)
+                .attr('fill', textColor)
                 .text(line)
         })
     })
@@ -814,16 +872,41 @@ onMounted(() => {
 const func = {
     getColor(change) {
         const colors = CONFIG.colors.stock
+        const isMobileOrTablet = isMobileOrTabletDevice()
 
-        if (change > 3) return colors.strongUp
-        if (change > 2) return colors.up3
-        if (change > 1) return colors.up2
-        if (change > 0) return colors.up1
-        if (change === 0) return colors.neutral
-        if (change < -3) return colors.strongDown
-        if (change < -2) return colors.down3
-        if (change < -1) return colors.down2
-        return colors.down1
+        // 색상 진함 조정 함수
+        const adjustColor = (color) => {
+            if (!isMobileOrTablet) return color
+
+            // hex 색상을 RGB로 변환
+            const r = parseInt(color.slice(1, 3), 16)
+            const g = parseInt(color.slice(3, 5), 16)
+            const b = parseInt(color.slice(5, 7), 16)
+
+            // RGB 값을 조정 (강한 변화일 때는 1.5배, 약한 변화일 때는 1.2배)
+            const darken = (value) => {
+                const multiplier = (Math.abs(change) > 3) ? 1.5 : 1.2
+                return Math.min(255, Math.floor(value * multiplier))
+            }
+
+            // 진한 색상으로 변환
+            const newR = darken(r)
+            const newG = darken(g)
+            const newB = darken(b)
+
+            // RGB를 hex로 변환
+            return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`
+        }
+
+        if (change > 3) return adjustColor(colors.strongUp)
+        if (change > 2) return adjustColor(colors.up3)
+        if (change > 1) return adjustColor(colors.up2)
+        if (change > 0) return adjustColor(colors.up1)
+        if (change === 0) return adjustColor(colors.neutral)
+        if (change < -3) return adjustColor(colors.strongDown)
+        if (change < -2) return adjustColor(colors.down3)
+        if (change < -1) return adjustColor(colors.down2)
+        return adjustColor(colors.down1)
     },
 
     calcSector(d) {
@@ -1325,6 +1408,14 @@ h2 {
         position: relative;
         left: 0;
         /* 왼쪽 고정 */
+    }
+
+    .stocks-area svg text {
+        fill: inherit !important;
+    }
+
+    .stocks-area svg tspan {
+        fill: inherit !important;
     }
 }
 
