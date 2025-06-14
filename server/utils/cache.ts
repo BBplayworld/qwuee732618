@@ -202,8 +202,8 @@ export const incrementCallCountAndCheck = async (isMarketClosed: boolean): Promi
     callCount: newCallCount,
   })
 
-  // 30번 이상 호출되었고 아직 완료되지 않은 경우 방어로직 실행
-  if (newCallCount >= 100 && !state.hasCompletedInitialUpdate) {
+  // 200번 이상 호출되었고 아직 완료되지 않은 경우 방어로직 실행
+  if (newCallCount >= 200 && !state.hasCompletedInitialUpdate) {
     console.log(`[WARNING] Too many calls (${newCallCount}) without completion. Triggering defensive reset.`)
     await executeDefensiveReset()
     return true // 방어로직 실행됨
