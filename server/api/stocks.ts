@@ -213,6 +213,9 @@ async function performOneTimeUpdate() {
         }
 
         successCount++
+        // 성공 통계 로깅
+        const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
+        console.log(`[INFO] Update statistics: ${successCount}/${totalSymbols} successful (${successRate}%)`)
 
         // 1초 대기 (rate limit 고려 - 1회성이므로 좀 더 빠르게)
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -226,10 +229,6 @@ async function performOneTimeUpdate() {
         }
       }
     }
-
-    // 성공/실패 통계 로깅
-    const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-    console.log(`[INFO] Update statistics: ${successCount}/${totalSymbols} successful (${successRate}%)`)
 
     // 파일 캐시 업데이트 (부분적 성공이라도 저장)
     await writeFileCache(memoryCache)
@@ -300,9 +299,6 @@ async function updateStockDataInBackground() {
             }
 
             successCount++
-            // 성공/실패 통계 로깅
-            const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-            console.log(`[INFO] Background update statistics: ${successCount}/${totalSymbols} successful (${successRate}%)`)
 
             // 2초 대기 (rate limit 고려)
             await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -325,7 +321,9 @@ async function updateStockDataInBackground() {
       }
     }
 
-    console.log('[INFO] Background stock data update completed')
+    // 성공/실패 통계 로깅
+    const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
+    console.log(`[INFO] Background stock data update completed: ${successCount}/${totalSymbols} successful (${successRate}%)`)
   } catch (error: any) {
     console.error(`[ERROR] Background update failed:`, error?.message)
   } finally {
