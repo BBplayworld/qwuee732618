@@ -1,9 +1,10 @@
 import { promises as fs } from 'fs'
 import { join } from 'path'
 
-// 캐시 파일 경로 설정
-const CACHE_DIR = join(process.cwd(), '.cache')
-const CACHE_FILE = join(CACHE_DIR, 'stocks.json')
+// 환경에 따른 캐시 파일 경로 설정
+const isVercel = process.env.VERCEL === '1'
+const CACHE_DIR = isVercel ? '/tmp' : join(process.cwd(), '.cache')
+const CACHE_FILE = isVercel ? join('/tmp', 'stocks.json') : join(CACHE_DIR, 'stocks.json')
 
 // 캐시 TTL 설정 (밀리초)
 const CACHE_TTL = {
@@ -22,8 +23,10 @@ export const getCacheTTL = () => {
   return isMarketHours ? CACHE_TTL.MARKET_OPEN : CACHE_TTL.MARKET_CLOSED
 }
 
-// 캐시 디렉토리 생성
+// 캐시 디렉토리 생성 (로컬 환경에서만)
 const ensureCacheDir = async () => {
+  if (isVercel) return // Vercel에서는 /tmp가 이미 존재
+
   try {
     await fs.access(CACHE_DIR)
   } catch {
