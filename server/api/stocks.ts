@@ -1,66 +1,11 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
-import { promises as fs } from 'fs'
-import { join } from 'path'
+import { readFileCache, writeFileCache, getCacheTTL } from '~/server/utils/cache'
 
-// 환경에 따른 캐시 파일 경로 설정
-const getCacheFilePath = (): string => {
-  // Vercel 환경에서는 /tmp 디렉토리만 사용 가능
-  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-    return '/tmp/stocks-cache.json'
-  }
-  // 로컬 환경에서는 프로젝트 내 tmp 디렉토리 사용
-  return join(process.cwd(), 'tmp', 'stocks-cache.json')
-}
-
-const CACHE_FILE_PATH = getCacheFilePath()
-const CACHE_TTL_MARKET_OPEN = 90 * 1000 // 마켓 오픈 시: 90초
-const CACHE_TTL_MARKET_CLOSED = 12 * 60 * 60 * 1000 // 마켓 닫힘 시: 12시간
-const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY].filter((token): token is string => Boolean(token)) // undefined 값 제거
+const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY].filter((token): token is string => Boolean(token))
 
 let currentTokenIndex = 0
-
-const symbols = [
-  { name: 'QQQ', marketCap: 3415, high52: 540.81, c: 529.92, dp: 0.95, percentageFrom52WeekHigh: -2.02, sector: 'ETF', displayName: { en: 'QQQ Trust', ko: 'QQQ 트러스트', zh: 'QQQ信托' } },
-  { name: 'VOO', marketCap: 531.8, high52: 563.92, c: 550.66, dp: 1.03, percentageFrom52WeekHigh: -2.34, sector: 'ETF', displayName: { en: 'VOO ETF', ko: 'VOO ETF', zh: 'VOO ETF' } },
-
-  { name: 'AAPL', marketCap: 32807, high52: 260.09, c: 203.92, dp: 1.62, percentageFrom52WeekHigh: -21.6, sector: 'Technology', displayName: { en: 'Apple', ko: '애플', zh: '苹果' } },
-  { name: 'NVDA', marketCap: 34600, high52: 153.13, c: 141.72, dp: 1.19, percentageFrom52WeekHigh: -7.38, sector: 'Technology', displayName: { en: 'NVIDIA', ko: '엔비디아', zh: '英伟达' } },
-  { name: 'MSFT', marketCap: 27906, high52: 473.28, c: 470.38, dp: 0.54, percentageFrom52WeekHigh: -0.62, sector: 'Technology', displayName: { en: 'Microsoft', ko: '마이크로소프트', zh: '微软' } },
-  { name: 'GOOG', marketCap: 18765, high52: 175.76, c: 174.92, dp: 3.0, percentageFrom52WeekHigh: -0.48, sector: 'Technology', displayName: { en: 'Alphabet', ko: '알파벳', zh: '谷歌' } },
-  { name: 'AMZN', marketCap: 10872, high52: 246.42, c: 213.57, dp: 2.71, percentageFrom52WeekHigh: -13.33, sector: 'Consumer Discretionary', displayName: { en: 'Amazon', ko: '아마존', zh: '亚马逊' } },
-  { name: 'META', marketCap: 14603, high52: 702.41, c: 697.71, dp: 1.91, percentageFrom52WeekHigh: -0.69, sector: 'Technology', displayName: { en: 'Meta', ko: '메타', zh: '脸书' } },
-  { name: 'AVGO', marketCap: 3418, high52: 255.2, c: 246.93, dp: -5.0, percentageFrom52WeekHigh: -3.29, sector: 'Technology', displayName: { en: 'Broadcom', ko: '브로드컴', zh: '博通' } },
-  { name: 'TSLA', marketCap: 9506, high52: 305.41, c: 295.14, dp: 3.67, percentageFrom52WeekHigh: -3.29, sector: 'AI & Autonomous Driving', displayName: { en: 'Tesla', ko: '테슬라', zh: '特斯拉' } },
-
-  { name: 'COST', marketCap: 8437, high52: 1021.0, c: 1014.94, dp: 0.36, percentageFrom52WeekHigh: -0.61, sector: 'Consumer Staples', displayName: { en: 'Costco', ko: '코스트코', zh: '好市多' } },
-  { name: 'ASML', marketCap: 22744, high52: 762.11, c: 753.02, dp: 0.7, percentageFrom52WeekHigh: -1.18, sector: 'Technology', displayName: { en: 'ASML', ko: 'ASML', zh: '阿斯麦' } },
-  { name: 'NFLX', marketCap: 27516, high52: 1261.0, c: 1241.48, dp: -0.71, percentageFrom52WeekHigh: -1.55, sector: 'Communication Services', displayName: { en: 'Netflix', ko: '넷플릭스', zh: '网飞' } },
-  { name: 'AMD', marketCap: 14001, high52: 118.36, c: 116.19, dp: 0.4, percentageFrom52WeekHigh: -1.8, sector: 'Technology', displayName: { en: 'AMD', ko: 'AMD', zh: '超威' } },
-  { name: 'PLTR', marketCap: 5.55, high52: 128.11, c: 127.72, dp: 6.5, percentageFrom52WeekHigh: -0.31, sector: 'Technology', displayName: { en: 'Palantir', ko: '팔란티어', zh: '帕兰提尔' } },
-
-  { name: 'VZ', marketCap: 240, high52: 43.91, c: 43.8, dp: 1.13, percentageFrom52WeekHigh: -0.25, sector: 'Communication Services', displayName: { en: 'Verizon', ko: '버라이즌', zh: '威瑞森' } },
-  { name: 'WMT', marketCap: 4090, high52: 98.55, c: 97.47, dp: -0.53, percentageFrom52WeekHigh: -1.07, sector: 'Consumer Staples', displayName: { en: 'Walmart', ko: '월마트', zh: '沃尔玛' } },
-
-  { name: 'JPM', marketCap: 7385, high52: 266.65, c: 265.73, dp: 1.44, percentageFrom52WeekHigh: -0.34, sector: 'Financials', displayName: { en: 'JPMorgan', ko: 'JP모건', zh: '摩根' } },
-  { name: 'BAC', marketCap: 2969, high52: 45.16, c: 44.97, dp: 1.32, percentageFrom52WeekHigh: -0.43, sector: 'Financials', displayName: { en: 'BofA', ko: '뱅크오브아메리카', zh: '美国银行' } },
-
-  { name: 'NEE', marketCap: 1485, high52: 72.29, c: 72.16, dp: 0.88, percentageFrom52WeekHigh: -0.18, sector: 'Utilities', displayName: { en: 'NextEra', ko: '넥스트에라', zh: '未来能源' } },
-
-  { name: 'IONQ', marketCap: 1015, high52: 54.74, c: 39.02, dp: 6.38, percentageFrom52WeekHigh: -28.72, sector: 'Technology', displayName: { en: 'IonQ', ko: '아이온큐', zh: 'IonQ' } },
-  { name: 'TEM', marketCap: 1075, high52: 91.45, c: 62.07, dp: 5.74, percentageFrom52WeekHigh: -32.11, sector: 'Healthcare', displayName: { en: 'Tempus', ko: '템퍼스', zh: 'Tempus' } },
-  { name: 'JOBY', marketCap: 643, high52: 10.72, c: 8.12, dp: 3, percentageFrom52WeekHigh: -10, sector: 'Industrials', displayName: { en: 'Joby', ko: '조비', zh: '乔比' } },
-  { name: 'RKLB', marketCap: 1334, high52: 33.34, c: 28.92, dp: 7.59, percentageFrom52WeekHigh: -13.31, sector: 'Aerospace', displayName: { en: 'Rocket Lab', ko: '로켓랩', zh: '火箭实验室' } },
-  { name: 'SMR', marketCap: 458, high52: 36.85, c: 34.36, dp: 3.33, percentageFrom52WeekHigh: -6.78, sector: 'Nuclear/Energy', displayName: { en: 'NuScale SMR', ko: '누스케일 SMR', zh: 'NuScale 小型模块化反应堆' } },
-  { name: 'TSM', marketCap: 6047, high52: 226.4, c: 205.18, dp: 0.8, percentageFrom52WeekHigh: -9.35, sector: 'Technology', displayName: { en: 'TSMC', ko: 'TSMC', zh: '台积电' } },
-
-  { name: 'SCHD', marketCap: 681, high52: 29.72, c: 26.54, dp: 1.18, percentageFrom52WeekHigh: -10.74, sector: 'ETF', displayName: { en: 'SCHD Dividend ETF', ko: '미국 배당주 슈왑 ETF', zh: '美国分红股SCHD ETF' } },
-  { name: 'JEPQ', marketCap: 264, high52: 58.54, c: 52.7, dp: 0.69, percentageFrom52WeekHigh: -9.96, sector: 'ETF', displayName: { en: 'JEPQ Nasdaq Div ETF', ko: '나스닥 100 JP모건 고배당 ETF', zh: '纳斯达克JP摩根高股息ETF' } },
-  { name: 'IEF', marketCap: 100, high52: 100, c: 93.51, dp: -0.77, percentageFrom52WeekHigh: 100, sector: 'ETF', displayName: { en: '7–10Y Treasury', ko: '미국 국채 7–10년', zh: '美国国债7-10年' } },
-  { name: 'TLT', marketCap: 100, high52: 100, c: 85.35, dp: -1.27, percentageFrom52WeekHigh: 100, sector: 'ETF', displayName: { en: '20Y+ Treasury', ko: '미국 국채 20년 이상', zh: '美国国债 20年以上' } },
-  { name: 'GLD', marketCap: 1003, high52: 317.63, c: 305.18, dp: -4.15, percentageFrom52WeekHigh: -3.93, sector: 'ETF', displayName: { en: 'Gold SPDR', ko: '금 ETF', zh: '黄金ETF' } },
-]
 
 interface StockData {
   name: string
@@ -71,190 +16,208 @@ interface StockData {
   percentageFrom52WeekHigh: number
   sector: string
   displayName: { en: string; ko: string; zh: string }
+  timestamp?: number
 }
 
-interface CacheData {
-  data: StockData[]
-  timestamp: number
-}
+// 심볼 데이터 정의
+const symbols: StockData[] = [
+  // Technology Sector
+  { name: 'AAPL', marketCap: 2800000, c: 175.04, dp: 0.51, high52: 199.62, percentageFrom52WeekHigh: -12.3, sector: 'Technology', displayName: { en: 'Apple Inc.', ko: '애플', zh: '苹果公司' } },
+  { name: 'MSFT', marketCap: 3200000, c: 465.28, dp: 0.71, high52: 475.0, percentageFrom52WeekHigh: -2.05, sector: 'Technology', displayName: { en: 'Microsoft', ko: '마이크로소프트', zh: '微软' } },
+  { name: 'NVDA', marketCap: 2800000, c: 1125.48, dp: 0.02, high52: 1199.0, percentageFrom52WeekHigh: -6.13, sector: 'Technology', displayName: { en: 'NVIDIA', ko: '엔비디아', zh: '英伟达' } },
+  { name: 'GOOGL', marketCap: 2200000, c: 175.35, dp: 0.46, high52: 182.0, percentageFrom52WeekHigh: -3.65, sector: 'Technology', displayName: { en: 'Alphabet', ko: '알파벳', zh: '字母表' } },
+  { name: 'META', marketCap: 1200000, c: 485.58, dp: 0.42, high52: 531.49, percentageFrom52WeekHigh: -8.64, sector: 'Technology', displayName: { en: 'Meta Platforms', ko: '메타', zh: '元平台' } },
+  { name: 'TSLA', marketCap: 650000, c: 325.31, dp: 0.0, high52: 488.54, percentageFrom52WeekHigh: -33.4, sector: 'Technology', displayName: { en: 'Tesla', ko: '테슬라', zh: '特斯拉' } },
+  { name: 'AMD', marketCap: 280000, c: 178.72, dp: 0.0, high52: 227.3, percentageFrom52WeekHigh: -21.4, sector: 'Technology', displayName: { en: 'AMD', ko: 'AMD', zh: 'AMD' } },
+  { name: 'INTC', marketCap: 180000, c: 43.31, dp: 1.39, high52: 51.28, percentageFrom52WeekHigh: -15.5, sector: 'Technology', displayName: { en: 'Intel', ko: '인텔', zh: '英特尔' } },
+  // 추가된 유망 기술 기업들
+  { name: 'IONQ', marketCap: 1800, c: 8.45, dp: 0.0, high52: 21.6, percentageFrom52WeekHigh: -60.9, sector: 'Technology', displayName: { en: 'IonQ', ko: '아이온큐', zh: '离子量子' } },
+  { name: 'RGTI', marketCap: 1200, c: 2.85, dp: 0.0, high52: 5.4, percentageFrom52WeekHigh: -47.2, sector: 'Technology', displayName: { en: 'Rigetti Computing', ko: '리게티 컴퓨팅', zh: '里格蒂计算' } },
+  { name: 'RKLB', marketCap: 2200, c: 4.25, dp: 0.0, high52: 8.05, percentageFrom52WeekHigh: -47.2, sector: 'Technology', displayName: { en: 'Rocket Lab', ko: '로켓랩', zh: '火箭实验室' } },
+  { name: 'PLTR', marketCap: 52000, c: 24.85, dp: 0.0, high52: 25.24, percentageFrom52WeekHigh: -1.5, sector: 'Technology', displayName: { en: 'Palantir', ko: '팔란티어', zh: '帕兰提尔' } },
+  // 추가된 상위 시가총액 기술 기업들
+  { name: 'AVGO', marketCap: 680000, c: 1485.25, dp: 0.85, high52: 1520.0, percentageFrom52WeekHigh: -2.3, sector: 'Technology', displayName: { en: 'Broadcom', ko: '브로드컴', zh: '博通' } },
+  { name: 'ORCL', marketCap: 420000, c: 152.45, dp: 1.25, high52: 165.0, percentageFrom52WeekHigh: -7.6, sector: 'Technology', displayName: { en: 'Oracle', ko: '오라클', zh: '甲骨文' } },
+  { name: 'CRM', marketCap: 285000, c: 295.67, dp: 0.92, high52: 315.0, percentageFrom52WeekHigh: -6.1, sector: 'Technology', displayName: { en: 'Salesforce', ko: '세일즈포스', zh: '赛富时' } },
+  { name: 'ADBE', marketCap: 245000, c: 535.28, dp: 0.68, high52: 575.0, percentageFrom52WeekHigh: -6.9, sector: 'Technology', displayName: { en: 'Adobe', ko: '어도비', zh: '奥多比' } },
+  { name: 'NFLX', marketCap: 195000, c: 445.85, dp: 1.15, high52: 485.0, percentageFrom52WeekHigh: -8.1, sector: 'Technology', displayName: { en: 'Netflix', ko: '넷플릭스', zh: '奈飞' } },
 
-// 메모리 캐시
+  // Healthcare (8)
+  { name: 'JNJ', marketCap: 400000, c: 158.92, dp: 2.85, high52: 180.25, percentageFrom52WeekHigh: -11.8, sector: 'Healthcare', displayName: { en: 'Johnson & Johnson', ko: '존슨앤존슨', zh: '强生' } },
+  { name: 'UNH', marketCap: 480000, c: 495.67, dp: 1.48, high52: 560.15, percentageFrom52WeekHigh: -11.5, sector: 'Healthcare', displayName: { en: 'UnitedHealth', ko: '유나이티드헬스', zh: '联合健康' } },
+  { name: 'PFE', marketCap: 160000, c: 28.45, dp: 6.25, high52: 42.18, percentageFrom52WeekHigh: -32.6, sector: 'Healthcare', displayName: { en: 'Pfizer', ko: '화이자', zh: '辉瑞' } },
+  { name: 'MRK', marketCap: 340000, c: 128.95, dp: 2.48, high52: 135.25, percentageFrom52WeekHigh: -4.7, sector: 'Healthcare', displayName: { en: 'Merck', ko: '머크', zh: '默克' } },
+  { name: 'ABBV', marketCap: 310000, c: 165.28, dp: 3.58, high52: 188.45, percentageFrom52WeekHigh: -12.3, sector: 'Healthcare', displayName: { en: 'AbbVie', ko: '애브비', zh: '艾伯维' } },
+  { name: 'LLY', marketCap: 780000, c: 785.45, dp: 0.76, high52: 825.0, percentageFrom52WeekHigh: -4.8, sector: 'Healthcare', displayName: { en: 'Eli Lilly', ko: '일라이릴리', zh: '礼来' } },
+  { name: 'TMO', marketCap: 220000, c: 555.67, dp: 0.3, high52: 610.25, percentageFrom52WeekHigh: -8.9, sector: 'Healthcare', displayName: { en: 'Thermo Fisher', ko: '써모피셔', zh: '赛默飞' } },
+  { name: 'DHR', marketCap: 200000, c: 255.28, dp: 0.69, high52: 285.0, percentageFrom52WeekHigh: -10.4, sector: 'Healthcare', displayName: { en: 'Danaher', ko: '다나허', zh: '丹纳赫' } },
+
+  // Financial (7)
+  { name: 'JPM', marketCap: 550000, c: 195.45, dp: 2.35, high52: 205.25, percentageFrom52WeekHigh: -4.8, sector: 'Financial', displayName: { en: 'JPMorgan Chase', ko: 'JP모건', zh: '摩根大通' } },
+  { name: 'BAC', marketCap: 290000, c: 36.28, dp: 2.75, high52: 38.95, percentageFrom52WeekHigh: -6.9, sector: 'Financial', displayName: { en: 'Bank of America', ko: '뱅크오브아메리카', zh: '美国银行' } },
+  { name: 'V', marketCap: 590000, c: 285.67, dp: 0.72, high52: 295.25, percentageFrom52WeekHigh: -3.2, sector: 'Financial', displayName: { en: 'Visa', ko: '비자', zh: '维萨' } },
+  { name: 'MA', marketCap: 440000, c: 455.28, dp: 0.56, high52: 495.0, percentageFrom52WeekHigh: -8.0, sector: 'Financial', displayName: { en: 'Mastercard', ko: '마스터카드', zh: '万事达' } },
+  { name: 'GS', marketCap: 135000, c: 395.45, dp: 2.68, high52: 395.58, percentageFrom52WeekHigh: -0.03, sector: 'Financial', displayName: { en: 'Goldman Sachs', ko: '골드만삭스', zh: '高盛' } },
+  { name: 'MS', marketCap: 155000, c: 88.95, dp: 3.38, high52: 96.25, percentageFrom52WeekHigh: -7.6, sector: 'Financial', displayName: { en: 'Morgan Stanley', ko: '모건스탠리', zh: '摩根士丹利' } },
+  { name: 'BLK', marketCap: 125000, c: 805.28, dp: 2.45, high52: 845.0, percentageFrom52WeekHigh: -4.7, sector: 'Financial', displayName: { en: 'BlackRock', ko: '블랙록', zh: '贝莱德' } },
+
+  // Consumer (7)
+  { name: 'AMZN', marketCap: 1900000, c: 182.45, dp: 0, high52: 192.25, percentageFrom52WeekHigh: -5.1, sector: 'Consumer', displayName: { en: 'Amazon', ko: '아마존', zh: '亚马逊' } },
+  { name: 'WMT', marketCap: 490000, c: 60.28, dp: 1.42, high52: 62.15, percentageFrom52WeekHigh: -3.0, sector: 'Consumer', displayName: { en: 'Walmart', ko: '월마트', zh: '沃尔玛' } },
+  { name: 'PG', marketCap: 390000, c: 158.95, dp: 2.4, high52: 160.25, percentageFrom52WeekHigh: -0.8, sector: 'Consumer', displayName: { en: 'Procter & Gamble', ko: 'P&G', zh: '宝洁' } },
+  { name: 'KO', marketCap: 270000, c: 61.28, dp: 3.1, high52: 65.45, percentageFrom52WeekHigh: -6.4, sector: 'Consumer', displayName: { en: 'Coca-Cola', ko: '코카콜라', zh: '可口可乐' } },
+  { name: 'MCD', marketCap: 215000, c: 285.67, dp: 2.25, high52: 300.25, percentageFrom52WeekHigh: -4.9, sector: 'Consumer', displayName: { en: "McDonald's", ko: '맥도날드', zh: '麦当劳' } },
+  { name: 'SBUX', marketCap: 115000, c: 92.45, dp: 2.35, high52: 118.25, percentageFrom52WeekHigh: -21.8, sector: 'Consumer', displayName: { en: 'Starbucks', ko: '스타벅스', zh: '星巴克' } },
+  { name: 'NKE', marketCap: 155000, c: 100.28, dp: 1.38, high52: 130.45, percentageFrom52WeekHigh: -23.1, sector: 'Consumer', displayName: { en: 'Nike', ko: '나이키', zh: '耐克' } },
+
+  // ETF - Macroeconomic Indicators (10)
+  { name: 'SPY', marketCap: 520000, c: 485.25, dp: 0.35, high52: 495.0, percentageFrom52WeekHigh: -2.0, sector: 'ETF', displayName: { en: 'SPDR S&P 500 ETF', ko: 'S&P 500 ETF', zh: '标普500 ETF' } },
+  { name: 'QQQ', marketCap: 245000, c: 395.67, dp: 0.42, high52: 408.0, percentageFrom52WeekHigh: -3.0, sector: 'ETF', displayName: { en: 'Invesco QQQ Trust', ko: '나스닥 100 ETF', zh: '纳斯达克100 ETF' } },
+  { name: 'IWM', marketCap: 65000, c: 198.45, dp: 0.28, high52: 215.0, percentageFrom52WeekHigh: -7.7, sector: 'ETF', displayName: { en: 'iShares Russell 2000 ETF', ko: '러셀 2000 ETF', zh: '罗素2000 ETF' } },
+  { name: 'TLT', marketCap: 18000, c: 92.35, dp: -0.15, high52: 105.0, percentageFrom52WeekHigh: -12.0, sector: 'ETF', displayName: { en: '20+ Year Treasury Bond ETF', ko: '20년+ 국채 ETF', zh: '20年+国债 ETF' } },
+  { name: 'GLD', marketCap: 58000, c: 185.67, dp: 0.85, high52: 195.0, percentageFrom52WeekHigh: -4.8, sector: 'ETF', displayName: { en: 'SPDR Gold Shares', ko: '금 ETF', zh: '黄金 ETF' } },
+  { name: 'USO', marketCap: 2800, c: 68.45, dp: 1.25, high52: 85.0, percentageFrom52WeekHigh: -19.5, sector: 'ETF', displayName: { en: 'United States Oil Fund', ko: '원유 ETF', zh: '原油 ETF' } },
+  { name: 'VIX', marketCap: 1200, c: 18.25, dp: -2.15, high52: 35.0, percentageFrom52WeekHigh: -47.9, sector: 'ETF', displayName: { en: 'CBOE Volatility Index', ko: '변동성 지수', zh: '波动率指数' } },
+  { name: 'DXY', marketCap: 850, c: 104.25, dp: 0.12, high52: 108.0, percentageFrom52WeekHigh: -3.5, sector: 'ETF', displayName: { en: 'US Dollar Index', ko: '달러 지수', zh: '美元指数' } },
+  { name: 'EEM', marketCap: 28000, c: 42.85, dp: 0.68, high52: 48.0, percentageFrom52WeekHigh: -10.7, sector: 'ETF', displayName: { en: 'iShares MSCI Emerging Markets ETF', ko: '신흥국 ETF', zh: '新兴市场 ETF' } },
+  { name: 'EFA', marketCap: 75000, c: 78.45, dp: 0.45, high52: 82.0, percentageFrom52WeekHigh: -4.3, sector: 'ETF', displayName: { en: 'iShares MSCI EAFE ETF', ko: '선진국 ETF', zh: '发达市场 ETF' } },
+]
+
 let memoryCache: StockData[] = []
 let lastFetchTime = 0
 
-// 현재 마켓 상태에 따른 캐시 TTL 반환
-function getCacheTTL(): number {
-  const { isMarketOpen } = useMarketOpen()
-  return isMarketOpen ? CACHE_TTL_MARKET_OPEN : CACHE_TTL_MARKET_CLOSED
-}
-
 // 현재 토큰 가져오기
 function getCurrentToken(): string {
-  if (tokenArr.length === 0) {
-    throw new Error('No API tokens available')
-  }
-  return tokenArr[currentTokenIndex % tokenArr.length]
+  return tokenArr[currentTokenIndex]
 }
 
-// 다음 토큰으로 순환
+// 토큰 순환
 function rotateToken(): void {
   currentTokenIndex = (currentTokenIndex + 1) % tokenArr.length
 }
 
-// 파일 캐시 읽기
-async function readFileCache(): Promise<StockData[] | null> {
-  try {
-    const data = await fs.readFile(CACHE_FILE_PATH, 'utf-8')
-    const cacheData: CacheData = JSON.parse(data)
-
-    // 캐시가 유효한지 확인 (마켓 상태에 따른 TTL)
-    if (Date.now() - cacheData.timestamp < getCacheTTL()) {
-      return cacheData.data
-    }
-    return null
-  } catch (error) {
-    // 파일이 없거나 읽을 수 없는 경우
-    return null
-  }
-}
-
-// 파일 캐시 저장
-async function writeFileCache(data: StockData[]): Promise<void> {
-  try {
-    // 캐시 디렉토리 생성 (필요시)
-    const cacheDir = CACHE_FILE_PATH.includes('/tmp/') ? '/tmp' : join(process.cwd(), 'tmp')
-
-    await fs.mkdir(cacheDir, { recursive: true })
-
-    const cacheData: CacheData = {
-      data,
-      timestamp: Date.now(),
-    }
-
-    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(cacheData, null, 2))
-    console.log(`[INFO] Cache file saved to: ${CACHE_FILE_PATH}`)
-  } catch (error) {
-    console.warn('[WARN] Failed to write cache file:', error)
-  }
-}
-
-// 외부 API 호출
-async function fetchStockData(symbol: any): Promise<StockData> {
-  const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
-
-  const response = await $fetch(url, {
-    headers: {
-      'X-Finnhub-Token': getCurrentToken(),
-      'Content-Type': 'application/json',
-    },
-  })
-
-  const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-
-  return {
-    name: symbol.name,
-    marketCap: symbol.marketCap,
-    c: response.c,
-    dp: response.dp,
-    high52: symbol.high52,
-    percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
-    sector: symbol.sector,
-    displayName: symbol.displayName,
-  }
-}
-
-// 모든 주식 데이터 가져오기 (토큰 순환 포함)
-async function fetchAllStockData(): Promise<StockData[]> {
-  let attempts = 0
-
-  while (attempts < tokenArr.length) {
-    try {
-      const requests = symbols.map((symbol) => fetchStockData(symbol))
-      const result = await Promise.all(requests)
-      return result
-    } catch (error: any) {
-      console.log(`[INFO] API call failed with token ${currentTokenIndex + 1}:`, error?.message)
-
-      // 429 (Rate Limit) 또는 401 (Unauthorized) 에러인 경우 토큰 순환
-      if (error?.response?.status === 429 || error?.response?.status === 401) {
-        rotateToken()
-        attempts++
-
-        if (attempts < tokenArr.length) {
-          console.log(`[INFO] Rotating to token ${currentTokenIndex + 1}, attempt ${attempts + 1}`)
-          continue
-        }
-      }
-
-      throw new Error(`Failed to fetch stock data after ${attempts + 1} attempts`)
-    }
-  }
-
-  throw new Error('All API tokens exhausted')
-}
-
-export default defineEventHandler(async () => {
+// 배치 단위로 Finnhub API 호출 (안정성 개선)
+async function fetchStockBatch(symbolNames: string[], batchSize: number): Promise<StockData[]> {
   const now = Date.now()
 
   // 1. 메모리 캐시 확인 (가장 빠름)
   if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
-    console.log('[INFO] Stocks Memory cache hit')
+    console.log('[INFO] Using memory cache for stocks')
     return memoryCache
   }
 
   // 2. 파일 캐시 확인 (두 번째로 빠름)
   const fileCache = await readFileCache()
-  if (fileCache) {
-    console.log('[INFO] Stocks File cache hit')
-
+  if (fileCache && fileCache.length === symbols.length) {
+    console.log('[INFO] Using file cache for stocks')
     memoryCache = fileCache
     lastFetchTime = now
     return fileCache
   }
 
-  // 3. 외부 API 호출이 필요한 경우
-  const { isMarketOpen } = useMarketOpen()
-  const marketOpen = isMarketOpen
+  // 3. 캐시가 없거나 불완전한 경우, 하드코딩된 데이터로 초기화
+  console.log('[INFO] Initializing with hardcoded data')
+  const results = [...symbols] // 전체 symbols 배열 복사
 
-  // 마켓이 닫혀있을 때는 1회만 API 호출 후 12시간 캐시 사용
-  if (!marketOpen) {
+  // 메모리 캐시 및 파일 캐시 업데이트
+  memoryCache = results
+  lastFetchTime = now
+  await writeFileCache(results)
+
+  // 4. 백그라운드에서 점진적 업데이트 (응답 차단하지 않음)
+  updateStockDataInBackground()
+
+  return results
+}
+
+// 백그라운드에서 주식 데이터 업데이트
+async function updateStockDataInBackground() {
+  console.log('[INFO] Starting background stock data update')
+
+  const sectors = [...new Set(symbols.map((s) => s.sector))]
+
+  for (const sector of sectors) {
+    const sectorSymbols = symbols.filter((s) => s.sector === sector)
+
     try {
-      console.log('[INFO] Market closed - Fetching fresh stock data from API (once)')
-      const freshData = await fetchAllStockData()
+      // 섹터별로 순차 처리 (rate limit 고려)
+      for (const symbol of sectorSymbols) {
+        try {
+          const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
+          const response = await $fetch(url, {
+            headers: {
+              'X-Finnhub-Token': getCurrentToken(),
+              'Content-Type': 'application/json',
+            },
+          })
 
-      // 캐시 업데이트
-      memoryCache = freshData
-      lastFetchTime = now
+          const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
 
-      // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
-      writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update file cache:', err))
+          const updatedStock = {
+            ...symbol,
+            c: response.c,
+            dp: response.dp,
+            percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+          }
 
-      return freshData
+          // 메모리 캐시에서 해당 주식 업데이트
+          const index = memoryCache.findIndex((s) => s.name === symbol.name)
+          if (index !== -1) {
+            memoryCache[index] = updatedStock
+          }
+
+          // 2초 대기 (rate limit 고려)
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+        } catch (error: any) {
+          console.error(`[ERROR] Failed to update ${symbol.name}:`, error?.message)
+
+          if (error?.response?.status === 429) {
+            rotateToken()
+            await new Promise((resolve) => setTimeout(resolve, 5000)) // 5초 대기
+          }
+        }
+      }
+
+      // 섹터 완료 후 파일 캐시 업데이트
+      await writeFileCache(memoryCache)
+      console.log(`[INFO] Updated ${sector} sector data`)
     } catch (error: any) {
-      console.error('[ERROR] Failed to fetch stock data:', error?.message)
-
-      // API 호출이 실패한 경우, 기존 symbols 데이터라도 반환
-      return symbols
+      console.error(`[ERROR] Failed to update ${sector} sector:`, error?.message)
     }
   }
 
-  // 마켓이 열려있을 때는 90초마다 API 호출
+  console.log('[INFO] Background stock data update completed')
+}
+
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
+  const batchIndex = parseInt(query.batchIndex as string) || 0
+  const batchSize = parseInt(query.batchSize as string) || 12
+
   try {
-    console.log('[INFO] Market open - Fetching fresh stock data from API')
-    const freshData = await fetchAllStockData()
+    // 전체 데이터 가져오기
+    const allData = await fetchStockBatch(
+      symbols.map((s) => s.name),
+      batchSize
+    )
 
-    // 캐시 업데이트
-    memoryCache = freshData
-    lastFetchTime = now
+    // 현재 배치에 해당하는 데이터만 선택
+    const startIndex = batchIndex * batchSize
+    const endIndex = Math.min(startIndex + batchSize, allData.length)
+    const batchData = allData.slice(startIndex, endIndex)
 
-    // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
-    writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update file cache:', err))
-
-    return freshData
-  } catch (error: any) {
-    console.error('[ERROR] Failed to fetch stock data:', error?.message)
-
-    // API 호출이 실패한 경우, 기존 symbols 데이터라도 반환
-    return symbols
+    return {
+      data: batchData,
+      hasNextBatch: endIndex < allData.length,
+      totalSymbols: allData.length,
+      currentBatch: batchIndex,
+      totalBatches: Math.ceil(allData.length / batchSize),
+    }
+  } catch (error) {
+    console.error('[ERROR] Failed to fetch stock batch:', error)
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to fetch stock data',
+    })
   }
 })
