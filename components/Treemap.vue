@@ -31,6 +31,11 @@ const treemapContainer = ref(null)
 const economicIndicatorsContainer = ref(null)
 const items = ref([])
 const economicIndicators = ref([])
+const marketClosedUpdateStatus = ref({
+    hasCompletedInitialUpdate: false,
+    isBackgroundUpdateInProgress: false
+})
+const hasEconomicIndicatorsFetched = ref(false)
 
 const CONFIG = {
     // ========== 전역 시스템 설정 ==========
@@ -38,6 +43,7 @@ const CONFIG = {
         // 타이밍 설정
         timing: {
             initialFetchDelay: 100,        // 초기 fetch 지연 시간 (ms)
+            firstFetchInterval: 10 * 1000,      // 주기적 fetch 간격 (ms) - 1분마다
             fetchInterval: 60 * 1000,      // 주기적 fetch 간격 (ms) - 1분마다
             retryDelay: 100,              // fetch 실패시 재시도 지연 시간 (ms)
             containerReadyDelay: 100,      // 컨테이너 준비 대기 시간 (ms)
@@ -53,20 +59,24 @@ const CONFIG = {
 
         // 화면 크기 및 브레이크포인트
         screen: {
-            mobileBreakpoint: 767,        // 모바일 브레이크포인트
-            largeScreenBreakpoint: 1800,  // 대형 화면 브레이크포인트
             devices: {
-                pc: {
-                    widthMultiplier: 0.88,      // PC 화면 너비 배율
-                    largeWidthMultiplier: 0.45  // 대형 PC 화면 너비 배율
+                mobile: {
+                    maxWidth: 767,              // 모바일 최대 너비
+                    widthMultiplier: 0.98       // 모바일 화면 너비 배율
                 },
                 tablet: {
-                    min: 768,                   // 태블릿 최소 너비
-                    max: 1112,                  // 태블릿 최대 너비
+                    minWidth: 768,              // 태블릿 최소 너비
+                    maxWidth: 1112,             // 태블릿 최대 너비
                     widthMultiplier: 0.96       // 태블릿 화면 너비 배율
                 },
-                mobile: {
-                    widthMultiplier: 0.98       // 모바일 화면 너비 배율
+                pc: {
+                    minWidth: 1113,             // PC 최소 너비
+                    maxWidth: 2599,             // PC 최대 너비
+                    widthMultiplier: 0.7       // PC 화면 너비 배율
+                },
+                largePc: {
+                    minWidth: 2600,             // 대형 PC 최소 너비
+                    widthMultiplier: 0.47       // 대형 PC 화면 너비 배율
                 }
             }
         },
@@ -229,7 +239,7 @@ const CONFIG = {
                 up3: '#00be00',           // 상승 3 (2-3%)
                 up2: '#00be00',           // 상승 2 (1-2%)
                 up1: '#34b128',           // 상승 1 (0-1%)
-                neutral: '#890000',       // 중립 (0%)
+                neutral: '#3e3e3e',       // 중립 (0%)
                 down1: '#7c0000',         // 하락 1 (0 to -1%)
                 down2: '#b60000',         // 하락 2 (-1 to -2%)
                 down3: '#da0000',         // 하락 3 (-2 to -3%)
@@ -346,9 +356,8 @@ const CONFIG = {
     }
 }
 
-// 전역 설정 및 상수
-const MOBILE_BREAKPOINT = CONFIG.system.screen.mobileBreakpoint
-const isMobile = () => window.innerWidth < MOBILE_BREAKPOINT
+// 전역 설정 및 상수  
+const isMobile = () => window.innerWidth <= CONFIG.system.screen.devices.mobile.maxWidth
 
 // 브라우저 언어 감지 함수
 function getBrowserLanguage() {
@@ -370,8 +379,8 @@ function isMobileOrTabletDevice() {
     }
 
     // 패드 사이즈 체크 (PC에서도 테스트 가능)
-    const isTabletSize = window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-        window.innerWidth <= CONFIG.system.screen.devices.tablet.max
+    const isTabletSize = window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+        window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth
 
     if (isTabletSize) {
         return true
@@ -858,7 +867,7 @@ function createEconomicIndicatorsSVG() {
     // 경제지표 영역 크기 계산 (CONFIG에서 가져오기)
     const containerWidth = isMobile() ?
         CONFIG.economicIndicators.layout.area.containerWidth.mobile :
-        (window.innerWidth >= CONFIG.system.screen.largeScreenBreakpoint ?
+        (window.innerWidth >= CONFIG.system.screen.devices.largePc.minWidth ?
             CONFIG.economicIndicators.layout.area.containerWidth.largePC :
             CONFIG.economicIndicators.layout.area.containerWidth.pc)
     const indicatorHeight = isMobile() ?
@@ -977,116 +986,6 @@ function createEconomicIndicatorItem(svg, x, y, width, height, indicator, index)
     }
 }
 
-const fetchEconomicIndicators = async () => {
-    try {
-        const { data } = await useFetch('/api/economic-indicators', {
-            retry: false,
-        })
-        if (data.value) {
-            economicIndicators.value = data.value
-            // 경제지표가 로드되면 트리맵 업데이트
-            if (treemapContainer.value) {
-                createTreemap({ isFetch: true })
-            }
-        } else {
-            console.warn('No economic indicators data received')
-        }
-    } catch (error) {
-        console.error('Failed to fetch economic indicators:', error)
-    }
-}
-
-const fetch = async () => {
-    const batchSize = CONFIG.system.timing.batchSize
-    let currentBatch = 0
-    let retryCount = 0
-    const maxRetries = 3
-    let totalSymbols = 0
-
-    const fetchBatch = async (batchIndex) => {
-        try {
-            const { data } = await useFetch('/api/stocks', {
-                query: {
-                    batchIndex,
-                    batchSize
-                },
-                retry: false,
-            })
-
-            if (!data.value) {
-                if (retryCount < maxRetries) {
-                    retryCount++
-                    console.warn(`[WARN] Retrying batch ${batchIndex} (attempt ${retryCount}/${maxRetries})`)
-                    return setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
-                }
-                console.error(`[ERROR] Failed to fetch batch ${batchIndex} after ${maxRetries} attempts`)
-                return
-            }
-
-            retryCount = 0 // 성공하면 재시도 카운트 리셋
-
-            // 첫 번째 배치에서 전체 심볼 수 확인
-            if (batchIndex === 0) {
-                totalSymbols = data.value.totalSymbols || 0
-                console.log(`[INFO] Total symbols to process: ${totalSymbols}`)
-            }
-
-            // 새로운 데이터로 기존 데이터 업데이트
-            if (data.value.data) {
-                data.value.data.forEach(newItem => {
-                    const existingIndex = items.value.findIndex(item => item.name === newItem.name)
-                    if (existingIndex !== -1) {
-                        items.value[existingIndex] = newItem
-                    } else {
-                        items.value.push(newItem)
-                    }
-                })
-            }
-
-            // 다음 배치가 있는지 확인
-            const nextBatchIndex = batchIndex + 1
-            const hasNextBatch = nextBatchIndex * batchSize < totalSymbols
-
-            if (hasNextBatch) {
-                currentBatch++
-                await fetchBatch(currentBatch)
-            } else {
-                // 모든 배치를 가져왔으면 트리맵 업데이트
-                if (treemapContainer.value) {
-                    createTreemap({ isFetch: true })
-                } else {
-                    setTimeout(() => createTreemap({ isFetch: true }), CONFIG.system.timing.containerReadyDelay)
-                }
-            }
-        } catch (error) {
-            console.error(`[ERROR] Failed to fetch batch ${batchIndex}:`, error)
-            if (retryCount < maxRetries) {
-                retryCount++
-                console.warn(`[WARN] Retrying batch ${batchIndex} after error (attempt ${retryCount}/${maxRetries})`)
-                setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
-            }
-        }
-    }
-
-    // 첫 번째 배치부터 시작
-    await fetchBatch(0)
-
-    // 경제 지표도 함께 가져오기
-    await fetchEconomicIndicators()
-
-    const { isMarketOpen } = useMarketOpen()
-    if (!isMarketOpen) {
-        return
-    }
-
-    setTimeout(fetch, CONFIG.system.timing.fetchInterval)
-}
-
-onMounted(() => {
-    // 컴포넌트가 마운트된 후 약간의 지연을 두고 fetch 시작
-    setTimeout(fetch, CONFIG.system.timing.initialFetchDelay)
-})
-
 // 스타일링 및 계산 함수들
 const func = {
     getColor(change) {
@@ -1139,8 +1038,8 @@ const func = {
 
         // 모바일/패드 환경에서 가로세로 비율에 따른 조정
         if (isMobileOrTabletDevice()) {
-            const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-                window.innerWidth <= CONFIG.system.screen.devices.tablet.max
+            const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+                window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth
 
             if (isTablet) {
                 // 패드 환경에서는 기본 크기를 더 작게 조정
@@ -1166,8 +1065,8 @@ const func = {
         let config
         if (isMobile()) {
             config = CONFIG.stocks.box.textSize.name.mobile
-        } else if (window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-            window.innerWidth <= CONFIG.system.screen.devices.tablet.max) {
+        } else if (window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+            window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth) {
             config = CONFIG.stocks.box.textSize.name.tablet
         } else {
             config = CONFIG.stocks.box.textSize.name.pc
@@ -1189,8 +1088,8 @@ const func = {
 
         // 모바일/패드 환경에서 가로세로 비율에 따른 조정
         if (isMobileOrTabletDevice()) {
-            const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-                window.innerWidth <= CONFIG.system.screen.devices.tablet.max
+            const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+                window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth
 
             if (isTablet) {
                 // 패드 환경에서는 기본 크기를 더 작게 조정
@@ -1216,8 +1115,8 @@ const func = {
         let config
         if (isMobile()) {
             config = CONFIG.stocks.box.textSize.change.mobile
-        } else if (window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-            window.innerWidth <= CONFIG.system.screen.devices.tablet.max) {
+        } else if (window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+            window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth) {
             config = CONFIG.stocks.box.textSize.change.tablet
         } else {
             config = CONFIG.stocks.box.textSize.change.pc
@@ -1240,23 +1139,24 @@ function createTreemap({ isFetch = false }) {
     const indicatorAreaWidth = economicIndicators.value.length > 0 ?
         (isMobile() ?
             CONFIG.economicIndicators.layout.area.areaWidth.mobile :
-            (window.innerWidth >= CONFIG.system.screen.largeScreenBreakpoint ?
+            (window.innerWidth >= CONFIG.system.screen.devices.largePc.minWidth ?
                 CONFIG.economicIndicators.layout.area.areaWidth.largePC :
                 CONFIG.economicIndicators.layout.area.areaWidth.pc)) + CONFIG.economicIndicators.layout.area.gap : 0
 
     let width = treemapContainer.value.getBoundingClientRect().width
-    const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.min &&
-        window.innerWidth <= CONFIG.system.screen.devices.tablet.max
+    const isTablet = window.innerWidth >= CONFIG.system.screen.devices.tablet.minWidth &&
+        window.innerWidth <= CONFIG.system.screen.devices.tablet.maxWidth
 
     if (isTablet) {
-        // 패드 환경
+        // 태블릿 환경
         width = window.innerWidth * CONFIG.system.screen.devices.tablet.widthMultiplier - indicatorAreaWidth
-    } else if (window.innerWidth < CONFIG.system.screen.largeScreenBreakpoint && window.innerWidth >= MOBILE_BREAKPOINT) {
-        // 중형 PC (1800px 이하)
+    } else if (window.innerWidth >= CONFIG.system.screen.devices.pc.minWidth &&
+        window.innerWidth <= CONFIG.system.screen.devices.pc.maxWidth) {
+        // 일반 PC
         width = window.innerWidth * CONFIG.system.screen.devices.pc.widthMultiplier - indicatorAreaWidth
-    } else if (window.innerWidth >= CONFIG.system.screen.largeScreenBreakpoint && !isMobile()) {
-        // 대형 PC (1800px 이상)
-        width = window.innerWidth * CONFIG.system.screen.devices.pc.largeWidthMultiplier - indicatorAreaWidth
+    } else if (window.innerWidth >= CONFIG.system.screen.devices.largePc.minWidth && !isMobile()) {
+        // 대형 PC
+        width = window.innerWidth * CONFIG.system.screen.devices.largePc.widthMultiplier - indicatorAreaWidth
     } else if (!isMobile()) {
         // 기타 PC 환경
         width = width - indicatorAreaWidth
@@ -1522,6 +1422,140 @@ function createTreemap({ isFetch = false }) {
         }
     })
 }
+
+const fetchEconomicIndicators = async () => {
+    // 이미 가져왔으면 다시 가져오지 않음
+    if (hasEconomicIndicatorsFetched.value) {
+        console.log('[INFO] Economic indicators already fetched, skipping')
+        return
+    }
+
+    try {
+        console.log('[INFO] Fetching economic indicators (first time)')
+        const { data } = await useFetch('/api/economic-indicators', {
+            retry: false,
+        })
+        if (data.value) {
+            economicIndicators.value = data.value
+            hasEconomicIndicatorsFetched.value = true // 성공 시 플래그 설정
+            console.log('[INFO] Economic indicators fetched successfully')
+
+            // 경제지표가 로드되면 트리맵 업데이트
+            if (treemapContainer.value) {
+                createTreemap({ isFetch: true })
+            }
+        } else {
+            console.warn('No economic indicators data received')
+        }
+    } catch (error) {
+        console.error('Failed to fetch economic indicators:', error)
+        // 실패 시에는 플래그를 설정하지 않아서 다음에 다시 시도할 수 있게 함
+    }
+}
+
+const fetch = async () => {
+    const batchSize = CONFIG.system.timing.batchSize
+    let currentBatch = 0
+    let retryCount = 0
+    const maxRetries = 3
+    let totalSymbols = 0
+
+    const fetchBatch = async (batchIndex) => {
+        try {
+            const { data } = await useFetch('/api/stocks', {
+                query: {
+                    batchIndex,
+                    batchSize
+                },
+                retry: false,
+            })
+
+            if (!data.value) {
+                if (retryCount < maxRetries) {
+                    retryCount++
+                    console.warn(`[WARN] Retrying batch ${batchIndex} (attempt ${retryCount}/${maxRetries})`)
+                    return setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
+                }
+                console.error(`[ERROR] Failed to fetch batch ${batchIndex} after ${maxRetries} attempts`)
+                return
+            }
+
+            retryCount = 0 // 성공하면 재시도 카운트 리셋
+
+            // 첫 번째 배치에서 전체 심볼 수 확인
+            if (batchIndex === 0) {
+                totalSymbols = data.value.totalSymbols || 0
+                console.log(`[INFO] Total symbols to process: ${totalSymbols}`)
+            }
+
+            // 새로운 데이터로 기존 데이터 업데이트
+            if (data.value.data) {
+                data.value.data.forEach(newItem => {
+                    const existingIndex = items.value.findIndex(item => item.name === newItem.name)
+                    if (existingIndex !== -1) {
+                        items.value[existingIndex] = newItem
+                    } else {
+                        items.value.push(newItem)
+                    }
+                })
+            }
+
+            // 업데이트 상태 정보 저장
+            if (data.value.updateStatus) {
+                marketClosedUpdateStatus.value.hasCompletedInitialUpdate = data.value.updateStatus.hasCompletedInitialUpdate
+                marketClosedUpdateStatus.value.isBackgroundUpdateInProgress = data.value.updateStatus.isBackgroundUpdateInProgress
+            }
+
+            // 다음 배치가 있는지 확인
+            const nextBatchIndex = batchIndex + 1
+            const hasNextBatch = nextBatchIndex * batchSize < totalSymbols
+
+            if (hasNextBatch) {
+                currentBatch++
+                await fetchBatch(currentBatch)
+            } else {
+                // 모든 배치를 가져왔으면 트리맵 업데이트
+                if (treemapContainer.value) {
+                    createTreemap({ isFetch: true })
+                } else {
+                    setTimeout(() => createTreemap({ isFetch: true }), CONFIG.system.timing.containerReadyDelay)
+                }
+            }
+        } catch (error) {
+            console.error(`[ERROR] Failed to fetch batch ${batchIndex}:`, error)
+            if (retryCount < maxRetries) {
+                retryCount++
+                console.warn(`[WARN] Retrying batch ${batchIndex} after error (attempt ${retryCount}/${maxRetries})`)
+                setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
+            }
+        }
+    }
+
+    // 첫 번째 배치부터 시작
+    await fetchBatch(0)
+
+    // 경제 지표도 함께 가져오기
+    await fetchEconomicIndicators()
+
+    const { isMarketOpen } = useMarketOpen()
+    if (!isMarketOpen) {
+        // 마켓이 닫혀있을 때: 초기 업데이트가 완료되지 않았으면 주기적으로 확인
+        if (!marketClosedUpdateStatus.value.hasCompletedInitialUpdate) {
+            console.log('[INFO] Market closed - checking for update completion')
+            setTimeout(fetch, CONFIG.system.timing.firstFetchInterval)
+        } else {
+            console.log('[INFO] Market closed - initial update completed, stopping periodic fetch')
+        }
+        return
+    }
+
+    setTimeout(fetch, CONFIG.system.timing.fetchInterval)
+}
+
+onMounted(() => {
+    // 컴포넌트가 마운트된 후 약간의 지연을 두고 fetch 시작
+    setTimeout(fetch, CONFIG.system.timing.initialFetchDelay)
+})
 </script>
 
 <style scoped>

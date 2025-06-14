@@ -69,6 +69,24 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/api/**': { cache: false },
+    // Chrome DevTools 경로 처리
+    '/.well-known/**': { prerender: true },
+  },
+
+  nitro: {
+    // Chrome DevTools 관련 요청 처리
+    handlers: [
+      {
+        route: '/.well-known/**',
+        handler: '~/server/api/well-known.get.ts',
+      },
+    ],
+    routeRules: {
+      '/.well-known/**': {
+        headers: { 'Cache-Control': 's-maxage=0' },
+        cors: true,
+      },
+    },
   },
 
   compatibilityDate: '2024-09-01',
