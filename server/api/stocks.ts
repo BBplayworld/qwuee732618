@@ -235,9 +235,9 @@ async function performOneTimeUpdate() {
     await writeFileCache(memoryCache)
     lastFetchTime = Date.now()
 
-    // 성공률이 90% 이상이면 완료로 처리 (너무 많은 실패가 아닌 경우)
+    // 성공률이 50% 이상이면 완료로 처리 (너무 많은 실패가 아닌 경우)
     const successRateNumber = (successCount / totalSymbols) * 100
-    if (successRateNumber >= 90) {
+    if (successRateNumber >= 50) {
       await markUpdateCompleted()
       console.log(`[INFO] One-time stock data update completed successfully (${successRate}% success rate)`)
     } else {
@@ -263,11 +263,14 @@ async function updateStockDataInBackground() {
   console.log('[INFO] Starting background stock data update')
 
   const sectors = [...new Set(symbols.map((s) => s.sector))]
+  let successCount = 0
+  let failureCount = 0
+  const totalSymbols = symbols.length
 
   try {
     for (const sector of sectors) {
       const sectorSymbols = symbols.filter((s) => s.sector === sector)
-      console.log(`[INFO] Updating ${sector} sector data`)
+      console.log(`[INFO] Updating ${sector} sector data (${sectorSymbols.length} stocks)`)
 
       try {
         // 섹터별로 순차 처리 (rate limit 고려)
@@ -296,9 +299,15 @@ async function updateStockDataInBackground() {
               memoryCache[index] = updatedStock
             }
 
+            successCount++
+            // 성공/실패 통계 로깅
+            const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
+            console.log(`[INFO] Background update statistics: ${successCount}/${totalSymbols} successful (${successRate}%)`)
+
             // 2초 대기 (rate limit 고려)
             await new Promise((resolve) => setTimeout(resolve, 2000))
           } catch (error: any) {
+            failureCount++
             console.error(`[ERROR] Failed to update ${symbol.name}:`, error?.message)
 
             if (error?.response?.status === 429) {

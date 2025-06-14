@@ -43,7 +43,7 @@ const CONFIG = {
         // 타이밍 설정
         timing: {
             initialFetchDelay: 100,        // 초기 fetch 지연 시간 (ms)
-            firstFetchInterval: 15 * 1000,      // 최초 서버 업데이트 확인 fetch 간격 (ms) - 15초마다
+            firstFetchInterval: 20 * 1000,      // 최초 서버 업데이트 확인 fetch 간격 (ms) - 20초마다
             fetchInterval: 60 * 1000,      // 주기적 fetch 간격 (ms) - 1분마다
             retryDelay: 100,              // fetch 실패시 재시도 지연 시간 (ms)
             containerReadyDelay: 100,      // 컨테이너 준비 대기 시간 (ms)
