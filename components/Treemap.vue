@@ -71,11 +71,11 @@ const CONFIG = {
                 },
                 pc: {
                     minWidth: 1113,             // PC 최소 너비
-                    maxWidth: 2599,             // PC 최대 너비
-                    widthMultiplier: 0.7       // PC 화면 너비 배율
+                    maxWidth: 2299,             // PC 최대 너비
+                    widthMultiplier: 0.77       // PC 화면 너비 배율
                 },
                 largePc: {
-                    minWidth: 2600,             // 대형 PC 최소 너비
+                    minWidth: 2300,             // 대형 PC 최소 너비
                     widthMultiplier: 0.47       // 대형 PC 화면 너비 배율
                 }
             }
@@ -201,7 +201,7 @@ const CONFIG = {
                     mobile: '4px'   // 모바일 회사명 마진
                 },
                 change: {
-                    pc: '0 8px 8px 8px',    // PC 변화율 마진
+                    pc: '2px 8px 8px 8px',    // PC 변화율 마진
                     mobile: '2px 8px 8px 8px'  // 모바일 변화율 마진
                 }
             },
@@ -815,10 +815,10 @@ function createDesktopTextElements(node, isFetch) {
 
             // 게스트 주식인 경우 원래 섹터명 표시
             const sectorBadge = isGuest && originalSector ?
-                `<div style="font-size: 0.6em; opacity: 0.7; margin-bottom: 2px; color: ${CONFIG.ui.colors.text.accent}; font-weight: bold;">[${originalSector}]</div>` : ''
+                `<div style="font-size: 0.6em; opacity: 0.7; color: ${CONFIG.ui.colors.text.accent}; font-weight: bold;">[${originalSector}]</div>` : ''
 
             if (displayName !== originalName && originalName) {
-                return `${sectorBadge}<strong>${originalName}</strong><br><span style="font-size: 0.8em; opacity: 0.8;">${displayName}</span>`
+                return `${sectorBadge}<strong>${originalName}</strong> <span style="font-size: 0.8em; opacity: 0.8;">${displayName}</span>`
             } else {
                 return `${sectorBadge}<strong>${originalName}</strong>`
             }
