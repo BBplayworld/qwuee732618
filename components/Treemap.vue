@@ -1020,7 +1020,7 @@ const func = {
         if (change > 2) return adjustColor(colors.up3)
         if (change > 1) return adjustColor(colors.up2)
         if (change > 0) return adjustColor(colors.up1)
-        if (change === 0) return adjustColor(colors.neutral)
+        if (change === 0 || !change) return adjustColor(colors.neutral)
         if (change < -3) return adjustColor(colors.strongDown)
         if (change < -2) return adjustColor(colors.down3)
         if (change < -1) return adjustColor(colors.down2)
