@@ -126,13 +126,24 @@ async function fetchStockBatch(symbolNames: string[], batchSize: number): Promis
     }
   }
 
-  // 2. 파일 캐시 확인 (두 번째로 빠름)
+  // 2. 파일 캐시 확인 (두 번째로 빠름) - 백그라운드 업데이트 상태도 고려
   const fileCache = await readFileCache()
   if (fileCache && fileCache.length === symbols.length) {
-    console.log('[INFO] Using file cache for stocks')
-    memoryCache = fileCache
-    lastFetchTime = now
-    return fileCache
+    const state = await readUpdateState()
+    // 마켓이 열려있거나, 마켓이 닫혀있지만 초기 업데이트가 완료된 경우에만 파일 캐시를 완전한 것으로 판단
+    const canUseFileCache = isMarketOpen || state.hasCompletedInitialUpdate
+
+    if (canUseFileCache) {
+      console.log('[INFO] Using file cache for stocks')
+      memoryCache = fileCache
+      lastFetchTime = now
+      return fileCache
+    } else {
+      console.log('[INFO] File cache available but background update not completed, proceeding with initialization for continued updates')
+      // 파일 캐시는 메모리에 로드하되, 백그라운드 업데이트를 계속 진행하기 위해 초기화 로직으로 진행
+      memoryCache = fileCache
+      lastFetchTime = now
+    }
   }
 
   // 3. 캐시가 없거나 불완전한 경우 처리
