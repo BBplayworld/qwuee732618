@@ -87,6 +87,23 @@ export default defineNuxtConfig({
         cors: true,
       },
     },
+    // Vercel 함수 최적화 설정
+    vercel: {
+      functions: {
+        '/api/stocks': {
+          maxDuration: 60,
+          memory: 1024,
+        },
+        '/api/economic-indicators': {
+          maxDuration: 30,
+          memory: 512,
+        },
+        '/api/admin/clear-cache': {
+          maxDuration: 15,
+          memory: 256,
+        },
+      },
+    },
   },
 
   compatibilityDate: '2024-09-01',

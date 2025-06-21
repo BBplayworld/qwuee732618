@@ -1,16 +1,5 @@
 {
-  "functions": {
-    "server/api/stocks.ts": {
-      "maxDuration": 60,
-      "memory": 1024
-    },
-    "server/api/economic-indicators.ts": {
-      "maxDuration": 30,
-      "memory": 512
-    },
-    "server/api/admin/clear-cache.ts": {
-      "maxDuration": 15,
-      "memory": 256
-    }
-  }
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
 }
