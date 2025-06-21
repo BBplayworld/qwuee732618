@@ -86,14 +86,17 @@ const symbols: StockData[] = [
 let memoryCache: StockData[] = []
 let lastFetchTime = 0
 
-// 현재 토큰 가져오기
+// 현재 토큰 가져오기 (랜덤 선택으로 부하 분산)
 function getCurrentToken(): string {
-  return tokenArr[currentTokenIndex]
+  // Rate limit을 피하기 위해 랜덤 토큰 선택
+  const randomIndex = Math.floor(Math.random() * tokenArr.length)
+  return tokenArr[randomIndex]
 }
 
 // 토큰 순환
 function rotateToken(): void {
   currentTokenIndex = (currentTokenIndex + 1) % tokenArr.length
+  console.log(`[TOKEN] Rotated to token index: ${currentTokenIndex}`)
 }
 
 // 주식 데이터 가져오기 (캐시 우선, 백그라운드 업데이트)
@@ -180,7 +183,7 @@ async function performOneTimeUpdate() {
   const cachedSymbols = new Set(fileCache?.filter((item: StockData) => item.timestamp && item.timestamp > recentThreshold).map((item: StockData) => item.name) || [])
   const symbolsToUpdate = symbols.filter((symbol) => !cachedSymbols.has(symbol.name))
 
-  console.log(`[U2] Need Update queue: ${cachedSymbols.size}/${symbols.length} symbols`)
+  console.log(`[U2] Update queue: ${symbolsToUpdate.length}/${symbols.length} symbols`)
 
   let successCount = 0
   const totalSymbols = symbolsToUpdate.length
@@ -192,49 +195,81 @@ async function performOneTimeUpdate() {
   }
 
   try {
-    for (const symbol of symbolsToUpdate) {
-      const apiStartTime = Date.now()
-      try {
-        const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
-        const response = await $fetch(url, {
-          headers: {
-            'X-Finnhub-Token': getCurrentToken(),
-            'Content-Type': 'application/json',
-          },
-        })
+    // 병렬 처리를 위한 배치 분할 (한 번에 8개씩 처리)
+    const batchSize = 8
+    const batches = []
+    for (let i = 0; i < symbolsToUpdate.length; i += batchSize) {
+      batches.push(symbolsToUpdate.slice(i, i + batchSize))
+    }
 
-        const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-        const updatedStock = {
-          ...symbol,
-          c: response.c,
-          dp: response.dp,
-          percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
-          timestamp: Date.now(),
+    console.log(`[U2.1] Processing ${batches.length} batches of up to ${batchSize} symbols`)
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex]
+      const batchStartTime = Date.now()
+
+      // 배치 내 병렬 처리
+      const batchPromises = batch.map(async (symbol) => {
+        const apiStartTime = Date.now()
+        try {
+          const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 15000) // 15초 타임아웃
+
+          const response = await $fetch(url, {
+            headers: {
+              'X-Finnhub-Token': getCurrentToken(),
+              'Content-Type': 'application/json',
+            },
+            signal: controller.signal,
+          })
+          clearTimeout(timeoutId)
+
+          const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
+          const updatedStock = {
+            ...symbol,
+            c: response.c,
+            dp: response.dp,
+            percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+            timestamp: Date.now(),
+          }
+
+          const index = memoryCache.findIndex((s) => s.name === symbol.name)
+          if (index !== -1) {
+            memoryCache[index] = updatedStock
+          }
+
+          const apiTime = Date.now() - apiStartTime
+          return { success: true, symbol: symbol.name, apiTime }
+        } catch (error: any) {
+          const apiTime = Date.now() - apiStartTime
+          console.error(`[U4] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
+
+          if (error?.response?.status === 429) {
+            rotateToken()
+          }
+          return { success: false, symbol: symbol.name, apiTime, error: error?.message }
         }
+      })
 
-        const index = memoryCache.findIndex((s) => s.name === symbol.name)
-        if (index !== -1) {
-          memoryCache[index] = updatedStock
-        }
+      // 배치 결과 대기
+      const batchResults = await Promise.allSettled(batchPromises)
+      const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).length
 
-        successCount++
-        const apiTime = Date.now() - apiStartTime
+      successCount += batchSuccesses
+      const batchTime = Date.now() - batchStartTime
+      const currentProgress = ((successCount / totalSymbols) * 100).toFixed(1)
 
-        // 성능 로그 - 10개마다 또는 느린 API 호출시
-        if (successCount % 10 === 0 || apiTime > 5000) {
-          const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-          console.log(`[U3] Progress: ${successCount}/${totalSymbols} (${successRate}%) - API time: ${apiTime}ms`)
-        }
+      console.log(`[U3] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccesses}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch time: ${batchTime}ms`)
 
-        await new Promise((resolve) => setTimeout(resolve, 100))
-      } catch (error: any) {
-        const apiTime = Date.now() - apiStartTime
-        console.error(`[U4] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
+      // 배치 간 짧은 대기 (Rate limiting 방지)
+      if (batchIndex < batches.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+      }
 
-        if (error?.response?.status === 429) {
-          rotateToken()
-          await new Promise((resolve) => setTimeout(resolve, 3000))
-        }
+      // 중간 캐시 저장 (데이터 손실 방지)
+      if (batchIndex % 2 === 1) {
+        await writeFileCache(memoryCache)
       }
     }
 
@@ -282,6 +317,7 @@ async function updateStockDataInBackground() {
     return
   }
 
+  // 섹터별 병렬 처리
   const sectors = [...new Set(symbolsToUpdate.map((s) => s.sector))]
   let successCount = 0
   const totalSymbols = symbolsToUpdate.length
@@ -293,48 +329,68 @@ async function updateStockDataInBackground() {
       console.log(`[B4] Processing ${sector}: ${sectorSymbols.length} stocks`)
 
       try {
-        for (const symbol of sectorSymbols) {
-          const apiStartTime = Date.now()
-          try {
-            const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
-            const response = await $fetch(url, {
-              headers: {
-                'X-Finnhub-Token': getCurrentToken(),
-                'Content-Type': 'application/json',
-              },
-            })
+        // 섹터 내 병렬 처리 (한 번에 6개씩)
+        const batchSize = 6
+        const batches = []
+        for (let i = 0; i < sectorSymbols.length; i += batchSize) {
+          batches.push(sectorSymbols.slice(i, i + batchSize))
+        }
 
-            const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-            const updatedStock = {
-              ...symbol,
-              c: response.c,
-              dp: response.dp,
-              percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
-              timestamp: Date.now(),
+        for (const batch of batches) {
+          const batchPromises = batch.map(async (symbol) => {
+            const apiStartTime = Date.now()
+            try {
+              const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
+              const controller = new AbortController()
+              const timeoutId = setTimeout(() => controller.abort(), 12000) // 12초 타임아웃
+
+              const response = await $fetch(url, {
+                headers: {
+                  'X-Finnhub-Token': getCurrentToken(),
+                  'Content-Type': 'application/json',
+                },
+                signal: controller.signal,
+              })
+              clearTimeout(timeoutId)
+
+              const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
+              const updatedStock = {
+                ...symbol,
+                c: response.c,
+                dp: response.dp,
+                percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+                timestamp: Date.now(),
+              }
+
+              const index = memoryCache.findIndex((s) => s.name === symbol.name)
+              if (index !== -1) {
+                memoryCache[index] = updatedStock
+              }
+
+              return { success: true, symbol: symbol.name }
+            } catch (error: any) {
+              const apiTime = Date.now() - apiStartTime
+              console.error(`[B5] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
+
+              if (error?.response?.status === 429) {
+                rotateToken()
+              }
+              return { success: false, symbol: symbol.name }
             }
+          })
 
-            const index = memoryCache.findIndex((s) => s.name === symbol.name)
-            if (index !== -1) {
-              memoryCache[index] = updatedStock
-            }
+          const batchResults = await Promise.allSettled(batchPromises)
+          const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).length
 
-            successCount++
+          successCount += batchSuccesses
 
-            await new Promise((resolve) => setTimeout(resolve, 100))
-          } catch (error: any) {
-            const apiTime = Date.now() - apiStartTime
-            console.error(`[B5] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
-
-            if (error?.response?.status === 429) {
-              rotateToken()
-              await new Promise((resolve) => setTimeout(resolve, 5000))
-            }
-          }
+          // 배치 간 짧은 대기
+          await new Promise((resolve) => setTimeout(resolve, 150))
         }
 
         await writeFileCache(memoryCache)
         const sectorTime = Date.now() - sectorStartTime
-        console.log(`[B6] Completed ${sector} sector in ${sectorTime}ms`)
+        console.log(`[B6] Completed ${sector} sector: ${sectorSymbols.length} stocks in ${sectorTime}ms`)
       } catch (error: any) {
         console.error(`[B7] Sector ${sector} failed:`, error?.message)
       }
@@ -352,12 +408,18 @@ async function updateStockDataInBackground() {
 }
 
 export default defineEventHandler(async (event) => {
+  const requestStartTime = Date.now()
+  console.log('[S0] API request started')
+
   try {
     // 전체 데이터 가져오기 (배치 로직 제거)
     const allData = await fetchStockData(symbols.map((s) => s.name))
 
     // 파일 기반 상태 읽기
     const state = await readUpdateState()
+
+    const responseTime = Date.now() - requestStartTime
+    console.log(`[S7] API response ready in ${responseTime}ms`)
 
     return {
       data: allData,
@@ -368,9 +430,14 @@ export default defineEventHandler(async (event) => {
         isBackgroundUpdateInProgress: state.isBackgroundUpdateInProgress,
         lastUpdateTime: state.lastUpdateTimestamp,
       },
+      _performance: {
+        responseTime,
+        serverTime: new Date().toISOString(),
+      },
     }
   } catch (error) {
-    console.error('[S7] API failed:', error)
+    const errorTime = Date.now() - requestStartTime
+    console.error(`[S8] API failed after ${errorTime}ms:`, error)
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch stock data',
