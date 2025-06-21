@@ -256,3 +256,87 @@ export const clearFileCache = async () => {
     console.error('[ERROR] Failed to clear file cache:', error)
   }
 }
+
+// ==================== Economic Indicators Cache Functions ====================
+
+// Economic Indicators 전용 캐시 파일 경로
+const getEconomicCacheFilePath = (): string => {
+  if (isVercel) {
+    return '/tmp/economic-indicators-cache.json'
+  }
+  return join(process.cwd(), '.cache', 'economic-indicators-cache.json')
+}
+
+const ECONOMIC_CACHE_FILE = getEconomicCacheFilePath()
+
+// Economic Indicators 데이터 인터페이스
+export interface EconomicData {
+  name: string
+  displayName?: { en: string; ko: string; zh: string }
+  date: string
+  value: string
+}
+
+interface EconomicCacheData {
+  data: EconomicData[]
+  timestamp: number
+}
+
+// Economic Indicators 캐시 TTL
+const ECONOMIC_CACHE_TTL = {
+  MARKET_OPEN: 90 * 1000, // 90초
+  MARKET_CLOSED: 12 * 60 * 60 * 1000, // 12시간
+}
+
+// Economic Indicators 캐시 TTL 가져오기
+export const getEconomicCacheTTL = () => {
+  const now = new Date()
+  const day = now.getDay()
+  const hour = now.getHours()
+  const isWeekend = day === 0 || day === 6
+  const isMarketHours = !isWeekend && hour >= 9 && hour < 16
+
+  return isMarketHours ? ECONOMIC_CACHE_TTL.MARKET_OPEN : ECONOMIC_CACHE_TTL.MARKET_CLOSED
+}
+
+// Economic Indicators 파일 캐시 읽기
+export const readEconomicFileCache = async (): Promise<EconomicData[] | null> => {
+  try {
+    await ensureCacheDir()
+    const data = await fs.readFile(ECONOMIC_CACHE_FILE, 'utf-8')
+    const cacheData: EconomicCacheData = JSON.parse(data)
+
+    // 캐시가 유효한지 확인
+    if (Date.now() - cacheData.timestamp < getEconomicCacheTTL()) {
+      return cacheData.data
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+// Economic Indicators 파일 캐시 쓰기
+export const writeEconomicFileCache = async (data: EconomicData[]): Promise<void> => {
+  try {
+    await ensureCacheDir()
+    const cacheData: EconomicCacheData = {
+      data,
+      timestamp: Date.now(),
+    }
+    await fs.writeFile(ECONOMIC_CACHE_FILE, JSON.stringify(cacheData, null, 2))
+  } catch (error) {
+    // Silent fail - 캐시 저장 실패가 메인 로직에 영향주지 않음
+  }
+}
+
+// Economic Indicators 캐시 삭제
+export const clearEconomicFileCache = async () => {
+  try {
+    await ensureCacheDir()
+    await fs.unlink(ECONOMIC_CACHE_FILE)
+    console.log('[INFO] Cleared economic indicators cache file')
+  } catch (error) {
+    // 파일이 없어도 에러 무시
+  }
+}

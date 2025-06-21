@@ -26,7 +26,7 @@ console.log('ADMIN_SECRET_KEY=' + adminKey)
 
 ## API 엔드포인트
 
-### 캐시 삭제 API
+### 어드민 API
 
 **URL:** `/api/admin/clear-cache`
 **Method:** GET
@@ -34,12 +34,12 @@ console.log('ADMIN_SECRET_KEY=' + adminKey)
 
 #### 파라미터
 
-| 파라미터 | 타입   | 필수 | 기본값  | 설명                                     |
-| -------- | ------ | ---- | ------- | ---------------------------------------- |
-| `key`    | string | ✅   | -       | 어드민 시크릿 키                         |
-| `type`   | string | ❌   | `cache` | 리셋 타입 (`cache`, `full`, `defensive`) |
+| 파라미터 | 타입   | 필수 | 기본값  | 설명                                             |
+| -------- | ------ | ---- | ------- | ------------------------------------------------ |
+| `key`    | string | ✅   | -       | 어드민 시크릿 키                                 |
+| `type`   | string | ❌   | `cache` | 액션 타입 (`cache`, `full`, `defensive`, `read`) |
 
-#### 리셋 타입
+#### 액션 타입
 
 1. **`cache`** (기본값)
    - 파일 캐시만 삭제
@@ -50,10 +50,16 @@ console.log('ADMIN_SECRET_KEY=' + adminKey)
 3. **`defensive`**
    - 방어 로직 실행 (전체 리셋)
    - 가장 강력한 리셋 옵션
+4. **`read`** ✨ **새로 추가**
+   - 현재 캐시 데이터 조회
+   - 캐시 상태 및 내용 확인
 
 #### 사용 예시
 
 ```bash
+# 캐시 데이터 조회
+curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY&type=read"
+
 # 기본 캐시 삭제
 curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY"
 
@@ -66,14 +72,54 @@ curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY&type=defe
 
 #### 응답 예시
 
-**성공 시:**
+**캐시 조회 성공 시:**
+
+```json
+{
+  "success": true,
+  "message": "Cache data retrieved successfully",
+  "timestamp": 1704067200000,
+  "data": {
+    "stocks": [
+      {
+        "name": "AAPL",
+        "marketCap": 2800000,
+        "c": 175.04,
+        "dp": 0.51,
+        "sector": "Technology",
+        "timestamp": 1704067180000
+      }
+    ],
+    "economic": [
+      {
+        "name": "GDP",
+        "date": "2024-01-01",
+        "value": "2.5%"
+      }
+    ],
+    "updateState": {
+      "hasCompletedInitialUpdate": true,
+      "isBackgroundUpdateInProgress": false,
+      "callCount": 0
+    },
+    "cacheInfo": {
+      "stocksCacheExists": true,
+      "economicCacheExists": true,
+      "stocksCacheSize": 49,
+      "economicCacheSize": 8
+    }
+  }
+}
+```
+
+**캐시 삭제 성공 시:**
 
 ```json
 {
   "success": true,
   "message": "Cache cleared successfully (cache mode)",
   "timestamp": 1704067200000,
-  "clearedItems": ["file_cache"]
+  "clearedItems": ["stocks_cache", "economic_cache"]
 }
 ```
 
@@ -137,21 +183,28 @@ curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY&type=defe
 
 ## 사용 시나리오
 
-### 1. 정기 캐시 정리
+### 1. 캐시 상태 확인
+
+```bash
+# 현재 캐시 데이터 및 상태 확인
+curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY&type=read"
+```
+
+### 2. 정기 캐시 정리
 
 ```bash
 # 주간 정기 정리 (기본 캐시만)
 curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY"
 ```
 
-### 2. 시스템 업데이트 후
+### 3. 시스템 업데이트 후
 
 ```bash
 # 전체 리셋으로 새로운 데이터 강제 업데이트
 curl "https://your-domain.com/api/admin/clear-cache?key=YOUR_ADMIN_KEY&type=full"
 ```
 
-### 3. 응급 상황
+### 4. 응급 상황
 
 ```bash
 # 시스템 이상시 방어 리셋 실행

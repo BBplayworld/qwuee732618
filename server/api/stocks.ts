@@ -96,60 +96,51 @@ function rotateToken(): void {
   currentTokenIndex = (currentTokenIndex + 1) % tokenArr.length
 }
 
-// 배치 단위로 Finnhub API 호출 (안정성 개선)
-async function fetchStockBatch(symbolNames: string[], batchSize: number): Promise<StockData[]> {
+// 주식 데이터 가져오기 (캐시 우선, 백그라운드 업데이트)
+async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
   const now = Date.now()
   const { isMarketOpen } = useMarketOpen()
 
   // 마켓 상태 변경 감지 및 상태 리셋
   await checkAndResetForMarketStateChange(isMarketOpen)
 
-  // 방어 로직: 마켓 종료 시 호출 횟수 추적 및 과도한 호출 방지
   const shouldReset = await incrementCallCountAndCheck(!isMarketOpen)
   if (shouldReset) {
-    console.log('[INFO] Defensive reset triggered - clearing memory cache')
-    memoryCache = [] // 메모리 캐시도 클리어
+    console.log('[S1] Defensive reset triggered')
+    memoryCache = []
     lastFetchTime = 0
   }
 
-  // 1. 메모리 캐시 확인 (가장 빠름) - 백그라운드 업데이트 상태도 고려
+  // 1. 메모리 캐시 확인
   if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
     const state = await readUpdateState()
-    // 마켓이 열려있거나, 마켓이 닫혀있지만 초기 업데이트가 완료된 경우에만 메모리 캐시 사용
     const canUseMemoryCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseMemoryCache) {
-      console.log('[INFO] Using memory cache for stocks')
+      console.log('[S2] Memory cache hit')
       return memoryCache
-    } else {
-      console.log('[INFO] Memory cache available but background update not completed, proceeding with initialization')
     }
   }
 
-  // 2. 파일 캐시 확인 (두 번째로 빠름) - 백그라운드 업데이트 상태도 고려
+  // 2. 파일 캐시 확인
   const fileCache = await readFileCache()
   if (fileCache && fileCache.length === symbols.length) {
     const state = await readUpdateState()
-    // 마켓이 열려있거나, 마켓이 닫혀있지만 초기 업데이트가 완료된 경우에만 파일 캐시를 완전한 것으로 판단
     const canUseFileCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseFileCache) {
-      console.log('[INFO] Using file cache for stocks')
+      console.log('[S3] File cache hit')
       memoryCache = fileCache
       lastFetchTime = now
       return fileCache
     } else {
-      console.log('[INFO] File cache available but background update not completed, proceeding with initialization for continued updates')
-      // 파일 캐시는 메모리에 로드하되, 백그라운드 업데이트를 계속 진행하기 위해 초기화 로직으로 진행
+      console.log('[S4] File cache loaded, continuing update')
       memoryCache = fileCache
       lastFetchTime = now
     }
   }
 
-  // 3. 캐시가 없거나 불완전한 경우 처리
-  console.log('[INFO] Initializing stock data')
-
-  // 공통: 하드코딩된 데이터로 초기화
+  // 3. 초기화 및 백그라운드 업데이트
   const results = [...symbols]
   if (memoryCache.length === 0 || isMarketOpen) {
     memoryCache = results
@@ -157,67 +148,52 @@ async function fetchStockBatch(symbolNames: string[], batchSize: number): Promis
     await writeFileCache(results)
   }
 
+  const state = await readUpdateState()
+  const shouldPerformUpdate = (!state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress) || shouldReset
+
   if (isMarketOpen) {
-    // 마켓이 열려있을 때: 백그라운드에서 점진적 업데이트
-    console.log('[INFO] Market is open - using hardcoded data and starting background update')
+    console.log('[S5] Market open - starting background update')
     updateStockDataInBackground()
-    return results
-  } else {
-    // 마켓이 닫혀있을 때: 백그라운드에서 1회성 업데이트
-    console.log('[INFO] Market is closed - using hardcoded data and starting one-time background update')
-
-    // 파일 기반 상태 확인 후 백그라운드 업데이트 실행
-    const state = await readUpdateState()
-    const shouldPerformUpdate = (!state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress) || shouldReset
-
-    if (shouldPerformUpdate) {
-      if (shouldReset) {
-        console.log('[INFO] Defensive reset completed - forcing one-time update restart')
-      }
-      performOneTimeUpdate() // await 제거 - 백그라운드 실행
-    }
-
-    // 캐시된 데이터 즉시 반환
-    return memoryCache
+  } else if (shouldPerformUpdate) {
+    console.log('[S6] Market closed - starting one-time update')
+    performOneTimeUpdate()
   }
+
+  return memoryCache
 }
 
 // 마켓 종료 시 1회성 업데이트
 async function performOneTimeUpdate() {
-  // 동시성 제어 - 이미 업데이트 중이면 종료
+  const startTime = Date.now()
   const canStart = await tryStartUpdate()
   if (!canStart) {
     return
   }
 
-  console.log('[INFO] Starting one-time stock data update (market closed)')
-
-  // 하드코딩된 데이터로 초기화
+  console.log('[U1] One-time update started')
   memoryCache = [...symbols]
 
-  // 파일 캐시에서 이미 업데이트된 심볼들 확인
   const fileCache = await readFileCache()
-  const cachedSymbols = new Set(fileCache?.map((item: StockData) => item.name) || [])
-
-  // 아직 업데이트되지 않은 심볼들만 필터링
+  // 하드코딩된 데이터와 실제 API 업데이트된 데이터 구분
+  // timestamp가 없거나 매우 오래된 데이터는 업데이트 필요로 판단
+  const recentThreshold = Date.now() - 24 * 60 * 60 * 1000 // 24시간 전
+  const cachedSymbols = new Set(fileCache?.filter((item: StockData) => item.timestamp && item.timestamp > recentThreshold).map((item: StockData) => item.name) || [])
   const symbolsToUpdate = symbols.filter((symbol) => !cachedSymbols.has(symbol.name))
 
-  console.log(`[INFO] Found ${cachedSymbols.size} cached symbols, need to update ${symbolsToUpdate.length} symbols`)
+  console.log(`[U2] Need Update queue: ${cachedSymbols.size}/${symbols.length} symbols`)
 
   let successCount = 0
-  let failureCount = 0
   const totalSymbols = symbolsToUpdate.length
 
-  // 업데이트할 심볼이 없으면 완료 처리
   if (totalSymbols === 0) {
-    console.log('[INFO] All symbols already cached, marking as completed')
+    console.log('[U3] All symbols cached, completed')
     await markUpdateCompleted()
     return
   }
 
   try {
-    // 업데이트가 필요한 주식들만 API 호출
     for (const symbol of symbolsToUpdate) {
+      const apiStartTime = Date.now()
       try {
         const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
         const response = await $fetch(url, {
@@ -228,98 +204,97 @@ async function performOneTimeUpdate() {
         })
 
         const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-
         const updatedStock = {
           ...symbol,
           c: response.c,
           dp: response.dp,
           percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+          timestamp: Date.now(),
         }
 
-        // 메모리 캐시에서 해당 주식 업데이트
         const index = memoryCache.findIndex((s) => s.name === symbol.name)
         if (index !== -1) {
           memoryCache[index] = updatedStock
         }
 
         successCount++
-        // 성공 통계 로깅
-        const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-        console.log(`[INFO] Update statistics: ${successCount}/${totalSymbols} successful (${successRate}%)`)
+        const apiTime = Date.now() - apiStartTime
 
-        // 대기 (rate limit 고려 - 1회성이므로 좀 더 빠르게)
+        // 성능 로그 - 10개마다 또는 느린 API 호출시
+        if (successCount % 10 === 0 || apiTime > 5000) {
+          const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
+          console.log(`[U3] Progress: ${successCount}/${totalSymbols} (${successRate}%) - API time: ${apiTime}ms`)
+        }
+
         await new Promise((resolve) => setTimeout(resolve, 100))
       } catch (error: any) {
-        failureCount++
-        console.error(`[ERROR] Failed to update ${symbol.name}:`, error?.message)
+        const apiTime = Date.now() - apiStartTime
+        console.error(`[U4] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
 
         if (error?.response?.status === 429) {
           rotateToken()
-          await new Promise((resolve) => setTimeout(resolve, 3000)) // 3초 대기
+          await new Promise((resolve) => setTimeout(resolve, 3000))
         }
       }
     }
 
-    // 파일 캐시 업데이트 (부분적 성공이라도 저장)
     await writeFileCache(memoryCache)
     lastFetchTime = Date.now()
 
-    // 성공률이 50% 이상이면 완료로 처리 (너무 많은 실패가 아닌 경우)
     const successRateNumber = (successCount / totalSymbols) * 100
+    const totalTime = Date.now() - startTime
+
     if (successRateNumber >= 50) {
       await markUpdateCompleted()
-      console.log(`[INFO] One-time stock data update completed successfully (${successRateNumber}% success rate)`)
+      console.log(`[U5] Update completed: ${successCount}/${totalSymbols} (${successRateNumber.toFixed(1)}%) in ${totalTime}ms`)
     } else {
-      console.warn(`[WARNING] One-time update had low success rate (${successRateNumber}%), not marking as completed`)
-      // 실패 시에는 진행 중 상태만 해제
+      console.warn(`[U6] Low success rate: ${successRateNumber.toFixed(1)}%`)
       await writeUpdateState({ isBackgroundUpdateInProgress: false })
     }
   } catch (error: any) {
-    console.error(`[ERROR] Critical failure in one-time update:`, error?.message)
-    // 치명적 실패 시에도 진행 중 상태 해제
+    const totalTime = Date.now() - startTime
+    console.error(`[U7] Critical failure after ${totalTime}ms:`, error?.message)
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
   }
 }
 
 // 백그라운드에서 주식 데이터 업데이트 (마켓 오픈 시에만)
 async function updateStockDataInBackground() {
-  // 동시성 제어 - 이미 업데이트 중이면 종료
+  const startTime = Date.now()
   const canStart = await tryStartUpdate()
   if (!canStart) {
     return
   }
 
-  console.log('[INFO] Starting background stock data update')
+  console.log('[B1] Background update started')
 
-  // 파일 캐시에서 이미 업데이트된 심볼들 확인
   const fileCache = await readFileCache()
-  const cachedSymbols = new Set(fileCache?.map((item: StockData) => item.name) || [])
-
-  // 아직 업데이트되지 않은 심볼들만 필터링
+  // 하드코딩된 데이터와 실제 API 업데이트된 데이터 구분
+  const recentThreshold = Date.now() - 24 * 60 * 60 * 1000 // 24시간 전
+  const cachedSymbols = new Set(fileCache?.filter((item: StockData) => item.timestamp && item.timestamp > recentThreshold).map((item: StockData) => item.name) || [])
   const symbolsToUpdate = symbols.filter((symbol) => !cachedSymbols.has(symbol.name))
 
-  console.log(`[INFO] Found ${cachedSymbols.size} cached symbols, need to update ${symbolsToUpdate.length} symbols`)
+  console.log(`[B2] Update queue: ${symbolsToUpdate.length}/${symbols.length} symbols`)
 
-  // 업데이트할 심볼이 없으면 완료 처리
   if (symbolsToUpdate.length === 0) {
-    console.log('[INFO] All symbols already cached, background update completed')
+    console.log('[B3] All symbols cached, completed')
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
     return
   }
 
   const sectors = [...new Set(symbolsToUpdate.map((s) => s.sector))]
   let successCount = 0
-  let failureCount = 0
   const totalSymbols = symbolsToUpdate.length
 
   try {
     for (const sector of sectors) {
       const sectorSymbols = symbolsToUpdate.filter((s) => s.sector === sector)
-      console.log(`[INFO] Updating ${sector} sector data (${sectorSymbols.length} stocks)`)
+      const sectorStartTime = Date.now()
+      console.log(`[B4] Processing ${sector}: ${sectorSymbols.length} stocks`)
 
       try {
-        // 섹터별로 순차 처리 (rate limit 고려)
         for (const symbol of sectorSymbols) {
+          const apiStartTime = Date.now()
           try {
             const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
             const response = await $fetch(url, {
@@ -330,15 +305,14 @@ async function updateStockDataInBackground() {
             })
 
             const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
-
             const updatedStock = {
               ...symbol,
               c: response.c,
               dp: response.dp,
               percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+              timestamp: Date.now(),
             }
 
-            // 메모리 캐시에서 해당 주식 업데이트
             const index = memoryCache.findIndex((s) => s.name === symbol.name)
             if (index !== -1) {
               memoryCache[index] = updatedStock
@@ -346,72 +320,57 @@ async function updateStockDataInBackground() {
 
             successCount++
 
-            // 대기 (rate limit 고려)
             await new Promise((resolve) => setTimeout(resolve, 100))
           } catch (error: any) {
-            failureCount++
-            console.error(`[ERROR] Failed to update ${symbol.name}:`, error?.message)
+            const apiTime = Date.now() - apiStartTime
+            console.error(`[B5] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
 
             if (error?.response?.status === 429) {
               rotateToken()
-              await new Promise((resolve) => setTimeout(resolve, 5000)) // 5초 대기
+              await new Promise((resolve) => setTimeout(resolve, 5000))
             }
           }
         }
 
-        // 섹터 완료 후 파일 캐시 업데이트
         await writeFileCache(memoryCache)
-        console.log(`[INFO] Updated ${sector} sector data`)
+        const sectorTime = Date.now() - sectorStartTime
+        console.log(`[B6] Completed ${sector} sector in ${sectorTime}ms`)
       } catch (error: any) {
-        console.error(`[ERROR] Failed to update ${sector} sector:`, error?.message)
+        console.error(`[B7] Sector ${sector} failed:`, error?.message)
       }
     }
 
-    // 성공/실패 통계 로깅
     const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-    console.log(`[INFO] Background stock data update completed: ${successCount}/${totalSymbols} successful (${successRate}%)`)
+    const totalTime = Date.now() - startTime
+    console.log(`[B8] Background update completed: ${successCount}/${totalSymbols} (${successRate}%) in ${totalTime}ms`)
   } catch (error: any) {
-    console.error(`[ERROR] Background update failed:`, error?.message)
+    const totalTime = Date.now() - startTime
+    console.error(`[B9] Background update failed after ${totalTime}ms:`, error?.message)
   } finally {
-    // 진행 중 상태 해제
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
   }
 }
 
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  const batchIndex = parseInt(query.batchIndex as string) || 0
-  const batchSize = parseInt(query.batchSize as string) || 12
-
   try {
-    // 전체 데이터 가져오기
-    const allData = await fetchStockBatch(
-      symbols.map((s) => s.name),
-      batchSize
-    )
-
-    // 현재 배치에 해당하는 데이터만 선택
-    const startIndex = batchIndex * batchSize
-    const endIndex = Math.min(startIndex + batchSize, allData.length)
-    const batchData = allData.slice(startIndex, endIndex)
+    // 전체 데이터 가져오기 (배치 로직 제거)
+    const allData = await fetchStockData(symbols.map((s) => s.name))
 
     // 파일 기반 상태 읽기
     const state = await readUpdateState()
 
     return {
-      data: batchData,
-      hasNextBatch: endIndex < allData.length,
+      data: allData,
       totalSymbols: allData.length,
-      currentBatch: batchIndex,
-      totalBatches: Math.ceil(allData.length / batchSize),
       updateStatus: {
         isMarketOpen: useMarketOpen().isMarketOpen,
         hasCompletedInitialUpdate: state.hasCompletedInitialUpdate,
         isBackgroundUpdateInProgress: state.isBackgroundUpdateInProgress,
+        lastUpdateTime: state.lastUpdateTimestamp,
       },
     }
   } catch (error) {
-    console.error('[ERROR] Failed to fetch stock batch:', error)
+    console.error('[S7] API failed:', error)
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch stock data',

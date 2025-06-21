@@ -2,82 +2,11 @@ import { defineEventHandler } from 'h3'
 import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 import dayjs from 'dayjs'
-import { promises as fs } from 'fs'
-import { join } from 'path'
-
-// 환경에 따른 캐시 파일 경로 설정
-const getCacheFilePath = (): string => {
-  // Vercel 환경에서는 /tmp 디렉토리만 사용 가능
-  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-    return '/tmp/economic-indicators-cache.json'
-  }
-  // 로컬 환경에서는 프로젝트 내 tmp 디렉토리 사용
-  return join(process.cwd(), 'tmp', 'economic-indicators-cache.json')
-}
-
-const CACHE_FILE_PATH = getCacheFilePath()
-const CACHE_TTL_MARKET_OPEN = 90 * 1000 // 마켓 오픈 시: 90초
-const CACHE_TTL_MARKET_CLOSED = 12 * 60 * 60 * 1000 // 마켓 닫힘 시: 12시간
-
-// 미리 정의된 데이터 (production 환경이 아닐 때 사용)
-interface EconomicData {
-  name: string
-  displayName?: { en: string; ko: string; zh: string }
-  date: string
-  value: string
-}
-
-interface CacheData {
-  data: EconomicData[]
-  timestamp: number
-}
+import { readEconomicFileCache, writeEconomicFileCache, getEconomicCacheTTL, type EconomicData } from '~/server/utils/cache'
 
 // 메모리 캐시
 let memoryCache: EconomicData[] = []
 let lastFetchTime = 0
-
-// 현재 마켓 상태에 따른 캐시 TTL 반환
-function getCacheTTL(): number {
-  const { isMarketOpen } = useMarketOpen()
-  return isMarketOpen ? CACHE_TTL_MARKET_OPEN : CACHE_TTL_MARKET_CLOSED
-}
-
-// 파일 캐시 읽기
-async function readFileCache(): Promise<EconomicData[] | null> {
-  try {
-    const data = await fs.readFile(CACHE_FILE_PATH, 'utf-8')
-    const cacheData: CacheData = JSON.parse(data)
-
-    // 캐시가 유효한지 확인 (마켓 상태에 따른 TTL)
-    if (Date.now() - cacheData.timestamp < getCacheTTL()) {
-      return cacheData.data
-    }
-    return null
-  } catch (error) {
-    // 파일이 없거나 읽을 수 없는 경우
-    return null
-  }
-}
-
-// 파일 캐시 저장
-async function writeFileCache(data: EconomicData[]): Promise<void> {
-  try {
-    // 캐시 디렉토리 생성 (필요시)
-    const cacheDir = CACHE_FILE_PATH.includes('/tmp/') ? '/tmp' : join(process.cwd(), 'tmp')
-
-    await fs.mkdir(cacheDir, { recursive: true })
-
-    const cacheData: CacheData = {
-      data,
-      timestamp: Date.now(),
-    }
-
-    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(cacheData, null, 2))
-    console.log(`[INFO] Economic indicators cache file saved to: ${CACHE_FILE_PATH}`)
-  } catch (error) {
-    console.warn('[WARN] Failed to write economic indicators cache file:', error)
-  }
-}
 
 // 외부 API에서 경제 지표 데이터 가져오기
 async function fetchEconomicData(startDate: string, endDate: string, transferUnit: (code: any, value: any) => string): Promise<EconomicData[]> {
@@ -94,8 +23,8 @@ async function fetchEconomicData(startDate: string, endDate: string, transferUni
         date: latestObservation.date,
         value: transferUnit(indicator.code, latestObservation.value), // 지표 값
       }
-    } catch (e) {
-      console.log('[ERROR] Economic indicator API call failed:', e)
+    } catch (e: any) {
+      console.error('[E7] FRED API failed:', e?.message)
       return {
         name: indicator.displayName.en,
         displayName: indicator.displayName,
@@ -241,17 +170,16 @@ function createFallbackData(): EconomicData[] {
 export default defineEventHandler(async () => {
   const now = Date.now()
 
-  // 1. 메모리 캐시 확인 (가장 빠름)
-  if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
-    console.log('[INFO] Economic indicators memory cache hit')
+  // 1. 메모리 캐시 확인
+  if (memoryCache.length > 0 && now - lastFetchTime < getEconomicCacheTTL()) {
+    console.log('[E1] Memory cache hit')
     return memoryCache
   }
 
-  // 2. 파일 캐시 확인 (두 번째로 빠름)
-  const fileCache = await readFileCache()
+  // 2. 파일 캐시 확인
+  const fileCache = await readEconomicFileCache()
   if (fileCache) {
-    console.log('[INFO] Economic indicators file cache hit')
-
+    console.log('[E2] File cache hit')
     memoryCache = fileCache
     lastFetchTime = now
     return fileCache
@@ -291,45 +219,33 @@ export default defineEventHandler(async () => {
   const { isMarketOpen } = useMarketOpen()
   const marketOpen = isMarketOpen
 
-  // 마켓이 닫혀있을 때는 1회만 API 호출 후 12시간 캐시 사용
   if (!marketOpen) {
     try {
-      console.log('[INFO] Market closed - Fetching fresh economic indicators from API (once)')
+      console.log('[E3] Market closed - API fetch')
       const freshData = await fetchEconomicData(startDate, endDate, transferUnit)
 
-      // 캐시 업데이트
       memoryCache = freshData
       lastFetchTime = now
-
-      // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
-      writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update economic indicators file cache:', err))
+      writeEconomicFileCache(freshData).catch(() => {}) // Silent fail
 
       return freshData
     } catch (error: any) {
-      console.error('[ERROR] Failed to fetch economic indicators:', error?.message)
-
-      // API 호출이 실패한 경우, 기존 fallback 데이터 반환
+      console.error('[E4] API fetch failed:', error?.message)
       return createFallbackData()
     }
   }
 
-  // 마켓이 열려있을 때는 90초마다 API 호출
   try {
-    console.log('[INFO] Market open - Fetching fresh economic indicators from API')
+    console.log('[E5] Market open - API fetch')
     const freshData = await fetchEconomicData(startDate, endDate, transferUnit)
 
-    // 캐시 업데이트
     memoryCache = freshData
     lastFetchTime = now
-
-    // 파일 캐시 저장 (비동기, 실패해도 응답에 영향 없음)
-    writeFileCache(freshData).catch((err) => console.warn('[WARN] Failed to update economic indicators file cache:', err))
+    writeEconomicFileCache(freshData).catch(() => {}) // Silent fail
 
     return freshData
   } catch (error: any) {
-    console.error('[ERROR] Failed to fetch economic indicators:', error?.message)
-
-    // API 호출이 실패한 경우, 기존 fallback 데이터 반환
+    console.error('[E6] API fetch failed:', error?.message)
     return createFallbackData()
   }
 })

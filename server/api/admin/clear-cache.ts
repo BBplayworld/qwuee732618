@@ -1,5 +1,5 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
-import { clearFileCache, writeUpdateState, executeDefensiveReset } from '~/server/utils/cache'
+import { clearFileCache, writeUpdateState, executeDefensiveReset, clearEconomicFileCache, readFileCache, readEconomicFileCache, readUpdateState } from '~/server/utils/cache'
 
 // 어드민 개인키 환경 변수에서 가져오기
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY
@@ -11,10 +11,27 @@ interface ClearCacheResponse {
   clearedItems: string[]
 }
 
+interface ReadCacheResponse {
+  success: boolean
+  message: string
+  timestamp: number
+  data: {
+    stocks: any[] | null
+    economic: any[] | null
+    updateState: any
+    cacheInfo: {
+      stocksCacheExists: boolean
+      economicCacheExists: boolean
+      stocksCacheSize: number
+      economicCacheSize: number
+    }
+  }
+}
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const providedKey = query.key as string
-  const resetType = (query.type as string) || 'cache' // 'cache' | 'full' | 'defensive'
+  const actionType = (query.type as string) || 'cache' // 'cache' | 'full' | 'defensive' | 'read'
 
   // 1. 어드민 키 검증
   if (!ADMIN_SECRET_KEY) {
@@ -32,72 +49,76 @@ export default defineEventHandler(async (event) => {
   }
 
   if (providedKey !== ADMIN_SECRET_KEY) {
-    // 보안 로그 (실제 환경에서는 더 자세한 로깅 권장)
-    console.warn(`[SECURITY] Unauthorized cache clear attempt with key: ${providedKey?.substring(0, 4)}***`)
-
+    console.warn(`[A1] Unauthorized attempt: ${providedKey?.substring(0, 4)}***`)
     throw createError({
       statusCode: 403,
       statusMessage: 'Invalid admin key',
     })
   }
 
-  // 2. 캐시 삭제 실행
-  const clearedItems: string[] = []
   const timestamp = Date.now()
 
   try {
-    console.log(`[ADMIN] Cache clear requested by admin - type: ${resetType}`)
+    // 캐시 읽기 요청 처리
+    if (actionType === 'read') {
+      console.log(`[A2] Cache read requested`)
 
-    switch (resetType) {
-      case 'cache':
-        // 파일 캐시만 삭제
-        await clearFileCache()
-        clearedItems.push('file_cache')
-        console.log('[ADMIN] File cache cleared successfully')
-        break
+      const [stocksCache, economicCache, updateState] = await Promise.all([readFileCache(), readEconomicFileCache(), readUpdateState()])
 
-      case 'full':
-        // 파일 캐시 + 상태 리셋
-        await clearFileCache()
-        await writeUpdateState({
-          hasCompletedInitialUpdate: false,
-          isBackgroundUpdateInProgress: false,
-          callCount: 0,
-          lastResetTimestamp: timestamp,
-        })
-        clearedItems.push('file_cache', 'update_state')
-        console.log('[ADMIN] Full cache and state reset completed')
-        break
+      const response: ReadCacheResponse = {
+        success: true,
+        message: 'Cache data retrieved successfully',
+        timestamp,
+        data: {
+          stocks: stocksCache,
+          economic: economicCache,
+          updateState,
+          cacheInfo: {
+            stocksCacheExists: stocksCache !== null,
+            economicCacheExists: economicCache !== null,
+            stocksCacheSize: stocksCache ? stocksCache.length : 0,
+            economicCacheSize: economicCache ? economicCache.length : 0,
+          },
+        },
+      }
 
+      console.log(`[A3] Cache read completed: stocks=${stocksCache?.length || 0}, economic=${economicCache?.length || 0}`)
+      return response
+    }
+
+    // 캐시 클리어 요청 처리
+    const clearedItems: string[] = []
+    console.log(`[A2] Cache clear requested: ${actionType}`)
+
+    switch (actionType) {
       case 'defensive':
-        // 방어 로직 실행 (가장 강력한 리셋)
         await executeDefensiveReset()
-        clearedItems.push('file_cache', 'update_state', 'defensive_reset')
-        console.log('[ADMIN] Defensive reset executed')
+        await clearEconomicFileCache()
+        clearedItems.push('stocks_cache', 'economic_cache', 'update_state', 'defensive_reset')
         break
 
       default:
         throw createError({
           statusCode: 400,
-          statusMessage: 'Invalid reset type. Use: cache, full, or defensive',
+          statusMessage: 'Invalid action type. Use: cache, full, defensive, or read',
         })
     }
 
     const response: ClearCacheResponse = {
       success: true,
-      message: `Cache cleared successfully (${resetType} mode)`,
+      message: `Cache cleared successfully (${actionType} mode)`,
       timestamp,
       clearedItems,
     }
 
-    console.log(`[ADMIN] Cache clear completed successfully:`, response)
+    console.log(`[A3] Cache clear completed: ${clearedItems.join(', ')}`)
     return response
   } catch (error: any) {
-    console.error('[ADMIN] Cache clear failed:', error)
+    console.error('[A4] Admin operation failed:', error)
 
     throw createError({
       statusCode: 500,
-      statusMessage: `Cache clear failed: ${error?.message || 'Unknown error'}`,
+      statusMessage: `Admin operation failed: ${error?.message || 'Unknown error'}`,
     })
   }
 })

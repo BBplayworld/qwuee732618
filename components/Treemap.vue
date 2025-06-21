@@ -44,10 +44,10 @@ const CONFIG = {
         timing: {
             initialFetchDelay: 100,        // 초기 fetch 지연 시간 (ms)
             firstFetchInterval: 20 * 1000,      // 최초 서버 업데이트 확인 fetch 간격 (ms) - 20초마다
-            fetchInterval: 60 * 1000,      // 주기적 fetch 간격 (ms) - 1분마다
+            fetchInterval: 120 * 1000,      // 주기적 fetch 간격 (ms) - 2분마다
             retryDelay: 100,              // fetch 실패시 재시도 지연 시간 (ms)
             containerReadyDelay: 100,      // 컨테이너 준비 대기 시간 (ms)
-            batchSize: 12,                // 한 번에 가져올 기업 수 (분당 60회 제한 고려)
+            // batchSize 제거 - 단일 호출로 변경
         },
 
         // 애니메이션 설정
@@ -1454,50 +1454,32 @@ const fetchEconomicIndicators = async () => {
 }
 
 const fetch = async () => {
-    const batchSize = CONFIG.system.timing.batchSize
-    let currentBatch = 0
     let retryCount = 0
     const maxRetries = 3
-    let totalSymbols = 0
 
-    const fetchBatch = async (batchIndex) => {
+    const fetchStocks = async () => {
         try {
+            console.log('[C1] Fetching stocks data')
             const { data } = await useFetch('/api/stocks', {
-                query: {
-                    batchIndex,
-                    batchSize
-                },
                 retry: false,
             })
 
             if (!data.value) {
                 if (retryCount < maxRetries) {
                     retryCount++
-                    console.warn(`[WARN] Retrying batch ${batchIndex} (attempt ${retryCount}/${maxRetries})`)
-                    return setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
+                    console.warn(`[C2] Retrying stocks fetch (attempt ${retryCount}/${maxRetries})`)
+                    return setTimeout(() => fetchStocks(), CONFIG.system.timing.retryDelay)
                 }
-                console.error(`[ERROR] Failed to fetch batch ${batchIndex} after ${maxRetries} attempts`)
+                console.error(`[C3] Failed to fetch stocks after ${maxRetries} attempts`)
                 return
             }
 
             retryCount = 0 // 성공하면 재시도 카운트 리셋
 
-            // 첫 번째 배치에서 전체 심볼 수 확인
-            if (batchIndex === 0) {
-                totalSymbols = data.value.totalSymbols || 0
-                console.log(`[INFO] Total symbols to process: ${totalSymbols}`)
-            }
-
-            // 새로운 데이터로 기존 데이터 업데이트
+            // 전체 데이터 업데이트
             if (data.value.data) {
-                data.value.data.forEach(newItem => {
-                    const existingIndex = items.value.findIndex(item => item.name === newItem.name)
-                    if (existingIndex !== -1) {
-                        items.value[existingIndex] = newItem
-                    } else {
-                        items.value.push(newItem)
-                    }
-                })
+                console.log(`[C4] Received ${data.value.data.length} stocks`)
+                items.value = data.value.data
             }
 
             // 업데이트 상태 정보 저장
@@ -1506,33 +1488,25 @@ const fetch = async () => {
                 marketClosedUpdateStatus.value.isBackgroundUpdateInProgress = data.value.updateStatus.isBackgroundUpdateInProgress
             }
 
-            // 다음 배치가 있는지 확인
-            const nextBatchIndex = batchIndex + 1
-            const hasNextBatch = nextBatchIndex * batchSize < totalSymbols
-
-            if (hasNextBatch) {
-                currentBatch++
-                await fetchBatch(currentBatch)
+            // 트리맵 업데이트
+            if (treemapContainer.value) {
+                createTreemap({ isFetch: true })
             } else {
-                // 모든 배치를 가져왔으면 트리맵 업데이트
-                if (treemapContainer.value) {
-                    createTreemap({ isFetch: true })
-                } else {
-                    setTimeout(() => createTreemap({ isFetch: true }), CONFIG.system.timing.containerReadyDelay)
-                }
+                setTimeout(() => createTreemap({ isFetch: true }), CONFIG.system.timing.containerReadyDelay)
             }
+
         } catch (error) {
-            console.error(`[ERROR] Failed to fetch batch ${batchIndex}:`, error)
+            console.error(`[C5] Failed to fetch stocks:`, error)
             if (retryCount < maxRetries) {
                 retryCount++
-                console.warn(`[WARN] Retrying batch ${batchIndex} after error (attempt ${retryCount}/${maxRetries})`)
-                setTimeout(() => fetchBatch(batchIndex), CONFIG.system.timing.retryDelay)
+                console.warn(`[C6] Retrying stocks fetch after error (attempt ${retryCount}/${maxRetries})`)
+                setTimeout(() => fetchStocks(), CONFIG.system.timing.retryDelay)
             }
         }
     }
 
-    // 첫 번째 배치부터 시작
-    await fetchBatch(0)
+    // 주식 데이터 가져오기
+    await fetchStocks()
 
     // 경제 지표도 함께 가져오기
     await fetchEconomicIndicators()
@@ -1541,10 +1515,10 @@ const fetch = async () => {
     if (!isMarketOpen) {
         // 마켓이 닫혀있을 때: 초기 업데이트가 완료되지 않았으면 주기적으로 확인
         if (!marketClosedUpdateStatus.value.hasCompletedInitialUpdate) {
-            console.log('[INFO] Market closed - checking for update completion')
+            console.log('[C7] Market closed - checking for update completion')
             setTimeout(fetch, CONFIG.system.timing.firstFetchInterval)
         } else {
-            console.log('[INFO] Market closed - initial update completed, stopping periodic fetch')
+            console.log('[C8] Market closed - initial update completed, stopping periodic fetch')
         }
         return
     }
@@ -1666,7 +1640,6 @@ h2 {
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     overflow: hidden;
-    min-height: 200px;
     margin-right: 4px;
 }
 
