@@ -1,10 +1,15 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { useMarketOpen } from '~/composables/useMarketOpen'
-import { readFileCache, writeFileCache, getCacheTTL, readUpdateState, writeUpdateState, checkAndResetForMarketStateChange, tryStartUpdate, markUpdateCompleted, incrementCallCountAndCheck } from '~/server/utils/cache'
+import { readFileCache, writeFileCache, getCacheTTL, readUpdateState, writeUpdateState, checkAndResetForMarketStateChange, tryStartUpdate, markUpdateCompleted } from '~/server/utils/cache'
 
 const tokenArr = [process.env.FINN_1_KEY, process.env.FINN_2_KEY, process.env.FINN_3_KEY, process.env.FINN_4_KEY].filter((token): token is string => Boolean(token))
 
-let currentTokenIndex = 0
+// 토큰 없을 때 명확한 에러 메시지
+if (tokenArr.length === 0) {
+  console.error('🚨 [CRITICAL] No Finnhub API tokens found!')
+  console.error('Please set environment variables: FINN_1_KEY, FINN_2_KEY, FINN_3_KEY, FINN_4_KEY')
+  console.error('Get tokens from: https://finnhub.io')
+}
 
 interface StockData {
   name: string
@@ -85,19 +90,6 @@ const symbols: StockData[] = [
 let memoryCache: StockData[] = []
 let lastFetchTime = 0
 
-// 현재 토큰 가져오기 (랜덤 선택으로 부하 분산)
-function getCurrentToken(): string {
-  // Rate limit을 피하기 위해 랜덤 토큰 선택
-  const randomIndex = Math.floor(Math.random() * tokenArr.length)
-  return tokenArr[randomIndex]
-}
-
-// 토큰 순환
-function rotateToken(): void {
-  currentTokenIndex = (currentTokenIndex + 1) % tokenArr.length
-  console.log(`[TOKEN] Rotated to token index: ${currentTokenIndex}`)
-}
-
 // 순수 fetch 함수 (성능 측정 포함)
 async function fetchStockQuote(symbol: string, token: string): Promise<{ data: any; timing: { fetchTime: number; parseTime: number; totalTime: number } }> {
   const startTime = performance.now()
@@ -147,23 +139,11 @@ async function fetchStockQuote(symbol: string, token: string): Promise<{ data: a
 
 // 주식 데이터 가져오기 (캐시 우선, 백그라운드 업데이트)
 async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
-  const functionStartTime = performance.now()
   const now = Date.now()
   const { isMarketOpen } = useMarketOpen()
 
-  console.log(`[S1] fetchStockData started - Market: ${isMarketOpen ? 'OPEN' : 'CLOSED'}`)
-
   // 마켓 상태 변경 감지 및 상태 리셋
-  const resetCheckStart = performance.now()
-  await checkAndResetForMarketStateChange(isMarketOpen)
-  const resetCheckTime = performance.now() - resetCheckStart
-
-  const shouldReset = await incrementCallCountAndCheck(!isMarketOpen)
-  if (shouldReset) {
-    console.log('[S1.1] Defensive reset triggered')
-    memoryCache = []
-    lastFetchTime = 0
-  }
+  // await checkAndResetForMarketStateChange(isMarketOpen)
 
   // 1. 메모리 캐시 확인
   const cacheCheckStart = performance.now()
@@ -173,7 +153,7 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
 
     if (canUseMemoryCache) {
       const cacheCheckTime = performance.now() - cacheCheckStart
-      console.log(`[S2] Memory cache hit (${Math.round(cacheCheckTime)}ms)`)
+      console.log(`[S1] Memory cache hit (${Math.round(cacheCheckTime)}ms)`)
       return memoryCache
     }
   }
@@ -188,12 +168,12 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
     const canUseFileCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseFileCache) {
-      console.log(`[S3-1] File cache hit (${Math.round(fileCacheTime)}ms)`)
+      console.log(`[S2-1] File cache hit (${Math.round(fileCacheTime)}ms)`)
       memoryCache = fileCache
       lastFetchTime = now
       return fileCache
     } else {
-      console.log(`[S3-2] File cache loaded (${Math.round(fileCacheTime)}ms), continuing update`)
+      console.log(`[S2-2] File cache loaded (${Math.round(fileCacheTime)}ms), continuing update`)
       memoryCache = fileCache
       lastFetchTime = now
     }
@@ -208,7 +188,7 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
   }
 
   const state = await readUpdateState()
-  const shouldPerformUpdate = (!state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress) || shouldReset
+  const shouldPerformUpdate = !state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress
 
   if (isMarketOpen) {
     updateStockDataInBackground()
@@ -248,24 +228,49 @@ async function performOneTimeUpdate() {
     return
   }
 
+  // 토큰 유효성 검사
+  if (tokenArr.length === 0) {
+    console.error('[U2.5] No valid tokens available')
+    await writeUpdateState({ isBackgroundUpdateInProgress: false })
+    return
+  }
+
+  console.log(`[U2.6] Using ${tokenArr.length} valid tokens`)
+
   try {
-    // 병렬 처리를 위한 배치 분할 (Edge Function에서는 더 작은 배치)
-    const batchSize = 5
+    // 🎯 Finnhub 실제 제한: 분당 60회, 초당 30회
+    // 49개 심볼 → 30개 + 19개 (2개 배치, 1초 간격)
+    const BATCH_SIZE = 22 // 초당 30회 제한 준수
+    const BATCH_DELAY = 2000 // 1초 (초당 제한 준수)
+
     const batches = []
-    for (let i = 0; i < symbolsToUpdate.length; i += batchSize) {
-      batches.push(symbolsToUpdate.slice(i, i + batchSize))
+    for (let i = 0; i < symbolsToUpdate.length; i += BATCH_SIZE) {
+      batches.push(symbolsToUpdate.slice(i, i + BATCH_SIZE))
     }
 
-    console.log(`[U2.1] Processing ${batches.length} batches of up to ${batchSize} symbols`)
+    console.log(`[U2.1] Processing ${batches.length} batches of ${BATCH_SIZE} symbols (Finnhub: 60/min, 30/sec - Optimized for speed)`)
 
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex]
       const batchStartTime = performance.now()
 
-      // 배치 내 병렬 처리
-      const batchPromises = batch.map(async (symbol) => {
+      console.log(`[U2.2] Starting batch ${batchIndex + 1}/${batches.length} with ${batch.length} symbols`)
+      console.log(`[U2.3] Symbols in this batch: ${batch.map((s) => s.name).join(', ')}`)
+
+      // 배치 내 토큰별 분산 병렬 처리 (환경변수 토큰 사용)
+      const batchPromises = batch.map(async (symbol, symbolIndex) => {
+        const symbolStartTime = performance.now()
         try {
-          const token = getCurrentToken()
+          // 환경변수 토큰 순환 할당
+          const tokenIndex = (batchIndex * BATCH_SIZE + symbolIndex) % tokenArr.length
+          const token = tokenArr[tokenIndex]
+
+          if (!token) {
+            throw new Error('No valid token available')
+          }
+
+          console.log(`[U2.4] ${symbol.name}: Using token ${tokenIndex}, starting request...`)
+
           const result = await fetchStockQuote(symbol.name, token)
 
           const percentage = ((result.data.c - symbol.high52) / symbol.high52) * 100
@@ -277,56 +282,63 @@ async function performOneTimeUpdate() {
             timestamp: Date.now(),
           }
 
-          const index = memoryCache.findIndex((s) => s.name === symbol.name)
-          if (index !== -1) {
-            memoryCache[index] = updatedStock
+          const memoryIndex = memoryCache.findIndex((s) => s.name === symbol.name)
+          if (memoryIndex !== -1) {
+            memoryCache[memoryIndex] = updatedStock
           }
+
+          const symbolTime = Math.round(performance.now() - symbolStartTime)
+          console.log(`[U2.5] ${symbol.name}: SUCCESS in ${symbolTime}ms (fetch: ${result.timing.fetchTime}ms)`)
 
           return {
             success: true,
             symbol: symbol.name,
             timing: result.timing,
             data: result.data,
+            tokenUsed: tokenIndex,
           }
         } catch (error: any) {
-          console.error(`[U4] ${error.message}`)
+          const symbolTime = Math.round(performance.now() - symbolStartTime)
+          console.error(`[U4] ${symbol.name}: FAILED in ${symbolTime}ms - ${error.message}`)
 
-          if (error.message.includes('429')) {
-            rotateToken()
-          }
           return { success: false, symbol: symbol.name, error: error.message }
         }
       })
 
       // 배치 결과 대기
       const batchResults = await Promise.allSettled(batchPromises)
-      const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success)
+      const successfulResults = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).map((result) => (result as PromiseFulfilledResult<any>).value)
 
-      // 성능 통계 계산
-      const successfulResults = batchSuccesses
-        .filter((r) => r.status === 'fulfilled')
-        .map((r) => (r as PromiseFulfilledResult<any>).value)
-        .filter((v) => v.timing)
-      const avgFetchTime = successfulResults.length > 0 ? Math.round(successfulResults.reduce((sum, r) => sum + r.timing.fetchTime, 0) / successfulResults.length) : 0
-      const maxFetchTime = successfulResults.length > 0 ? Math.max(...successfulResults.map((r) => r.timing.fetchTime)) : 0
-
-      successCount += batchSuccesses.length
+      const batchSuccessCount = successfulResults.length
+      successCount += batchSuccessCount
       const batchTime = Math.round(performance.now() - batchStartTime)
       const currentProgress = ((successCount / totalSymbols) * 100).toFixed(1)
 
-      console.log(`[U3] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccesses.length}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch: ${batchTime}ms, AvgFetch: ${avgFetchTime}ms, MaxFetch: ${maxFetchTime}ms`)
+      // 토큰별 사용 통계
+      const tokenStats = successfulResults.reduce((acc, result) => {
+        acc[result.tokenUsed] = (acc[result.tokenUsed] || 0) + 1
+        return acc
+      }, {} as Record<number, number>)
 
-      // 배치 간 짧은 대기 (Rate limiting 방지)
-      if (batchIndex < batches.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 100))
-      }
+      // 성능 통계 계산
+      const avgFetchTime = successfulResults.length > 0 ? Math.round(successfulResults.reduce((sum, r) => sum + r.timing.fetchTime, 0) / successfulResults.length) : 0
+      const maxFetchTime = successfulResults.length > 0 ? Math.max(...successfulResults.map((r) => r.timing.fetchTime)) : 0
+
+      console.log(`[U3] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccessCount}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch: ${batchTime}ms, AvgFetch: ${avgFetchTime}ms, MaxFetch: ${maxFetchTime}ms, Tokens: ${JSON.stringify(tokenStats)}`)
 
       // 중간 캐시 저장 (데이터 손실 방지)
       if (batchIndex % 2 === 1) {
         await writeFileCache(memoryCache)
       }
+
+      // 매우 보수적인 Rate limit 준수를 위한 배치 간 대기 (마지막 배치 제외)
+      if (batchIndex < batches.length - 1) {
+        console.log(`[U3.1] Waiting ${BATCH_DELAY / 1000}s for per-second rate limit compliance...`)
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY))
+      }
     }
 
+    // 최종 캐시 저장
     await writeFileCache(memoryCache)
     lastFetchTime = Date.now()
 
@@ -371,80 +383,149 @@ async function updateStockDataInBackground() {
     return
   }
 
-  // 섹터별 병렬 처리
-  const sectors = [...new Set(symbolsToUpdate.map((s) => s.sector))]
+  // 토큰 유효성 검사
+  if (tokenArr.length === 0) {
+    console.error('[B2.5] No valid tokens available')
+    await writeUpdateState({ isBackgroundUpdateInProgress: false })
+    return
+  }
+
+  console.log(`[B2.6] Using ${tokenArr.length} valid tokens`)
+
   let successCount = 0
   const totalSymbols = symbolsToUpdate.length
 
   try {
-    for (const sector of sectors) {
-      const sectorSymbols = symbolsToUpdate.filter((s) => s.sector === sector)
-      const sectorStartTime = performance.now()
-      console.log(`[B4] Processing ${sector}: ${sectorSymbols.length} stocks`)
+    // 🎯 Finnhub 실제 제한: 분당 60회, 초당 30회
+    // 49개 심볼 → 30개 + 19개 (2개 배치, 1초 간격)
+    const BATCH_SIZE = 22 // 초당 30회 제한 준수
+    const BATCH_DELAY = 2000 // 1초 (초당 제한 준수)
 
-      try {
-        // 섹터 내 병렬 처리 (Edge Function에서는 더 작은 배치)
-        const batchSize = 4
-        const batches = []
-        for (let i = 0; i < sectorSymbols.length; i += batchSize) {
-          batches.push(sectorSymbols.slice(i, i + batchSize))
+    const batches = []
+    for (let i = 0; i < symbolsToUpdate.length; i += BATCH_SIZE) {
+      batches.push(symbolsToUpdate.slice(i, i + BATCH_SIZE))
+    }
+
+    console.log(`[B4] Processing ${batches.length} batches of ${BATCH_SIZE} symbols (Finnhub: 60/min, 30/sec - Market open mode)`)
+
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex]
+      const batchStartTime = performance.now()
+
+      // 배치 내 토큰별 분산 병렬 처리 (환경변수 토큰 사용)
+      const batchPromises = batch.map(async (symbol, symbolIndex) => {
+        try {
+          // 환경변수 토큰 순환 할당
+          const tokenIndex = (batchIndex * BATCH_SIZE + symbolIndex) % tokenArr.length
+          const token = tokenArr[tokenIndex]
+
+          if (!token) {
+            throw new Error('No valid token available')
+          }
+
+          const result = await fetchStockQuote(symbol.name, token)
+
+          const percentage = ((result.data.c - symbol.high52) / symbol.high52) * 100
+          const updatedStock = {
+            ...symbol,
+            c: result.data.c,
+            dp: result.data.dp,
+            percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
+            timestamp: Date.now(),
+          }
+
+          const memoryIndex = memoryCache.findIndex((s) => s.name === symbol.name)
+          if (memoryIndex !== -1) {
+            memoryCache[memoryIndex] = updatedStock
+          }
+
+          return {
+            success: true,
+            symbol: symbol.name,
+            timing: result.timing,
+            sector: symbol.sector,
+            tokenUsed: tokenIndex,
+          }
+        } catch (error: any) {
+          console.error(`[B5] ${error.message}`)
+
+          return { success: false, symbol: symbol.name, error: error.message, sector: symbol.sector }
         }
+      })
 
-        for (const batch of batches) {
-          const batchPromises = batch.map(async (symbol) => {
-            try {
-              const token = getCurrentToken()
-              const result = await fetchStockQuote(symbol.name, token)
+      // 배치 결과 대기
+      const batchResults = await Promise.allSettled(batchPromises)
+      const successfulResults = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).map((result) => (result as PromiseFulfilledResult<any>).value)
 
-              const percentage = ((result.data.c - symbol.high52) / symbol.high52) * 100
-              const updatedStock = {
-                ...symbol,
-                c: result.data.c,
-                dp: result.data.dp,
-                percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
-                timestamp: Date.now(),
-              }
+      const batchSuccessCount = successfulResults.length
+      successCount += batchSuccessCount
+      const batchTime = Math.round(performance.now() - batchStartTime)
+      const currentProgress = ((successCount / totalSymbols) * 100).toFixed(1)
 
-              const index = memoryCache.findIndex((s) => s.name === symbol.name)
-              if (index !== -1) {
-                memoryCache[index] = updatedStock
-              }
+      // 토큰별 사용 통계
+      const tokenStats = successfulResults.reduce((acc, result) => {
+        acc[result.tokenUsed] = (acc[result.tokenUsed] || 0) + 1
+        return acc
+      }, {} as Record<number, number>)
 
-              return { success: true, symbol: symbol.name, timing: result.timing }
-            } catch (error: any) {
-              console.error(`[B5] ${error.message}`)
-
-              if (error.message.includes('429')) {
-                rotateToken()
-              }
-              return { success: false, symbol: symbol.name }
-            }
-          })
-
-          const batchResults = await Promise.allSettled(batchPromises)
-          const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).length
-
-          successCount += batchSuccesses
-
-          // 배치 간 짧은 대기
-          await new Promise((resolve) => setTimeout(resolve, 100))
+      // 섹터별 성공률 계산
+      const sectorStats = batch.reduce((acc, symbol) => {
+        if (!acc[symbol.sector]) {
+          acc[symbol.sector] = { total: 0, success: 0 }
         }
+        acc[symbol.sector].total++
+        return acc
+      }, {} as Record<string, { total: number; success: number }>)
 
+      successfulResults.forEach((result) => {
+        if (sectorStats[result.sector]) {
+          sectorStats[result.sector].success++
+        }
+      })
+
+      // 성능 통계 계산
+      const avgFetchTime = successfulResults.length > 0 ? Math.round(successfulResults.reduce((sum, r) => sum + r.timing.fetchTime, 0) / successfulResults.length) : 0
+      const maxFetchTime = successfulResults.length > 0 ? Math.max(...successfulResults.map((r) => r.timing.fetchTime)) : 0
+
+      console.log(`[B6] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccessCount}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch: ${batchTime}ms, AvgFetch: ${avgFetchTime}ms, MaxFetch: ${maxFetchTime}ms, Tokens: ${JSON.stringify(tokenStats)}`)
+
+      // 섹터별 성공률 로그 (성공한 섹터만)
+      Object.entries(sectorStats).forEach(([sector, stats]) => {
+        if (stats.success > 0) {
+          const rate = ((stats.success / stats.total) * 100).toFixed(1)
+          console.log(`[B6.1] ${sector}: ${stats.success}/${stats.total} (${rate}%)`)
+        }
+      })
+
+      // 중간 캐시 저장 (데이터 손실 방지)
+      if (batchIndex % 2 === 1) {
         await writeFileCache(memoryCache)
-        const sectorTime = Math.round(performance.now() - sectorStartTime)
-        console.log(`[B6] Completed ${sector} sector: ${sectorSymbols.length} stocks in ${sectorTime}ms`)
-      } catch (error: any) {
-        console.error(`[B7] Sector ${sector} failed:`, error?.message)
+      }
+
+      // 보수적인 Rate limit 준수를 위한 배치 간 대기 (마지막 배치 제외)
+      if (batchIndex < batches.length - 1) {
+        console.log(`[B6.2] Waiting ${BATCH_DELAY / 1000}s for per-second rate limit compliance...`)
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY))
       }
     }
 
-    const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
+    // 최종 캐시 저장
+    await writeFileCache(memoryCache)
+    lastFetchTime = Date.now()
+
+    const successRateNumber = (successCount / totalSymbols) * 100
     const totalTime = Math.round(performance.now() - startTime)
-    console.log(`[B8] Background update completed: ${successCount}/${totalSymbols} (${successRate}%) in ${totalTime}ms`)
+
+    if (successRateNumber >= 50) {
+      console.log(`[B7] Background update completed: ${successCount}/${totalSymbols} (${successRateNumber.toFixed(1)}%) in ${totalTime}ms`)
+      await writeUpdateState({ isBackgroundUpdateInProgress: false })
+    } else {
+      console.warn(`[B8] Low success rate: ${successRateNumber.toFixed(1)}%`)
+      await writeUpdateState({ isBackgroundUpdateInProgress: false })
+    }
   } catch (error: any) {
     const totalTime = Math.round(performance.now() - startTime)
-    console.error(`[B9] Background update failed after ${totalTime}ms:`, error?.message)
-  } finally {
+    console.error(`[B9] Critical failure after ${totalTime}ms:`, error?.message)
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
   }
 }
@@ -464,7 +545,6 @@ export default defineEventHandler(async (event) => {
     const stateReadTime = performance.now() - stateReadStart
 
     const responseTime = Math.round(performance.now() - requestStartTime)
-    console.log(`[S4] API response ready in ${responseTime}ms - dataFetch: ${Math.round(dataFetchTime)}ms, stateRead: ${Math.round(stateReadTime)}ms`)
 
     return {
       data: allData,

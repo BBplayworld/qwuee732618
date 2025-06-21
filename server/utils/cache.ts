@@ -188,34 +188,6 @@ export const markUpdateCompleted = async () => {
   }
 }
 
-// API 호출 횟수 증가 및 방어 로직 확인
-export const incrementCallCountAndCheck = async (isMarketClosed: boolean): Promise<boolean> => {
-  if (!isMarketClosed) {
-    return false // 마켓이 열려있으면 방어로직 불필요
-  }
-
-  const state = await readUpdateState()
-  const newCallCount = (state.callCount || 0) + 1
-
-  // 호출 횟수 업데이트
-  await writeUpdateState({
-    callCount: newCallCount,
-  })
-
-  // 200번 이상 호출되었고 아직 완료되지 않은 경우 방어로직 실행
-  if (newCallCount >= 200 && !state.hasCompletedInitialUpdate) {
-    console.log(`[WARNING] Too many calls (${newCallCount}) without completion. Triggering defensive reset.`)
-    await executeDefensiveReset()
-    return true // 방어로직 실행됨
-  }
-
-  if (newCallCount % 10 === 0) {
-    console.log(`[INFO] Market closed API calls: ${newCallCount}`)
-  }
-
-  return false // 정상 처리
-}
-
 // 방어로직: 캐시 클리어 및 상태 리셋
 export const executeDefensiveReset = async () => {
   console.log('[WARNING] Executing defensive reset - clearing caches and resetting state')
