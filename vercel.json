@@ -12,11 +12,5 @@
       "maxDuration": 15,
       "memory": 256
     }
-  },
-  "crons": [
-    {
-      "path": "/api/stocks",
-      "schedule": "*/15 * * * *"
-    }
-  ]
+  }
 }
