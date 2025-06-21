@@ -1,5 +1,4 @@
 import { defineEventHandler, getQuery } from 'h3'
-import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 import { readFileCache, writeFileCache, getCacheTTL, readUpdateState, writeUpdateState, checkAndResetForMarketStateChange, tryStartUpdate, markUpdateCompleted, incrementCallCountAndCheck } from '~/server/utils/cache'
 
@@ -55,18 +54,18 @@ const symbols: StockData[] = [
   // Financial (7)
   { name: 'JPM', marketCap: 550000, c: 195.45, dp: 2.35, high52: 205.25, percentageFrom52WeekHigh: -4.8, sector: 'Financial', displayName: { en: 'JPMorgan Chase', ko: 'JP모건', zh: '摩根大通' } },
   { name: 'BAC', marketCap: 290000, c: 36.28, dp: 2.75, high52: 38.95, percentageFrom52WeekHigh: -6.9, sector: 'Financial', displayName: { en: 'Bank of America', ko: '뱅크오브아메리카', zh: '美国银行' } },
-  { name: 'V', marketCap: 590000, c: 285.67, dp: 0.72, high52: 295.25, percentageFrom52WeekHigh: -3.2, sector: 'Financial', displayName: { en: 'Visa', ko: '비자', zh: '维萨' } },
-  { name: 'MA', marketCap: 440000, c: 455.28, dp: 0.56, high52: 495.0, percentageFrom52WeekHigh: -8.0, sector: 'Financial', displayName: { en: 'Mastercard', ko: '마스터카드', zh: '万事达' } },
-  { name: 'GS', marketCap: 135000, c: 395.45, dp: 2.68, high52: 395.58, percentageFrom52WeekHigh: -0.03, sector: 'Financial', displayName: { en: 'Goldman Sachs', ko: '골드만삭스', zh: '高盛' } },
-  { name: 'MS', marketCap: 155000, c: 88.95, dp: 3.38, high52: 96.25, percentageFrom52WeekHigh: -7.6, sector: 'Financial', displayName: { en: 'Morgan Stanley', ko: '모건스탠리', zh: '摩根士丹利' } },
-  { name: 'BLK', marketCap: 125000, c: 805.28, dp: 2.45, high52: 845.0, percentageFrom52WeekHigh: -4.7, sector: 'Financial', displayName: { en: 'BlackRock', ko: '블랙록', zh: '贝莱德' } },
+  { name: 'WFC', marketCap: 180000, c: 45.67, dp: 1.85, high52: 52.15, percentageFrom52WeekHigh: -12.4, sector: 'Financial', displayName: { en: 'Wells Fargo', ko: '웰스파고', zh: '富国银行' } },
+  { name: 'GS', marketCap: 125000, c: 365.28, dp: 0.95, high52: 415.0, percentageFrom52WeekHigh: -12.0, sector: 'Financial', displayName: { en: 'Goldman Sachs', ko: '골드만삭스', zh: '高盛' } },
+  { name: 'MS', marketCap: 145000, c: 85.45, dp: 1.25, high52: 95.0, percentageFrom52WeekHigh: -10.1, sector: 'Financial', displayName: { en: 'Morgan Stanley', ko: '모건스탠리', zh: '摩根士丹利' } },
+  { name: 'AXP', marketCap: 135000, c: 185.67, dp: 0.85, high52: 205.0, percentageFrom52WeekHigh: -9.4, sector: 'Financial', displayName: { en: 'American Express', ko: '아메리칸익스프레스', zh: '美国运通' } },
+  { name: 'BRK-B', marketCap: 890000, c: 425.28, dp: 0.45, high52: 465.0, percentageFrom52WeekHigh: -8.5, sector: 'Financial', displayName: { en: 'Berkshire Hathaway', ko: '버크셔해서웨이', zh: '伯克希尔哈撒韦' } },
 
   // Consumer (7)
-  { name: 'AMZN', marketCap: 1900000, c: 182.45, dp: 0, high52: 192.25, percentageFrom52WeekHigh: -5.1, sector: 'Consumer', displayName: { en: 'Amazon', ko: '아마존', zh: '亚马逊' } },
-  { name: 'WMT', marketCap: 490000, c: 60.28, dp: 1.42, high52: 62.15, percentageFrom52WeekHigh: -3.0, sector: 'Consumer', displayName: { en: 'Walmart', ko: '월마트', zh: '沃尔玛' } },
-  { name: 'PG', marketCap: 390000, c: 158.95, dp: 2.4, high52: 160.25, percentageFrom52WeekHigh: -0.8, sector: 'Consumer', displayName: { en: 'Procter & Gamble', ko: 'P&G', zh: '宝洁' } },
-  { name: 'KO', marketCap: 270000, c: 61.28, dp: 3.1, high52: 65.45, percentageFrom52WeekHigh: -6.4, sector: 'Consumer', displayName: { en: 'Coca-Cola', ko: '코카콜라', zh: '可口可乐' } },
-  { name: 'MCD', marketCap: 215000, c: 285.67, dp: 2.25, high52: 300.25, percentageFrom52WeekHigh: -4.9, sector: 'Consumer', displayName: { en: "McDonald's", ko: '맥도날드', zh: '麦当劳' } },
+  { name: 'AMZN', marketCap: 1850000, c: 178.25, dp: 0.85, high52: 201.2, percentageFrom52WeekHigh: -11.4, sector: 'Consumer', displayName: { en: 'Amazon', ko: '아마존', zh: '亚马逊' } },
+  { name: 'COST', marketCap: 385000, c: 865.45, dp: 1.25, high52: 895.0, percentageFrom52WeekHigh: -3.3, sector: 'Consumer', displayName: { en: 'Costco', ko: '코스트코', zh: '好市多' } },
+  { name: 'HD', marketCap: 355000, c: 335.67, dp: 0.95, high52: 365.0, percentageFrom52WeekHigh: -8.0, sector: 'Consumer', displayName: { en: 'Home Depot', ko: '홈디포', zh: '家得宝' } },
+  { name: 'MCD', marketCap: 195000, c: 265.28, dp: 1.15, high52: 285.0, percentageFrom52WeekHigh: -6.9, sector: 'Consumer', displayName: { en: "McDonald's", ko: '맥도날드', zh: '麦当劳' } },
+  { name: 'WMT', marketCap: 565000, c: 75.45, dp: 0.65, high52: 82.0, percentageFrom52WeekHigh: -8.0, sector: 'Consumer', displayName: { en: 'Walmart', ko: '월마트', zh: '沃尔玛' } },
   { name: 'SBUX', marketCap: 115000, c: 92.45, dp: 2.35, high52: 118.25, percentageFrom52WeekHigh: -21.8, sector: 'Consumer', displayName: { en: 'Starbucks', ko: '스타벅스', zh: '星巴克' } },
   { name: 'NKE', marketCap: 155000, c: 100.28, dp: 1.38, high52: 130.45, percentageFrom52WeekHigh: -23.1, sector: 'Consumer', displayName: { en: 'Nike', ko: '나이키', zh: '耐克' } },
 
@@ -99,45 +98,102 @@ function rotateToken(): void {
   console.log(`[TOKEN] Rotated to token index: ${currentTokenIndex}`)
 }
 
+// 순수 fetch 함수 (성능 측정 포함)
+async function fetchStockQuote(symbol: string, token: string): Promise<{ data: any; timing: { fetchTime: number; parseTime: number; totalTime: number } }> {
+  const startTime = performance.now()
+
+  try {
+    const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}`
+
+    // 순수 fetch 시작
+    const fetchStartTime = performance.now()
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Finnhub-Token': token,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: AbortSignal.timeout(30000), // 30초 타임아웃
+    })
+    const fetchEndTime = performance.now()
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    // JSON 파싱 시작
+    const parseStartTime = performance.now()
+    const data = await response.json()
+    const parseEndTime = performance.now()
+
+    const totalTime = performance.now() - startTime
+    const fetchTime = fetchEndTime - fetchStartTime
+    const parseTime = parseEndTime - parseStartTime
+
+    return {
+      data,
+      timing: {
+        fetchTime: Math.round(fetchTime),
+        parseTime: Math.round(parseTime),
+        totalTime: Math.round(totalTime),
+      },
+    }
+  } catch (error: any) {
+    const totalTime = performance.now() - startTime
+    throw new Error(`${symbol} fetch failed (${Math.round(totalTime)}ms): ${error.message}`)
+  }
+}
+
 // 주식 데이터 가져오기 (캐시 우선, 백그라운드 업데이트)
 async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
+  const functionStartTime = performance.now()
   const now = Date.now()
   const { isMarketOpen } = useMarketOpen()
 
+  console.log(`[S1] fetchStockData started - Market: ${isMarketOpen ? 'OPEN' : 'CLOSED'}`)
+
   // 마켓 상태 변경 감지 및 상태 리셋
+  const resetCheckStart = performance.now()
   await checkAndResetForMarketStateChange(isMarketOpen)
+  const resetCheckTime = performance.now() - resetCheckStart
 
   const shouldReset = await incrementCallCountAndCheck(!isMarketOpen)
   if (shouldReset) {
-    console.log('[S1] Defensive reset triggered')
+    console.log('[S1.1] Defensive reset triggered')
     memoryCache = []
     lastFetchTime = 0
   }
 
   // 1. 메모리 캐시 확인
+  const cacheCheckStart = performance.now()
   if (memoryCache.length > 0 && now - lastFetchTime < getCacheTTL()) {
     const state = await readUpdateState()
     const canUseMemoryCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseMemoryCache) {
-      console.log('[S2] Memory cache hit')
+      const cacheCheckTime = performance.now() - cacheCheckStart
+      console.log(`[S2] Memory cache hit (${Math.round(cacheCheckTime)}ms)`)
       return memoryCache
     }
   }
 
   // 2. 파일 캐시 확인
+  const fileCacheStart = performance.now()
   const fileCache = await readFileCache()
+  const fileCacheTime = performance.now() - fileCacheStart
+
   if (fileCache && fileCache.length === symbols.length) {
     const state = await readUpdateState()
     const canUseFileCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseFileCache) {
-      console.log('[S3] File cache hit')
+      console.log(`[S3] File cache hit (${Math.round(fileCacheTime)}ms)`)
       memoryCache = fileCache
       lastFetchTime = now
       return fileCache
     } else {
-      console.log('[S4] File cache loaded, continuing update')
+      console.log(`[S4] File cache loaded (${Math.round(fileCacheTime)}ms), continuing update`)
       memoryCache = fileCache
       lastFetchTime = now
     }
@@ -154,11 +210,14 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
   const state = await readUpdateState()
   const shouldPerformUpdate = (!state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress) || shouldReset
 
+  const functionTotalTime = performance.now() - functionStartTime
+  console.log(`[S5] fetchStockData completed (${Math.round(functionTotalTime)}ms) - resetCheck: ${Math.round(resetCheckTime)}ms, fileCache: ${Math.round(fileCacheTime)}ms`)
+
   if (isMarketOpen) {
-    console.log('[S5] Market open - starting background update')
+    console.log('[S6] Market open - starting background update')
     updateStockDataInBackground()
   } else if (shouldPerformUpdate) {
-    console.log('[S6] Market closed - starting one-time update')
+    console.log('[S7] Market closed - starting one-time update')
     performOneTimeUpdate()
   }
 
@@ -167,7 +226,7 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
 
 // 마켓 종료 시 1회성 업데이트
 async function performOneTimeUpdate() {
-  const startTime = Date.now()
+  const startTime = performance.now()
   const canStart = await tryStartUpdate()
   if (!canStart) {
     return
@@ -195,8 +254,8 @@ async function performOneTimeUpdate() {
   }
 
   try {
-    // 병렬 처리를 위한 배치 분할 (한 번에 8개씩 처리)
-    const batchSize = 8
+    // 병렬 처리를 위한 배치 분할 (Edge Function에서는 더 작은 배치)
+    const batchSize = 5
     const batches = []
     for (let i = 0; i < symbolsToUpdate.length; i += batchSize) {
       batches.push(symbolsToUpdate.slice(i, i + batchSize))
@@ -206,30 +265,19 @@ async function performOneTimeUpdate() {
 
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex]
-      const batchStartTime = Date.now()
+      const batchStartTime = performance.now()
 
       // 배치 내 병렬 처리
       const batchPromises = batch.map(async (symbol) => {
-        const apiStartTime = Date.now()
         try {
-          const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 15000) // 15초 타임아웃
+          const token = getCurrentToken()
+          const result = await fetchStockQuote(symbol.name, token)
 
-          const response = await $fetch(url, {
-            headers: {
-              'X-Finnhub-Token': getCurrentToken(),
-              'Content-Type': 'application/json',
-            },
-            signal: controller.signal,
-          })
-          clearTimeout(timeoutId)
-
-          const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
+          const percentage = ((result.data.c - symbol.high52) / symbol.high52) * 100
           const updatedStock = {
             ...symbol,
-            c: response.c,
-            dp: response.dp,
+            c: result.data.c,
+            dp: result.data.dp,
             percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
             timestamp: Date.now(),
           }
@@ -239,32 +287,43 @@ async function performOneTimeUpdate() {
             memoryCache[index] = updatedStock
           }
 
-          const apiTime = Date.now() - apiStartTime
-          return { success: true, symbol: symbol.name, apiTime }
+          return {
+            success: true,
+            symbol: symbol.name,
+            timing: result.timing,
+            data: result.data,
+          }
         } catch (error: any) {
-          const apiTime = Date.now() - apiStartTime
-          console.error(`[U4] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
+          console.error(`[U4] ${error.message}`)
 
-          if (error?.response?.status === 429) {
+          if (error.message.includes('429')) {
             rotateToken()
           }
-          return { success: false, symbol: symbol.name, apiTime, error: error?.message }
+          return { success: false, symbol: symbol.name, error: error.message }
         }
       })
 
       // 배치 결과 대기
       const batchResults = await Promise.allSettled(batchPromises)
-      const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success).length
+      const batchSuccesses = batchResults.filter((result) => result.status === 'fulfilled' && result.value.success)
 
-      successCount += batchSuccesses
-      const batchTime = Date.now() - batchStartTime
+      // 성능 통계 계산
+      const successfulResults = batchSuccesses
+        .filter((r) => r.status === 'fulfilled')
+        .map((r) => (r as PromiseFulfilledResult<any>).value)
+        .filter((v) => v.timing)
+      const avgFetchTime = successfulResults.length > 0 ? Math.round(successfulResults.reduce((sum, r) => sum + r.timing.fetchTime, 0) / successfulResults.length) : 0
+      const maxFetchTime = successfulResults.length > 0 ? Math.max(...successfulResults.map((r) => r.timing.fetchTime)) : 0
+
+      successCount += batchSuccesses.length
+      const batchTime = Math.round(performance.now() - batchStartTime)
       const currentProgress = ((successCount / totalSymbols) * 100).toFixed(1)
 
-      console.log(`[U3] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccesses}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch time: ${batchTime}ms`)
+      console.log(`[U3] Batch ${batchIndex + 1}/${batches.length}: ${batchSuccesses.length}/${batch.length} success, Progress: ${successCount}/${totalSymbols} (${currentProgress}%) - Batch: ${batchTime}ms, AvgFetch: ${avgFetchTime}ms, MaxFetch: ${maxFetchTime}ms`)
 
       // 배치 간 짧은 대기 (Rate limiting 방지)
       if (batchIndex < batches.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
 
       // 중간 캐시 저장 (데이터 손실 방지)
@@ -277,7 +336,7 @@ async function performOneTimeUpdate() {
     lastFetchTime = Date.now()
 
     const successRateNumber = (successCount / totalSymbols) * 100
-    const totalTime = Date.now() - startTime
+    const totalTime = Math.round(performance.now() - startTime)
 
     if (successRateNumber >= 50) {
       await markUpdateCompleted()
@@ -287,7 +346,7 @@ async function performOneTimeUpdate() {
       await writeUpdateState({ isBackgroundUpdateInProgress: false })
     }
   } catch (error: any) {
-    const totalTime = Date.now() - startTime
+    const totalTime = Math.round(performance.now() - startTime)
     console.error(`[U7] Critical failure after ${totalTime}ms:`, error?.message)
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
   }
@@ -295,7 +354,7 @@ async function performOneTimeUpdate() {
 
 // 백그라운드에서 주식 데이터 업데이트 (마켓 오픈 시에만)
 async function updateStockDataInBackground() {
-  const startTime = Date.now()
+  const startTime = performance.now()
   const canStart = await tryStartUpdate()
   if (!canStart) {
     return
@@ -325,12 +384,12 @@ async function updateStockDataInBackground() {
   try {
     for (const sector of sectors) {
       const sectorSymbols = symbolsToUpdate.filter((s) => s.sector === sector)
-      const sectorStartTime = Date.now()
+      const sectorStartTime = performance.now()
       console.log(`[B4] Processing ${sector}: ${sectorSymbols.length} stocks`)
 
       try {
-        // 섹터 내 병렬 처리 (한 번에 6개씩)
-        const batchSize = 6
+        // 섹터 내 병렬 처리 (Edge Function에서는 더 작은 배치)
+        const batchSize = 4
         const batches = []
         for (let i = 0; i < sectorSymbols.length; i += batchSize) {
           batches.push(sectorSymbols.slice(i, i + batchSize))
@@ -338,26 +397,15 @@ async function updateStockDataInBackground() {
 
         for (const batch of batches) {
           const batchPromises = batch.map(async (symbol) => {
-            const apiStartTime = Date.now()
             try {
-              const url = `https://finnhub.io/api/v1/quote?symbol=${symbol.name}`
-              const controller = new AbortController()
-              const timeoutId = setTimeout(() => controller.abort(), 12000) // 12초 타임아웃
+              const token = getCurrentToken()
+              const result = await fetchStockQuote(symbol.name, token)
 
-              const response = await $fetch(url, {
-                headers: {
-                  'X-Finnhub-Token': getCurrentToken(),
-                  'Content-Type': 'application/json',
-                },
-                signal: controller.signal,
-              })
-              clearTimeout(timeoutId)
-
-              const percentage = ((response.c - symbol.high52) / symbol.high52) * 100
+              const percentage = ((result.data.c - symbol.high52) / symbol.high52) * 100
               const updatedStock = {
                 ...symbol,
-                c: response.c,
-                dp: response.dp,
+                c: result.data.c,
+                dp: result.data.dp,
                 percentageFrom52WeekHigh: parseFloat(percentage.toFixed(2)),
                 timestamp: Date.now(),
               }
@@ -367,12 +415,11 @@ async function updateStockDataInBackground() {
                 memoryCache[index] = updatedStock
               }
 
-              return { success: true, symbol: symbol.name }
+              return { success: true, symbol: symbol.name, timing: result.timing }
             } catch (error: any) {
-              const apiTime = Date.now() - apiStartTime
-              console.error(`[B5] Failed ${symbol.name} (${apiTime}ms):`, error?.message)
+              console.error(`[B5] ${error.message}`)
 
-              if (error?.response?.status === 429) {
+              if (error.message.includes('429')) {
                 rotateToken()
               }
               return { success: false, symbol: symbol.name }
@@ -385,11 +432,11 @@ async function updateStockDataInBackground() {
           successCount += batchSuccesses
 
           // 배치 간 짧은 대기
-          await new Promise((resolve) => setTimeout(resolve, 150))
+          await new Promise((resolve) => setTimeout(resolve, 100))
         }
 
         await writeFileCache(memoryCache)
-        const sectorTime = Date.now() - sectorStartTime
+        const sectorTime = Math.round(performance.now() - sectorStartTime)
         console.log(`[B6] Completed ${sector} sector: ${sectorSymbols.length} stocks in ${sectorTime}ms`)
       } catch (error: any) {
         console.error(`[B7] Sector ${sector} failed:`, error?.message)
@@ -397,10 +444,10 @@ async function updateStockDataInBackground() {
     }
 
     const successRate = ((successCount / totalSymbols) * 100).toFixed(1)
-    const totalTime = Date.now() - startTime
+    const totalTime = Math.round(performance.now() - startTime)
     console.log(`[B8] Background update completed: ${successCount}/${totalSymbols} (${successRate}%) in ${totalTime}ms`)
   } catch (error: any) {
-    const totalTime = Date.now() - startTime
+    const totalTime = Math.round(performance.now() - startTime)
     console.error(`[B9] Background update failed after ${totalTime}ms:`, error?.message)
   } finally {
     await writeUpdateState({ isBackgroundUpdateInProgress: false })
@@ -408,18 +455,22 @@ async function updateStockDataInBackground() {
 }
 
 export default defineEventHandler(async (event) => {
-  const requestStartTime = Date.now()
+  const requestStartTime = performance.now()
   console.log('[S0] API request started')
 
   try {
     // 전체 데이터 가져오기 (배치 로직 제거)
+    const dataFetchStart = performance.now()
     const allData = await fetchStockData(symbols.map((s) => s.name))
+    const dataFetchTime = performance.now() - dataFetchStart
 
     // 파일 기반 상태 읽기
+    const stateReadStart = performance.now()
     const state = await readUpdateState()
+    const stateReadTime = performance.now() - stateReadStart
 
-    const responseTime = Date.now() - requestStartTime
-    console.log(`[S7] API response ready in ${responseTime}ms`)
+    const responseTime = Math.round(performance.now() - requestStartTime)
+    console.log(`[S8] API response ready in ${responseTime}ms - dataFetch: ${Math.round(dataFetchTime)}ms, stateRead: ${Math.round(stateReadTime)}ms`)
 
     return {
       data: allData,
@@ -432,12 +483,14 @@ export default defineEventHandler(async (event) => {
       },
       _performance: {
         responseTime,
+        dataFetchTime: Math.round(dataFetchTime),
+        stateReadTime: Math.round(stateReadTime),
         serverTime: new Date().toISOString(),
       },
     }
   } catch (error) {
-    const errorTime = Date.now() - requestStartTime
-    console.error(`[S8] API failed after ${errorTime}ms:`, error)
+    const errorTime = Math.round(performance.now() - requestStartTime)
+    console.error(`[S9] API failed after ${errorTime}ms:`, error)
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch stock data',

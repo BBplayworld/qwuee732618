@@ -87,18 +87,17 @@ export default defineNuxtConfig({
         cors: true,
       },
     },
-    // Vercel 함수 최적화 설정
+    // Vercel Edge Function 설정
     vercel: {
       functions: {
         '/api/stocks': {
-          maxDuration: 60,
-          memory: 1024,
+          runtime: 'edge',
         },
         '/api/economic-indicators': {
-          maxDuration: 30,
-          memory: 512,
+          runtime: 'edge',
         },
         '/api/admin/clear-cache': {
+          runtime: 'nodejs18.x',
           maxDuration: 15,
           memory: 256,
         },

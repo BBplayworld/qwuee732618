@@ -1,5 +1,4 @@
 import { defineEventHandler } from 'h3'
-import { $fetch } from 'ohmyfetch'
 import { useMarketOpen } from '~/composables/useMarketOpen'
 import dayjs from 'dayjs'
 import { readEconomicFileCache, writeEconomicFileCache, getEconomicCacheTTL, type EconomicData } from '~/server/utils/cache'
@@ -14,8 +13,9 @@ async function fetchEconomicData(startDate: string, endDate: string, transferUni
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${indicator.code}&api_key=${process.env.FRED_API_KEY}&file_type=json&observation_start=${startDate}&observation_end=${endDate}`
 
     try {
-      const response = await $fetch(url)
-      const latestObservation = response.observations.pop() // 가장 최신의 데이터를 사용
+      const response = await fetch(url)
+      const data = (await response.json()) as any
+      const latestObservation = data.observations.pop() // 가장 최신의 데이터를 사용
 
       return {
         name: indicator.displayName.en,
