@@ -101,6 +101,9 @@ export default defineNuxtConfig({
           maxDuration: 15,
           memory: 256,
         },
+        '/api/admin/test-finnhub': {
+          runtime: 'edge',
+        },
       },
     },
   },

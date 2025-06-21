@@ -188,12 +188,12 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
     const canUseFileCache = isMarketOpen || state.hasCompletedInitialUpdate
 
     if (canUseFileCache) {
-      console.log(`[S3] File cache hit (${Math.round(fileCacheTime)}ms)`)
+      console.log(`[S3-1] File cache hit (${Math.round(fileCacheTime)}ms)`)
       memoryCache = fileCache
       lastFetchTime = now
       return fileCache
     } else {
-      console.log(`[S4] File cache loaded (${Math.round(fileCacheTime)}ms), continuing update`)
+      console.log(`[S3-2] File cache loaded (${Math.round(fileCacheTime)}ms), continuing update`)
       memoryCache = fileCache
       lastFetchTime = now
     }
@@ -210,14 +210,9 @@ async function fetchStockData(symbolNames: string[]): Promise<StockData[]> {
   const state = await readUpdateState()
   const shouldPerformUpdate = (!state.hasCompletedInitialUpdate && !state.isBackgroundUpdateInProgress) || shouldReset
 
-  const functionTotalTime = performance.now() - functionStartTime
-  console.log(`[S5] fetchStockData completed (${Math.round(functionTotalTime)}ms) - resetCheck: ${Math.round(resetCheckTime)}ms, fileCache: ${Math.round(fileCacheTime)}ms`)
-
   if (isMarketOpen) {
-    console.log('[S6] Market open - starting background update')
     updateStockDataInBackground()
   } else if (shouldPerformUpdate) {
-    console.log('[S7] Market closed - starting one-time update')
     performOneTimeUpdate()
   }
 
@@ -456,7 +451,6 @@ async function updateStockDataInBackground() {
 
 export default defineEventHandler(async (event) => {
   const requestStartTime = performance.now()
-  console.log('[S0] API request started')
 
   try {
     // 전체 데이터 가져오기 (배치 로직 제거)
@@ -470,7 +464,7 @@ export default defineEventHandler(async (event) => {
     const stateReadTime = performance.now() - stateReadStart
 
     const responseTime = Math.round(performance.now() - requestStartTime)
-    console.log(`[S8] API response ready in ${responseTime}ms - dataFetch: ${Math.round(dataFetchTime)}ms, stateRead: ${Math.round(stateReadTime)}ms`)
+    console.log(`[S4] API response ready in ${responseTime}ms - dataFetch: ${Math.round(dataFetchTime)}ms, stateRead: ${Math.round(stateReadTime)}ms`)
 
     return {
       data: allData,
@@ -490,7 +484,7 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     const errorTime = Math.round(performance.now() - requestStartTime)
-    console.error(`[S9] API failed after ${errorTime}ms:`, error)
+    console.error(`[S4] API failed after ${errorTime}ms:`, error)
     throw createError({
       statusCode: 500,
       message: 'Failed to fetch stock data',
